@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base ──────────────────────────────────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-chulabhorn), var(--font-ibm-plex), "Noto Sans Thai",
+    sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#customer-menu::before {
+  content: '';
+  position: absolute;
+  border-bottom: solid 0.5em #444;
+  border-left: solid 0.5em transparent;
+  border-right: solid 0.5em transparent;
+  top: -0.5em;
+}
+
+.service-card-icon {
+  transition: transform 0.25s ease;
+}
+
+.service-card:hover .service-card-icon {
+  transform: scale(1.1);
+}
+
+.service-card {
+  transition: all 0.25s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(16, 24, 40, 0.12);
+  border-color: #155DFF;
+}
+
+.status-card {
+  transition: all 0.25s ease;
+}
+
+.status-card:hover {
+  background-color: #F5F8FF;
+}
+
+.slider {
+  scroll-behavior: smooth;
+}

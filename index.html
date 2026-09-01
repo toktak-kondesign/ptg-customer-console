@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTG Family - Customer Console</title>
+    <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        thai: ['"IBM Plex Sans Thai"', '"Noto Sans Thai"', 'sans-serif']
+                    },
+                    colors: {
+                        'primary': {
+                            '50': '#F5F8FF',
+                            '100': '#E7F1FF',
+                            '600': '#155DFF',
+                            '900': '#0D1B4C'
+                        },
+                        'brand': {
+                            'dark': '#0B1F6A',
+                            'blue': '#0EA5E9',
+                            'green': '#06C755'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: "IBM Plex Sans Thai", "Noto Sans Thai", sans-serif;
+        }
+        .service-card-icon {
+            transition: transform 0.25s ease;
+        }
+        .service-card:hover .service-card-icon {
+            transform: scale(1.1);
+        }
+        .service-card {
+            transition: all 0.25s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(16, 24, 40, 0.12);
+            border-color: #155DFF;
+        }
+        .status-card {
+            transition: all 0.25s ease;
+        }
+        .status-card:hover {
+            background-color: #F5F8FF;
+        }
+        .slider {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-white font-thai">
+    <!-- HEADER -->
+    <header class="border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <!-- Top Info Bar -->
+            <div class="py-4 flex justify-between items-center text-sm border-b border-gray-100">
+                <div class="text-xl font-bold text-primary-900 tracking-tight">PTG</div>
+                <div class="flex gap-8 items-center">
+                    <div class="text-gray-700">📞 Call Us 1634</div>
+                    <div class="text-gray-700">📧 Email Us cs@ptg.co.th</div>
+                    <div class="text-gray-700">🏅 Global Certificate ISO 14001:2015</div>
+                </div>
+                <div class="flex items-center gap-2 bg-primary-50 px-4 py-2 rounded-full cursor-pointer">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-brand-blue rounded-full"></div>
+                    <div class="text-xs">
+                        <div class="font-600 text-primary-900">บริษัท ทดสอบ จำกัด</div>
+                        <div class="text-gray-500">Code 01 | Silver • 2026:7:75</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex gap-8 py-4">
+                <div class="flex items-center gap-2 text-sm font-medium text-primary-600 pb-4 border-b-4 border-primary-600 cursor-pointer">
+                    🏠 หน้าหลัก
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer transition">
+                    📦 สินค้าและบริการ
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer transition">
+                    🛒 สั่งซื้อสินค้าออนไลน์
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer transition">
+                    ℹ️ เกี่ยวกับเรา
+                </div>
+                <div class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 cursor-pointer transition">
+                    📞 ติดต่อเรา
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- BANNER SLIDER -->
+        <section class="py-8">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="relative bg-gradient-to-r from-primary-50 via-blue-300 to-primary-600 rounded-2xl overflow-hidden h-96 flex items-center px-12">
+                    <!-- Slide Content -->
+                    <div class="flex justify-between items-center w-full gap-12 slider-content">
+                        <!-- Left Content -->
+                        <div class="flex-1">
+                            <h2 class="text-4xl font-bold text-gray-900 mb-2 leading-tight">
+                                สมาชิก PTG Family<br>
+                                อย่าพลาด <span class="text-red-500">บริการดีๆ</span>
+                            </h2>
+                            <p class="text-gray-700 mb-4">ใช้งานง่าย สะดวกสบาย</p>
+                            <button class="bg-gray-900 text-white px-6 py-3 rounded-full font-medium flex items-center gap-2 hover:bg-gray-800 transition">
+                                <span class="w-4 h-4 bg-brand-green rounded"></span>
+                                แอดเลย! @PTGFamily
+                            </button>
+                        </div>
+
+                        <!-- Features -->
+                        <div class="flex flex-col gap-4">
+                            <div class="text-center">
+                                <div class="bg-white bg-opacity-30 w-12 h-12 rounded-lg flex items-center justify-center mx-auto text-lg mb-2">🛒</div>
+                                <div class="text-xs text-white font-medium">สั่งซื้อสินค้าออนไลน์</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="bg-white bg-opacity-30 w-12 h-12 rounded-lg flex items-center justify-center mx-auto text-lg mb-2">⭐</div>
+                                <div class="text-xs text-white font-medium">เช็กคะแนนสะสม</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="bg-white bg-opacity-30 w-12 h-12 rounded-lg flex items-center justify-center mx-auto text-lg mb-2">💳</div>
+                                <div class="text-xs text-white font-medium">เช็กยอดจองเงิน</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="bg-white bg-opacity-30 w-12 h-12 rounded-lg flex items-center justify-center mx-auto text-lg mb-2">🚚</div>
+                                <div class="text-xs text-white font-medium">แจ้งเตือนส่งสินค้า</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="bg-white bg-opacity-30 w-12 h-12 rounded-lg flex items-center justify-center mx-auto text-lg mb-2">📄</div>
+                                <div class="text-xs text-white font-medium">เรียกดูเอกสารทางบัญชี</div>
+                            </div>
+                        </div>
+
+                        <!-- Right Image -->
+                        <div class="flex-1 flex justify-center items-center">
+                            <div class="relative">
+                                <div class="w-40 h-80 bg-white bg-opacity-30 rounded-3xl border-4 border-white border-opacity-40 flex items-center justify-center">
+                                    📱 PTG Solution
+                                </div>
+                                <div class="absolute -bottom-6 -right-8 text-6xl">🛒</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slider Dots -->
+                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
+                        <button class="w-8 h-2 bg-primary-600 rounded-full cursor-pointer slider-dot active" onclick="goToSlide(0)"></button>
+                        <button class="w-2 h-2 bg-white bg-opacity-50 rounded-full cursor-pointer slider-dot" onclick="goToSlide(1)"></button>
+                        <button class="w-2 h-2 bg-white bg-opacity-50 rounded-full cursor-pointer slider-dot" onclick="goToSlide(2)"></button>
+                        <button class="w-2 h-2 bg-white bg-opacity-50 rounded-full cursor-pointer slider-dot" onclick="goToSlide(3)"></button>
+                    </div>
+
+                    <!-- Slider Arrows -->
+                    <button class="slider-arrow absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white rounded-full flex items-center justify-center text-primary-900 font-bold opacity-0 hover:opacity-100 transition" onclick="prevSlide()">❮</button>
+                    <button class="slider-arrow absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 bg-white rounded-full flex items-center justify-center text-primary-900 font-bold opacity-0 hover:opacity-100 transition" onclick="nextSlide()">❯</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CUSTOMER SERVICE CARDS -->
+        <section class="py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-900">CUSTOMER SERVICE</h2>
+                    <p class="text-gray-500 text-sm">ระบบบริการลูกค้า</p>
+                </div>
+
+                <div class="grid grid-cols-4 gap-6">
+                    <!-- Card 1 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-blue-50 to-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">📄</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">e-TAX Invoice<br>& Delivery note</h3>
+                        <p class="text-gray-500 text-xs">ใบกำกับภาษีและใบส่งสินค้า</p>
+                    </div>
+
+                    <!-- Card 2 - Green -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-green-50 to-green-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">💳</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">My<br>Credit</h3>
+                        <p class="text-gray-500 text-xs">ข้อมูลวงเงินและเครดิตเทอม</p>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-purple-50 to-purple-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">💰</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">Payment<br>List</h3>
+                        <p class="text-gray-500 text-xs">รายการชำระเงิน</p>
+                    </div>
+
+                    <!-- Card 4 - Blue -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-blue-100 to-blue-200 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">⭐</div>
+                        <h3 class="font-bold text-primary-600 text-sm mb-2">Reward<br>Point</h3>
+                        <p class="text-gray-500 text-xs">ยอดคะแนนสะสม</p>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-red-50 to-red-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">🔧</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">ระบบ PTG<br>Lubricant</h3>
+                        <p class="text-gray-500 text-xs">บริการงานหล่อลื่นบำรุงรักษา</p>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-orange-50 to-orange-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">🚚</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">ข้อมูลรายการ<br>รถบรรทุก</h3>
+                        <p class="text-gray-500 text-xs">ข้อมูลรายการรถบรรทุก</p>
+                    </div>
+
+                    <!-- Card 7 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-pink-50 to-pink-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">📦</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">รายงาน<br>ส่งสินค้า</h3>
+                        <p class="text-gray-500 text-xs">รายงานส่งสินค้า</p>
+                    </div>
+
+                    <!-- Card 8 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-indigo-50 to-indigo-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">🛒</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">รายการ Order<br>สินค้า</h3>
+                        <p class="text-gray-500 text-xs">รายการ Order สินค้า</p>
+                    </div>
+
+                    <!-- Card 9 - Messages with Badge -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer relative">
+                        <div class="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+                        <div class="service-card-icon bg-gradient-to-br from-blue-50 to-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">💬</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">PTG<br>Messages</h3>
+                        <p class="text-gray-500 text-xs">ข้อความจาก PTG</p>
+                    </div>
+
+                    <!-- Card 10 -->
+                    <div class="service-card bg-white border border-gray-200 rounded-xl p-6 text-center hover:shadow-lg cursor-pointer">
+                        <div class="service-card-icon bg-gradient-to-br from-yellow-50 to-yellow-100 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl">🛍️</div>
+                        <h3 class="font-bold text-gray-900 text-sm mb-2">สั่งซื้อสินค้า<br>ออนไลน์</h3>
+                        <p class="text-gray-500 text-xs">สั่งซื้อสินค้าผ่านออนไลน์</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATUS DELIVERY -->
+        <section class="py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-baseline mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">STATUS DELIVERY</h2>
+                        <p class="text-gray-500 text-sm">สถานะสั่งสินค้า</p>
+                    </div>
+                    <a href="#" class="text-primary-600 text-sm font-medium hover:text-primary-900">ดูทั้งหมด ›</a>
+                </div>
+
+                <!-- Status Cards -->
+                <div class="space-y-4">
+                    <!-- Status 1 -->
+                    <div class="status-card border border-gray-200 rounded-xl p-6 flex items-center gap-6 cursor-pointer">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">✓</div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-600 mb-1">เลขที่ใบส่งสินค้า: 260800287 / 29-08-2026 14:01 น.</div>
+                            <div class="font-bold text-primary-600 mb-1">คอนกรีตผสมเสร็จ</div>
+                            <div class="text-xs text-gray-500">ทะเบียนรถ 70-4682 นค: ราชสีมา : นายกาญจน์ สร้างธรรม</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg text-gray-900 mb-2">2.75</div>
+                            <div class="w-20 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">🚚</div>
+                        </div>
+                    </div>
+
+                    <!-- Status 2 -->
+                    <div class="status-card border border-gray-200 rounded-xl p-6 flex items-center gap-6 cursor-pointer">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">✓</div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-600 mb-1">เลขที่ใบส่งสินค้า: 260800281 / 28-08-2026 07:51 น.</div>
+                            <div class="font-bold text-primary-600 mb-1">คอนกรีตผสมเสร็จ</div>
+                            <div class="text-xs text-gray-500">ทะเบียนรถ 70-4884 นค: ราชสีมา : นายประวิทย์ ศรีสวัสดิ์</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg text-gray-900 mb-2">4.00</div>
+                            <div class="w-20 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">🚚</div>
+                        </div>
+                    </div>
+
+                    <!-- Status 3 -->
+                    <div class="status-card border border-gray-200 rounded-xl p-6 flex items-center gap-6 cursor-pointer">
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">✓</div>
+                        <div class="flex-1">
+                            <div class="text-xs text-gray-600 mb-1">เลขที่ใบส่งสินค้า: 260800280 / 28-08-2026 16:23 น.</div>
+                            <div class="font-bold text-primary-600 mb-1">คอนกรีตผสมเสร็จ</div>
+                            <div class="text-xs text-gray-500">ทะเบียนรถ 45-661 นค: ราชสีมา : นายสัญชัย อดฉิมศรี</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg text-gray-900 mb-2">4.50</div>
+                            <div class="w-20 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">🚚</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REWARD SECTION - EMPTY STATE -->
+        <section class="py-12 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="flex justify-between items-baseline mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">REWARD</h2>
+                        <p class="text-gray-500 text-sm">รายการสินค้าแลกแต้ม</p>
+                    </div>
+                    <a href="#" class="text-primary-600 text-sm font-medium hover:text-primary-900">ดูทั้งหมด</a>
+                </div>
+
+                <!-- Empty State -->
+                <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+                    <div class="text-6xl mb-4">🎁</div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">ยังไม่มีรายการสินค้าแลกแต้ม</h3>
+                    <p class="text-gray-500">สะสมคะแนนให้มากขึ้น เพื่อแลกรับสิทธิพิเศษดีๆ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- BANNER FOOTER -->
+        <section class="py-12">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="bg-gradient-to-r from-primary-900 to-brand-dark rounded-2xl overflow-hidden px-12 py-12 relative">
+                    <!-- Background Pattern -->
+                    <div class="absolute inset-0 opacity-10 pointer-events-none">
+                        <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-radial from-white rounded-full"></div>
+                    </div>
+
+                    <div class="relative z-10 flex justify-between items-center gap-12">
+                        <!-- Left Section -->
+                        <div class="flex-1 text-white">
+                            <h3 class="text-3xl font-bold mb-2 leading-tight">
+                                ให้กิจการของคุณ<br>
+                                <span class="font-bold">ดูแลง่ายขึ้นกว่าเดิม</span>
+                            </h3>
+                            <p class="text-gray-300 mb-6">ใช้งานง่าย สะดวกสบาย</p>
+                            <div class="bg-white rounded-lg p-4 w-fit">
+                                <div class="w-20 h-20 bg-primary-50 rounded-lg mb-2"></div>
+                                <div class="text-xs font-bold text-gray-900">ดาวน์โหลดเลย!</div>
+                                <div class="text-xs text-gray-700">PTG Solution</div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Section -->
+                        <div class="flex-1 flex justify-center gap-6 items-center">
+                            <div class="w-28 h-56 bg-white bg-opacity-20 rounded-2xl border-2 border-white border-opacity-30 flex items-center justify-center text-xs text-white">📱</div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-white mb-1">PTG</div>
+                                <div class="text-sm text-gray-300">SOLUTION</div>
+                            </div>
+                            <div class="w-28 h-56 bg-white bg-opacity-20 rounded-2xl border-2 border-white border-opacity-30 flex items-center justify-center text-xs text-white">📱</div>
+                        </div>
+
+                        <!-- Right Section -->
+                        <div class="flex-1 text-white text-right">
+                            <h4 class="text-lg font-bold mb-2">PTG Solution</h4>
+                            <p class="text-gray-300 mb-6">Mobile Application</p>
+                            <div class="flex flex-col gap-3 justify-end">
+                                <button class="bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition text-sm">📱 Google Play</button>
+                                <button class="bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition text-sm">🍎 App Store</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-primary-900 text-gray-400 text-center text-xs py-6 relative">
+        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <div>COPYRIGHT © 2026 PTG SOLUTION. ALL RIGHTS RESERVED.</div>
+            <button id="backToTop" class="fixed bottom-8 right-8 w-11 h-11 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold hover:bg-primary-900 transition opacity-0 invisible" onclick="scrollToTop()">↑</button>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slides = 4;
+
+        function goToSlide(n) {
+            currentSlide = n;
+            updateSliderDots();
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides;
+            updateSliderDots();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides) % slides;
+            updateSliderDots();
+        }
+
+        function updateSliderDots() {
+            const dots = document.querySelectorAll('.slider-dot');
+            dots.forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.classList.add('bg-primary-600');
+                    dot.classList.remove('bg-opacity-50');
+                    dot.classList.add('w-8', 'bg-white');
+                    dot.classList.add('w-8');
+                } else {
+                    dot.classList.remove('bg-primary-600');
+                    dot.classList.add('bg-opacity-50');
+                    dot.classList.remove('w-8');
+                    dot.classList.add('w-2');
+                }
+            });
+        }
+
+        // Auto play slider
+        let autoPlayInterval = setInterval(() => {
+            nextSlide();
+        }, 5000);
+
+        // Pause on hover
+        const sliderContainer = document.querySelector('.slider-content');
+        if (sliderContainer) {
+            sliderContainer.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+            sliderContainer.addEventListener('mouseleave', () => {
+                autoPlayInterval = setInterval(() => nextSlide(), 5000);
+            });
+        }
+
+        // Back to top button
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize
+        updateSliderDots();
+    </script>
+</body>
+</html>
