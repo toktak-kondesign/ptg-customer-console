@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import AnimatedSection from "./AnimatedSection";
 
 const services = [
@@ -16,6 +17,7 @@ const services = [
     image: "/images/banner/Overdue_ltems.png",
     title: "Payment\nList",
     desc: "รายการชำระเงิน",
+    href: "/payment-list",
   },
   {
     image: "/images/banner/Reward_Point.png",
@@ -74,6 +76,15 @@ export default function CustomerService() {
                 key={service.title}
                 className="service-card bg-white border border-gray-200 rounded-xl p-3 sm:p-4 text-center shadow-md hover:shadow-sm cursor-pointer relative"
               >
+                {service.href && (
+                  <Link
+                    href={service.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute inset-0 z-10 rounded-xl"
+                    aria-label={`เปิด ${service.title.replace(/\n/g, " ")} ในแท็บใหม่`}
+                  />
+                )}
                 {service.badge && (
                   <div className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                     {service.badge}
