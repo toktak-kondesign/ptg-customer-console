@@ -388,7 +388,7 @@ export default function PaymentListPage() {
                   </p>
                 </div>
                 <div className="rounded-xl bg-[#0B132B] p-4 text-white">
-                  <p className="text-xs text-gray-300">ยอดรวมทั้งหมด</p>
+                  <p className="text-xs text-gray-300">ยอดค้างชำระทั้งสิ้น</p>
                   <p className="text-xl font-bold mt-1">
                     {formatAmount(totalAmount)}{" "}
                     <span className="text-xs font-normal">บาท</span>
