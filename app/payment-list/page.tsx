@@ -1,84 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Tooltip } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
-const paymentStatuses = [
-  {
-    key: "not-due",
-    label: "ยังไม่เกินกำหนดชำระ",
-    color: "bg-gray-400",
-    hex: "#9CA3AF",
-  },
-  {
-    key: "overdue-1-15",
-    label: "เกินกำหนดน้อยกว่า 15 วัน",
-    color: "bg-[#8BC53F]",
-    hex: "#8BC53F",
-  },
-  {
-    key: "overdue-16-30",
-    label: "เกินกำหนด 16–30 วัน",
-    color: "bg-[#FFD400]",
-    hex: "#FFD400",
-  },
-  {
-    key: "overdue-30",
-    label: "เกินกำหนดมากกว่า 30 วัน",
-    color: "bg-[#ED1C24]",
-    hex: "#ED1C24",
-  },
-] as const;
-
-type PaymentStatusKey = (typeof paymentStatuses)[number]["key"];
-type ViewMode = "table" | "pie" | "column";
-
-type Company = {
-  name: string;
-  nameEn: string;
-  rows: { status: PaymentStatusKey; count: number; amount: number }[];
-};
-
-const companies: Company[] = [
-  {
-    name: "บริษัท ผาทองทุ่งสง จำกัด",
-    nameEn: "PHATHONG THUNGSONG Co.,Ltd",
-    rows: [{ status: "not-due", count: 8, amount: 301587.35 }],
-  },
-  {
-    name: "บริษัท ผาทอง24 จำกัด",
-    nameEn: "PHATHONG24 Co.,Ltd",
-    rows: [
-      { status: "overdue-30", count: 59, amount: 720762.12 },
-      { status: "overdue-16-30", count: 14, amount: 80627.5 },
-      { status: "overdue-1-15", count: 29, amount: 393413.21 },
-      { status: "not-due", count: 86, amount: 4656669.84 },
-    ],
-  },
-  {
-    name: "บริษัท เอกทรานสปอร์ต 2016 จำกัด",
-    nameEn: "Ake Transport Co,Ltd",
-    rows: [],
-  },
-  {
-    name: "บริษัท โมโนเซเปียน จำกัด",
-    nameEn: "Monosapian Co,Ltd",
-    rows: [],
-  },
-];
-
-const formatAmount = (amount: number) =>
-  new Intl.NumberFormat("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-
-const formatCompact = (amount: number) => {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
-  return `${amount}`;
-};
+import {
+  paymentStatuses,
+  companies,
+  formatAmount,
+  formatCompact,
+  type Company,
+  type ViewMode,
+} from "./data";
 
 const polarToCartesian = (
   cx: number,
@@ -332,12 +267,16 @@ function ViewToggle({
 }
 
 export default function PaymentListPage() {
+  const router = useRouter();
   const [viewByCompany, setViewByCompany] = useState<Record<string, ViewMode>>(
     {},
   );
 
   const setView = (companyName: string, view: ViewMode) =>
     setViewByCompany((prev) => ({ ...prev, [companyName]: view }));
+
+  const goToDetail = (company: Company) =>
+    router.push(`/payment-list/${company.slug}`);
 
   const totalCount = companies
     .flatMap((company) => company.rows)
@@ -423,13 +362,24 @@ export default function PaymentListPage() {
                   className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-5 border-b border-gray-200">
-                    <div>
-                      <h2 className="font-semibold text-gray-900">
-                        {company.name}
-                      </h2>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {company.nameEn}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-16 h-10 shrink-0">
+                        <Image
+                          src={company.logo}
+                          alt={company.name}
+                          fill
+                          sizes="64px"
+                          className="object-contain"
+                        />
+                      </div>
+                      <div>
+                        <h2 className="font-semibold text-gray-900">
+                          {company.name}
+                        </h2>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {company.nameEn}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between sm:justify-end gap-4">
                       <p className="text-sm text-gray-500">
@@ -454,7 +404,7 @@ export default function PaymentListPage() {
                   ) : view === "table" ? (
                     <div className="overflow-x-auto">
                       <table className="w-full min-w-[640px] text-sm">
-                        <thead className="bg-gray-50 text-gray-500">
+                        <thead className="bg-[#34467d] text-white">
                           <tr>
                             <th className="text-left font-medium px-6 py-3">
                               สถานะการชำระ
@@ -475,7 +425,8 @@ export default function PaymentListPage() {
                             return (
                               <tr
                                 key={row.status}
-                                className="hover:bg-gray-50 transition-colors"
+                                onClick={() => goToDetail(company)}
+                                className="hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <td className="px-6 py-4">
                                   <span className="flex items-center gap-3">
@@ -488,7 +439,9 @@ export default function PaymentListPage() {
                                 <td className="px-6 py-4 text-right font-medium text-gray-700">
                                   {row.count}
                                 </td>
-                                <td className="px-6 py-4 text-right font-semibold text-gray-900">
+                                <td
+                                  className={`px-6 py-4 text-right ${status.textClass}`}
+                                >
                                   {formatAmount(row.amount)}
                                 </td>
                               </tr>
@@ -498,9 +451,19 @@ export default function PaymentListPage() {
                       </table>
                     </div>
                   ) : view === "pie" ? (
-                    <PieChart rows={company.rows} />
+                    <div
+                      onClick={() => goToDetail(company)}
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <PieChart rows={company.rows} />
+                    </div>
                   ) : (
-                    <ColumnChart rows={company.rows} />
+                    <div
+                      onClick={() => goToDetail(company)}
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <ColumnChart rows={company.rows} />
+                    </div>
                   )}
                 </section>
               );

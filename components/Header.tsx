@@ -9,6 +9,8 @@ const NAV_ABOUT_URL =
   "https://depwn2021.ptg.co.th/Site/AboutUs?l=f0141405-7c4b-4144-8e37-4b11e1b2edc2";
 const NAV_CONTACT_URL =
   "https://depwn2021.ptg.co.th/Site/contact?l=c07ba89e-d7bc-4a77-8f42-7083c361da6b";
+const NAV_CART_URL = "https://depwn2021.ptg.co.th/Site/mycart";
+const CART_COUNT = 0;
 
 const navLinks = [
   { label: "หน้าหลัก", href: NAV_HOME_URL },
@@ -112,16 +114,34 @@ export default function Header() {
 
       {/* Navigation Bar */}
       <nav className="bg-[#0B132B] w-full px-4 sm:px-6 py-3 sm:py-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
-        <div className="max-w-7xl mx-auto flex items-center gap-5 sm:gap-7">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="text-white text-[13px] sm:text-[14px] opacity-80 hover:opacity-100 transition shrink-0"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-5 sm:gap-7">
+            {navLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-white text-[13px] sm:text-[14px] opacity-80 hover:opacity-100 transition shrink-0"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+          <Link
+            href={NAV_CART_URL}
+            className="relative shrink-0"
+            aria-label="ตะกร้าของฉัน"
+          >
+            <Image
+              src="/images/carts-yellow.png"
+              alt="ตะกร้าของฉัน"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-medium rounded-full flex items-center justify-center">
+              {CART_COUNT}
+            </span>
+          </Link>
         </div>
       </nav>
     </header>

@@ -55,12 +55,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="th"
-      className={`${chulabhornLikit.variable} ${ibmPlexSansThai.variable}`}
-    >
+    <html lang="th" className={`${chulabhornLikit.variable}`}>
       <body
-        className={`${chulabhornLikit.className} ${ibmPlexSansThai.className} bg-white antialiased min-h-screen flex flex-col`}
+        className={`${chulabhornLikit.className} bg-white antialiased min-h-screen flex flex-col`}
       >
         {children}
       </body>

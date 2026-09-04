@@ -29,6 +29,7 @@ const services = [
     image: "/images/banner/PTG_L-M.png",
     title: "ระบบ PTG\nLubricant",
     desc: "บริการงานหล่อลื่นบำรุงรักษา",
+    disabled: true,
   },
   {
     image: "/images/banner/ptg_truck.png",
@@ -74,9 +75,14 @@ export default function CustomerService() {
             {services.map((service) => (
               <div
                 key={service.title}
-                className="service-card bg-white border border-gray-200 rounded-xl p-3 sm:p-4 text-center shadow-md hover:shadow-sm cursor-pointer relative"
+                className={`service-card border border-gray-200 rounded-xl p-3 sm:p-4 text-center shadow-md relative ${
+                  service.disabled
+                    ? "bg-gray-100 grayscale opacity-60 cursor-not-allowed pointer-events-none"
+                    : "bg-white hover:shadow-sm cursor-pointer"
+                }`}
+                aria-disabled={service.disabled || undefined}
               >
-                {service.href && (
+                {service.href && !service.disabled && (
                   <Link
                     href={service.href}
                     target="_blank"

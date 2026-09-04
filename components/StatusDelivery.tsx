@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
+import { Tooltip } from "antd";
 
 const statuses = [
   {
@@ -120,6 +121,15 @@ export default function StatusDelivery() {
                     {status.amount}
                   </div>
                 </div>
+                <Tooltip title="ดูใบส่งสินค้า">
+                  <Image
+                    src="/images/deliveryNote.svg"
+                    alt="devivery note"
+                    width={32}
+                    height={32}
+                    className="ml-auto"
+                  />
+                </Tooltip>
               </div>
             ))}
           </div>
@@ -139,6 +149,7 @@ export default function StatusDelivery() {
                   <th className="text-right px-4 py-3 font-medium">
                     ปริมาณ (ลบ.ม.)
                   </th>
+                  <th className="text-center px-4 py-3 font-medium w-20"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -159,6 +170,21 @@ export default function StatusDelivery() {
                     <td className="px-4 py-3 text-gray-700">{status.driver}</td>
                     <td className="px-4 py-3 text-right font-bold text-gray-900">
                       {status.amount}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Tooltip title="ดูใบส่งสินค้า">
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center cursor-pointer hover:opacity-70 transition"
+                        >
+                          <Image
+                            src="/images/deliveryNote.svg"
+                            alt="delivery note"
+                            width={28}
+                            height={28}
+                          />
+                        </button>
+                      </Tooltip>
                     </td>
                   </tr>
                 ))}
