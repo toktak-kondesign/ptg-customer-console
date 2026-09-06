@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+model TbCustPointSilverCurrent2017 {
+  itemId       Int     @id @default(autoincrement()) @map("ItemID")
+  custId       String? @map("CustID") @db.NVarChar(20)
+  currentPoint Float?  @map("CurrentPoint")
+  xStatus      Int?    @map("xStatus")
+
+  @@map("tbCustPointSilverCurrent2017")
+}
+
+model TbCustPointGoldCurrent2017 {
+  itemId        Int     @id @default(autoincrement()) @map("ItemID")
+  custId        String? @map("CustID") @db.NVarChar(20)
+  currentPoint  Float?  @map("CurrentPoint")
+  unfundedPoint Float?  @map("UnfundedPoint")
+  xStatus       Int?    @map("xStatus")
+
+  @@map("tbCustPointGoldCurrent2017")
+}
+
+model TbCustPointSilverCashCurrent {
+  itemId           Int       @id @default(autoincrement()) @map("ITemID")
+  custId           String?   @map("CustID") @db.NVarChar(10)
+  currentCashPoint Float?    @map("CurrentCashPoint")
+  pointDate        DateTime? @map("PointDate") @db.DateTime
+  note             String?   @map("Note") @db.NVarChar(250)
+  pointType        String?   @map("PointType") @db.NVarChar(50)
+  createDate       DateTime? @map("CreateDate") @db.DateTime
+  status2017       Int?      @map("Status2017")
+  expireDate       DateTime? @map("ExpireDate") @db.DateTime
+
+  @@map("tbCustPointSilverCashCurrent")
+}
+
+model TbCustGoldToAdjust {
+  itemId      Int       @id @default(autoincrement()) @map("ITemID")
+  goldYear    Int?      @map("GoldYear")
+  custId      String?   @map("CustID") @db.NVarChar(10)
+  currentGold Float?    @map("CurrentGold")
+  pointDate   DateTime? @map("PointDate") @db.DateTime
+  note        String?   @map("Note") @db.NVarChar(250)
+  pointType   String?   @map("PointType") @db.NVarChar(50)
+  createDate  DateTime? @map("CreateDate") @db.DateTime
+  status2017  Int?      @map("Status2017")
+  expireDate  DateTime? @map("ExpireDate") @db.DateTime
+  remarck     String?   @map("Remarck") @db.NVarChar(250)
+
+  @@map("tbCustGoldToAdjust")
+}

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { IBM_Plex_Sans_Thai } from "next/font/google";
+import Providers from "@/components/Providers";
 import "./globals.css";
 
 const chulabhornLikit = localFont({
@@ -59,7 +60,7 @@ export default function RootLayout({
       <body
         className={`${chulabhornLikit.className} bg-white antialiased min-h-screen flex flex-col`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

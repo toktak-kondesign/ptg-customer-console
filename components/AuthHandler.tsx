@@ -76,7 +76,7 @@ export default function AuthHandler() {
         setStatus("success");
         setMessage(`ยินดีต้อนรับ ${data.personName || data.custName || ""}`);
 
-        router.push("/payment-list");
+        router.push("/");
       } catch (error) {
         if (cancelled) return;
         setStatus("error");

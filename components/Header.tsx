@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
+import { getAuthUser, clearAuth, type AuthenUserInfo } from "@/lib/auth";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -21,6 +25,41 @@ const navLinks = [
 ];
 
 export default function Header() {
+  const [customer, setCustomer] = useState<AuthenUserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCustomerData = () => {
+      try {
+        const user = getAuthUser();
+        setCustomer(user);
+      } catch (error) {
+        console.error("Error loading customer data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCustomerData();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "ptg-auth-user") {
+        loadCustomerData();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    clearAuth();
+    setCustomer(null);
+    window.location.href = "/";
+  };
+
   return (
     <header className="w-full">
       {/* Top Bar */}
@@ -104,7 +143,11 @@ export default function Header() {
                   lg={7}
                   style={{ width: "auto", flex: "none" }}
                 >
-                  <CustomerMenu />
+                  <CustomerMenu
+                    customer={customer}
+                    isLoading={isLoading}
+                    onLogout={handleLogout}
+                  />
                 </Col>
               </Row>
             </Col>

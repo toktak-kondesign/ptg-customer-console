@@ -1,17 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import AnimatedSection from "./AnimatedSection";
+import { getApiBaseUrl } from "../lib/env";
 
 const services = [
   {
     image: "/images/banner/e-tax_lnvoice.png",
     title: "e-TAX Invoice\n& Delivery note",
     desc: "ใบกำกับภาษีและใบส่งสินค้า",
+    href: getApiBaseUrl() + "/PTGWeb/CalendarBill",
   },
   {
     image: "/images/banner/My_credit.png",
     title: "My\nCredit",
     desc: "ข้อมูลวงเงินและเครดิตเทอม",
+    href: getApiBaseUrl() + "/PTGWeb/CustomerCredit",
   },
   {
     image: "/images/banner/Overdue_ltems.png",
@@ -24,6 +27,7 @@ const services = [
     title: "Reward\nPoint",
     desc: "ยอดคะแนนสะสม",
     highlight: true,
+    href: getApiBaseUrl() + "http://deprewards.ptg.co.th/home",
   },
   {
     image: "/images/banner/PTG_L-M.png",
@@ -35,16 +39,19 @@ const services = [
     image: "/images/banner/ptg_truck.png",
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
+    href: getApiBaseUrl() + "/PTGWeb/TruckList",
   },
   {
     image: "/images/banner/tracking_logistic.png",
     title: "รายงาน\nส่งสินค้า",
     desc: "รายงานส่งสินค้า",
+    href: getApiBaseUrl() + "/Logistics/DeliveryProduct",
   },
   {
     image: "/images/banner/Order_purchase.png",
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
+    href: getApiBaseUrl() + "/PTGWeb/Orderpicker",
   },
   {
     image: "/images/banner/PTG-Messages.png",
