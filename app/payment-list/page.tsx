@@ -14,6 +14,7 @@ import {
   type Company,
   type ViewMode,
 } from "./data";
+import Link from "next/link";
 
 const polarToCartesian = (
   cx: number,
@@ -292,7 +293,16 @@ export default function PaymentListPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mb-7">
             <p className="text-sm text-blue-600 mb-2">
-              หน้าหลัก / รายการชำระเงิน
+              <Link href="/" className="text-gray-500 hover:text-gray-700">
+                หน้าหลัก
+              </Link>
+              <span className="text-gray-400 mx-2">|</span>
+              <Link
+                href="/payment-list"
+                className="text-gray-500 hover:text-gray-700"
+              >
+                รายการชำระเงิน
+              </Link>
             </p>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               PAYMENT LIST

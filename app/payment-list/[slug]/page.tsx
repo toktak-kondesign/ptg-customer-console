@@ -38,7 +38,7 @@ export default function PaymentAccountDetailPage() {
               href="/payment-list"
               className="text-gray-500 hover:text-gray-700"
             >
-              รายการเดินบัญชี
+              รายการชำระเงิน
             </Link>
             <span className="text-gray-400 mx-2">|</span>
             <span className="text-blue-600 font-medium">

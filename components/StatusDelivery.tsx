@@ -1,45 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
 import { Tooltip } from "antd";
+import { getAuthUser } from "@/lib/auth";
+import { getCustomerOrdersService } from "@/services/customer/orders";
+import type { CustomerOrder } from "@/interfaces/order";
 
-const statuses = [
-  {
-    id: "260800287",
-    date: "29-08-2026 14:01 น.",
-    product: "คอนกรีตผสมเสร็จ",
-    plate: "70-4682 นค",
-    province: "ราชสีมา",
-    driver: "นายกาญจน์ สร้างธรรม",
-    amount: "2.75",
-  },
-  {
-    id: "260800281",
-    date: "28-08-2026 07:51 น.",
-    product: "คอนกรีตผสมเสร็จ",
-    plate: "70-4884 นค",
-    province: "ราชสีมา",
-    driver: "นายประวิทย์ ศรีสวัสดิ์",
-    amount: "4.00",
-  },
-  {
-    id: "260800280",
-    date: "28-08-2026 16:23 น.",
-    product: "คอนกรีตผสมเสร็จ",
-    plate: "45-661 นค",
-    province: "ราชสีมา",
-    driver: "นายสัญชัย อดฉิมศรี",
-    amount: "4.50",
-  },
-];
+function formatThaiDateTime(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}-${mm}-${yyyy} ${hh}:${min} น.`;
+}
 
 type ViewMode = "cards" | "table";
 
 export default function StatusDelivery() {
   const [view, setView] = useState<ViewMode>("cards");
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadOrders = async () => {
+      const user = getAuthUser();
+      if (!user?.custID) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      const result = await getCustomerOrdersService(user.custID);
+      if (result.status === "success") {
+        setOrders(result.results);
+        setError(null);
+      } else {
+        setOrders([]);
+        setError(result.error ?? "ไม่สามารถโหลดข้อมูลได้");
+      }
+      setIsLoading(false);
+    };
+
+    loadOrders();
+  }, []);
 
   return (
     <section className="py-12 bg-white">
@@ -76,62 +87,72 @@ export default function StatusDelivery() {
                 <TableOutlined />
               </button>
             </div>
-            <a
+            {/* <a
               href="#"
               className="text-primary-600 text-sm font-medium hover:text-primary-900"
             >
               ดูทั้งหมด ›
-            </a>
+            </a> */}
           </div>
         </div>
 
         {view === "cards" ? (
           <div className="space-y-4">
-            {statuses.map((status) => (
-              <div
-                key={status.id}
-                className="status-card border border-gray-200 rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 cursor-pointer"
-              >
-                <div className="relative w-20 h-20 sm:w-[120px] sm:h-[120px] aspect-square shrink-0 mx-auto sm:mx-0">
-                  <Image
-                    src="/images/logistic-delivery.png"
-                    alt="logistic delivery"
-                    fill
-                    sizes="(max-width: 640px) 80px, 120px"
-                    className="object-contain"
-                  />
+            {isLoading ? (
+              <div className="text-center text-gray-500 py-8">กำลังโหลด...</div>
+            ) : error ? (
+              <div className="text-center text-red-500 py-8">{error}</div>
+            ) : orders.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">ไม่มีข้อมูล</div>
+            ) : (
+              orders.map((order) => (
+                <div
+                  key={order.BillID}
+                  className="status-card border border-gray-200 rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 cursor-pointer"
+                >
+                  <div className="relative w-20 h-20 sm:w-[80px] sm:h-[80px] aspect-square shrink-0 mx-auto sm:mx-0 p-6">
+                    <Image
+                      src="/images/delivered2.svg"
+                      alt="logistic delivery"
+                      fill
+                      sizes="(max-width: 640px) 80px, 80px"
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="flex-1 w-full text-center sm:text-left">
+                    <div className="text-xs text-gray-600 mb-1">
+                      เลขที่ใบส่งสินค้า: {order.BillID} /{" "}
+                      {formatThaiDateTime(order.DateScale)}
+                    </div>
+                    <div className="font-bold text-primary-600 mb-1">
+                      {order.Typename}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      ทะเบียนรถ {order.CarRegister} : {order.CarDriverName}
+                    </div>
+                  </div>
+                  <div className="w-full sm:w-auto text-center sm:text-right border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0 mt-2 sm:mt-0">
+                    <div className="text-xs text-gray-600 mb-1">
+                      ปริมาณ (ลบ.ม.)
+                    </div>
+                    <div className="font-bold text-lg text-gray-900 mb-2">
+                      {order.VolSend}
+                    </div>
+                  </div>
+                  {order.custsign === 1 && (
+                    <Tooltip title="ดูใบส่งสินค้า">
+                      <Image
+                        src="/images/deliveryNote.svg"
+                        alt="devivery note"
+                        width={32}
+                        height={32}
+                        className="ml-auto"
+                      />
+                    </Tooltip>
+                  )}
                 </div>
-                <div className="flex-1 w-full text-center sm:text-left">
-                  <div className="text-xs text-gray-600 mb-1">
-                    เลขที่ใบส่งสินค้า: {status.id} / {status.date}
-                  </div>
-                  <div className="font-bold text-primary-600 mb-1">
-                    {status.product}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    ทะเบียนรถ {status.plate}: {status.province} :{" "}
-                    {status.driver}
-                  </div>
-                </div>
-                <div className="w-full sm:w-auto text-center sm:text-right border-t sm:border-t-0 border-gray-100 pt-3 sm:pt-0 mt-2 sm:mt-0">
-                  <div className="text-xs text-gray-600 mb-1">
-                    ปริมาณ (ลบ.ม.)
-                  </div>
-                  <div className="font-bold text-lg text-gray-900 mb-2">
-                    {status.amount}
-                  </div>
-                </div>
-                <Tooltip title="ดูใบส่งสินค้า">
-                  <Image
-                    src="/images/deliveryNote.svg"
-                    alt="devivery note"
-                    width={32}
-                    height={32}
-                    className="ml-auto"
-                  />
-                </Tooltip>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto border border-gray-200 rounded-xl">
@@ -153,41 +174,71 @@ export default function StatusDelivery() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {statuses.map((status) => (
-                  <tr
-                    key={status.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                  >
-                    <td className="px-4 py-3 text-gray-900">{status.id}</td>
-                    <td className="px-4 py-3 text-gray-600">{status.date}</td>
-                    <td className="px-4 py-3 font-medium text-primary-600">
-                      {status.product}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{status.plate}</td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {status.province}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{status.driver}</td>
-                    <td className="px-4 py-3 text-right font-bold text-gray-900">
-                      {status.amount}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <Tooltip title="ดูใบส่งสินค้า">
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center cursor-pointer hover:opacity-70 transition"
-                        >
-                          <Image
-                            src="/images/deliveryNote.svg"
-                            alt="delivery note"
-                            width={28}
-                            height={28}
-                          />
-                        </button>
-                      </Tooltip>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-500 py-8">
+                      กำลังโหลด...
                     </td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-red-500 py-8">
+                      {error}
+                    </td>
+                  </tr>
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-gray-500 py-8">
+                      ไม่มีข้อมูล
+                    </td>
+                  </tr>
+                ) : (
+                  orders.map((order) => (
+                    <tr
+                      key={order.BillID}
+                      className="hover:bg-gray-50 cursor-pointer"
+                    >
+                      <td className="px-4 py-3 text-gray-900">
+                        {order.BillID}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {formatThaiDateTime(order.DateScale)}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-primary-600">
+                        {order.Typename}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {order.CarRegister}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {order.Company}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {order.CarDriverName}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-gray-900">
+                        {order.VolSend}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {order.custsign === 1 && (
+                          <Tooltip title="ดูใบส่งสินค้า">
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center cursor-pointer hover:opacity-70 transition"
+                            >
+                              <Image
+                                src="/images/deliveryNote.svg"
+                                alt="delivery note"
+                                width={28}
+                                height={28}
+                              />
+                            </button>
+                          </Tooltip>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
