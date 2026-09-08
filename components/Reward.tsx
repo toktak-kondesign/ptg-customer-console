@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AppstoreOutlined,
   EnvironmentOutlined,
@@ -8,27 +8,35 @@ import {
   TableOutlined,
 } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
-
-type RewardItem = {
-  name: string;
-  qty: number;
-  points: number;
-};
-
-type RewardOrder = {
-  id: string;
-  status: string;
-  statusType: "preparing" | "delivered";
-  date: string;
-  total: number;
-  tier: string;
-  address: string;
-  items: RewardItem[];
-};
+import { RewardDetailModal } from "./RewardDetailModal";
+import { getRewardsService } from "@/services/shop/rewards";
+import type { RewardOrder } from "@/interfaces/reward";
 
 type ViewMode = "cards" | "table";
 
-const rewards: RewardOrder[] = [
+interface AuthPayload {
+  custID?: string;
+  token?: string;
+}
+
+function getAuthFromStorage(): { custId: string | null; token: string | null } {
+  if (typeof window === "undefined") {
+    return { custId: null, token: null };
+  }
+  try {
+    const raw = localStorage.getItem("ptg-auth-user");
+    if (!raw) return { custId: null, token: null };
+    const parsed = JSON.parse(raw) as AuthPayload;
+    return {
+      custId: parsed.custID ?? null,
+      token: parsed.token ?? null,
+    };
+  } catch {
+    return { custId: null, token: null };
+  }
+}
+
+const fallbackRewards: RewardOrder[] = [
   {
     id: "RW20260721180335",
     status: "จัดเตรียมสินค้า",
@@ -84,9 +92,27 @@ function formatPoints(value: number) {
   return value.toLocaleString("th-TH", { minimumFractionDigits: 1 });
 }
 
-function RewardCard({ order }: { order: RewardOrder }) {
+function RewardCard({
+  order,
+  onClick,
+}: {
+  order: RewardOrder;
+  onClick: (order: RewardOrder) => void;
+}) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6">
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={`ดูรายละเอียด ${order.id}`}
+      onClick={() => onClick(order)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onClick(order);
+        }
+      }}
+      className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 cursor-pointer transition hover:border-gray-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+    >
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-1">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <h3 className="text-base font-bold text-gray-900 break-all">
@@ -136,6 +162,43 @@ function RewardCard({ order }: { order: RewardOrder }) {
 
 export default function Reward() {
   const [view, setView] = useState<ViewMode>("cards");
+  const [rewards, setRewards] = useState<RewardOrder[]>(fallbackRewards);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<RewardOrder | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchRewards() {
+      const { custId, token } = getAuthFromStorage();
+      if (!custId || !token) {
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      const result = await getRewardsService({ custId, token, limit: 5 });
+
+      if (cancelled) return;
+
+      if (!result.success) {
+        setError(result.error ?? "ไม่สามารถโหลดข้อมูลรางวัลได้");
+      } else if (result.data && result.data.length > 0) {
+        setRewards(result.data);
+      }
+
+      setIsLoading(false);
+    }
+
+    fetchRewards();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="py-12 bg-gray-50">
@@ -173,7 +236,9 @@ export default function Reward() {
               </button>
             </div>
             <a
-              href="#"
+              href="https://deprewards.ptg.co.th/history"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-primary-600 text-sm font-medium hover:text-primary-900 hidden sm:inline"
             >
               ดูทั้งหมด
@@ -181,10 +246,24 @@ export default function Reward() {
           </div>
         </div>
 
-        {view === "cards" ? (
+        {isLoading ? (
+          <div className="text-center py-12 text-gray-500">
+            กำลังโหลดข้อมูลรางวัล...
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-500">{error}</div>
+        ) : rewards.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">
+            ยังไม่มีรายการแลกแต้ม
+          </div>
+        ) : view === "cards" ? (
           <div className="space-y-4">
             {rewards.map((order) => (
-              <RewardCard key={order.id} order={order} />
+              <RewardCard
+                key={order.id}
+                order={order}
+                onClick={setSelectedOrder}
+              />
             ))}
           </div>
         ) : (
@@ -208,7 +287,20 @@ export default function Reward() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {rewards.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
+                  <tr
+                    key={order.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`ดูรายละเอียด ${order.id}`}
+                    onClick={() => setSelectedOrder(order)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedOrder(order);
+                      }
+                    }}
+                    className="hover:bg-gray-50 cursor-pointer transition focus:outline-none focus:bg-gray-50"
+                  >
                     <td className="px-4 py-3 text-gray-900 font-medium">
                       {order.id}
                     </td>
@@ -245,6 +337,11 @@ export default function Reward() {
           </div>
         )}
       </AnimatedSection>
+      <RewardDetailModal
+        order={selectedOrder}
+        open={selectedOrder !== null}
+        onClose={() => setSelectedOrder(null)}
+      />
     </section>
   );
 }

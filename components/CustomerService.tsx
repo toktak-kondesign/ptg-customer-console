@@ -27,7 +27,7 @@ const services = [
     title: "Reward\nPoint",
     desc: "ยอดคะแนนสะสม",
     highlight: true,
-    href: getApiBaseUrl() + "http://deprewards.ptg.co.th/home",
+    href: "link",
   },
   {
     image: "/images/banner/PTG_L-M.png",
