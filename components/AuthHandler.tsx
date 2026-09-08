@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { setCustomerAccessToken, setPtgSystemLink } from "@/lib/auth";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -72,6 +73,33 @@ export default function AuthHandler() {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
         setCookie(TOKEN_COOKIE, token!);
         setCookie(USER_COOKIE, JSON.stringify(data));
+
+        // Step 1-3: Generate CustomerAccessToken (JWT), fetch ResaleID,
+        // and call createApproveLink. Store JWT and link UUID.
+        try {
+          const approveRes = await fetch("/api/approve-link/ptg-system", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: data.username,
+              personName: data.personName,
+              custID: data.custID,
+              custName: data.custName,
+            }),
+          });
+          const approveData = await approveRes.json();
+          if (approveData.success) {
+            if (approveData.token) setCustomerAccessToken(approveData.token);
+            if (approveData.link) setPtgSystemLink(approveData.link);
+          } else {
+            console.error(
+              "[AuthHandler] approve-link failed:",
+              approveData.error,
+            );
+          }
+        } catch (approveError) {
+          console.error("[AuthHandler] approve-link error:", approveError);
+        }
 
         setStatus("success");
         setMessage(`ยินดีต้อนรับ ${data.personName || data.custName || ""}`);

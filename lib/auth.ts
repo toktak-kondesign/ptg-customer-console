@@ -22,6 +22,9 @@ const STORAGE_KEYS = {
   AUTH_USER: "ptg-auth-user",
   CUSTOMER_TOKEN: "ptg-customer-token",
   CUSTOMER_USER: "ptg-customer-user",
+  CUSTOMER_ACCESS_TOKEN: "ptg-customer-access-token",
+  PTG_SYSTEM_LINK: "ptg-system-link",
+  OUTSOURCE_SYSTEM_LINK: "outsource-system-link",
 } as const;
 
 function getCookie(name: string): string | null {
@@ -81,10 +84,43 @@ export function isLoggedIn(): boolean {
   return getAuthUser() !== null;
 }
 
+export function getCustomerAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+}
+
+export function setCustomerAccessToken(token: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN, token);
+}
+
+export function getPtgSystemLink(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(STORAGE_KEYS.PTG_SYSTEM_LINK);
+}
+
+export function setPtgSystemLink(link: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEYS.PTG_SYSTEM_LINK, link);
+}
+
+export function getOutsourceSystemLink(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK);
+}
+
+export function setOutsourceSystemLink(link: string): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK, link);
+}
+
 export function clearAuth(): void {
   if (typeof window === "undefined") return;
 
   localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+  localStorage.removeItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
+  localStorage.removeItem(STORAGE_KEYS.PTG_SYSTEM_LINK);
+  localStorage.removeItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK);
 
   const expire = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
   document.cookie = `${STORAGE_KEYS.CUSTOMER_TOKEN}=; path=/; ${expire}; SameSite=Lax`;
