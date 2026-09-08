@@ -9,11 +9,9 @@ import {
   useState,
 } from "react";
 import type { CustomerPointsData } from "@/interfaces/point";
-import { getAuthUser } from "@/lib/auth";
+import { CUSTOMER_SESSION_CHANGED_EVENT, getAuthUser } from "@/lib/auth";
 import { floorPointToOneDecimal } from "@/lib/pointPrecision";
 import { getCustomerPointsService } from "@/services/shop/points";
-
-export const CUSTOMER_SESSION_CHANGED_EVENT = "ptg-customer-session-changed";
 
 interface CustomerPointsContextValue {
   goldPoints: number;
@@ -47,9 +45,7 @@ export function CustomerPointsProvider({
   const getTargetCustId = useCallback((): string | null => {
     if (typeof window === "undefined") return null;
     return (
-      localStorage.getItem("ptg_staff_cid") ??
-      getAuthUser()?.custID ??
-      null
+      localStorage.getItem("ptg_staff_cid") ?? getAuthUser()?.custID ?? null
     );
   }, []);
 

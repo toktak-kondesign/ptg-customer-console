@@ -1,20 +1,118 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Tooltip } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import {
   paymentStatuses,
   companies,
   formatAmount,
   formatCompact,
   type Company,
+  type PaymentStatusKey,
   type ViewMode,
 } from "./data";
+import { getColorDashboardService } from "@/services/customer/color-dashboard";
+import type { ColorDashboardRow } from "@/interfaces/color-dashboard";
 import Link from "next/link";
+
+const COMPANY_CODE_TO_SLUG: Record<string, string> = {
+  PTG: "ptg",
+  PTG24: "ptg24",
+  AKET: "ake",
+  MONO: "mono",
+};
+
+const STATUS_BY_COLOR: Record<number, PaymentStatusKey> = {
+  0: "not-due",
+  1: "overdue-1-15",
+  2: "overdue-16-30",
+  3: "overdue-30",
+};
+
+function buildCompanyRows(
+  rows: ColorDashboardRow[] | undefined,
+  slug: string,
+): Company["rows"] {
+  if (!rows || rows.length === 0) return [];
+  const filtered = rows.filter(
+    (row) => COMPANY_CODE_TO_SLUG[row.Company] === slug,
+  );
+  const grouped = new Map<
+    PaymentStatusKey,
+    { count: number; amount: number }
+  >();
+  for (const row of filtered) {
+    const status = STATUS_BY_COLOR[row.Color1];
+    if (!status) continue;
+    const existing = grouped.get(status);
+    if (existing) {
+      existing.count += Number(row.Cmt) || 0;
+      existing.amount += Number(row.Amt) || 0;
+    } else {
+      grouped.set(status, {
+        count: Number(row.Cmt) || 0,
+        amount: Number(row.Amt) || 0,
+      });
+    }
+  }
+  return paymentStatuses
+    .slice()
+    .sort((a, b) => {
+      const colorA = Number(
+        Object.keys(STATUS_BY_COLOR).find(
+          (k) => STATUS_BY_COLOR[Number(k)] === a.key,
+        ),
+      );
+      const colorB = Number(
+        Object.keys(STATUS_BY_COLOR).find(
+          (k) => STATUS_BY_COLOR[Number(k)] === b.key,
+        ),
+      );
+      return colorB - colorA;
+    })
+    .map((status) => {
+      const data = grouped.get(status.key);
+      return data
+        ? { status: status.key, count: data.count, amount: data.amount }
+        : null;
+    })
+    .filter((row): row is Company["rows"][number] => row !== null);
+}
+
+function getCustomerField(
+  info: Record<string, unknown> | null,
+  names: string[],
+): string {
+  if (!info) return "";
+  const keys = Object.keys(info);
+  for (const name of names) {
+    const key = keys.find((k) => k.toLowerCase() === name.toLowerCase());
+    if (key) {
+      const value = info[key];
+      if (value === null || value === undefined) return "";
+      return String(value).trim();
+    }
+  }
+  return "";
+}
+
+function formatCustomerAddress(info: Record<string, unknown> | null): string {
+  if (!info) return "";
+  const parts = [
+    getCustomerField(info, ["Address1", "address1", "Add1", "add1"]),
+    getCustomerField(info, ["Address2", "address2", "Add2", "add2"]),
+    getCustomerField(info, ["Address3", "address3", "Add3", "add3"]),
+    getCustomerField(info, ["City", "city", "District", "district"]),
+    getCustomerField(info, ["State", "state", "Province", "province"]),
+    getCustomerField(info, ["ZipCode", "zipCode", "Zipcode", "zipcode", "Zip"]),
+  ];
+  return parts.filter(Boolean).join(" ");
+}
 
 const polarToCartesian = (
   cx: number,
@@ -272,6 +370,63 @@ export default function PaymentListPage() {
   const [viewByCompany, setViewByCompany] = useState<Record<string, ViewMode>>(
     {},
   );
+  const [customerInfo, setCustomerInfo] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [apiRows, setApiRows] = useState<ColorDashboardRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCustomerInfo(getCustomerInfo());
+    const handleChanged = () => setCustomerInfo(getCustomerInfo());
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () => {
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    };
+  }, []);
+
+  const custID = getCustomerField(customerInfo, [
+    "CustID",
+    "CUSTID",
+    "custId",
+    "custID",
+  ]);
+
+  useEffect(() => {
+    if (!custID) {
+      setApiRows([]);
+      setError(null);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      const result = await getColorDashboardService(custID);
+      if (cancelled) return;
+      if (result.status === "success") {
+        setApiRows(result.results);
+        setError(null);
+      } else {
+        setApiRows([]);
+        setError(result.error ?? "ไม่สามารถโหลดข้อมูลได้");
+      }
+      setIsLoading(false);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [custID]);
+
+  const companiesView: Company[] = companies
+    .map((company) => ({
+      ...company,
+      rows: buildCompanyRows(apiRows, company.slug),
+    }))
+    .filter((company) => company.rows.length > 0);
 
   const setView = (companyName: string, view: ViewMode) =>
     setViewByCompany((prev) => ({ ...prev, [companyName]: view }));
@@ -279,10 +434,10 @@ export default function PaymentListPage() {
   const goToDetail = (company: Company) =>
     router.push(`/payment-list/${company.slug}`);
 
-  const totalCount = companies
+  const totalCount = companiesView
     .flatMap((company) => company.rows)
     .reduce((sum, row) => sum + row.count, 0);
-  const totalAmount = companies
+  const totalAmount = companiesView
     .flatMap((company) => company.rows)
     .reduce((sum, row) => sum + row.amount, 0);
 
@@ -317,14 +472,54 @@ export default function PaymentListPage() {
                 <h2 className="text-xl font-semibold text-gray-900">
                   CUSTOMER INFORMATION
                 </h2>
-                <dl className="grid sm:grid-cols-2 gap-x-10 gap-y-1 mt-3 text-sm">
+                <dl className="mt-3 text-sm space-y-1">
                   <div className="flex gap-2">
-                    <dt className="text-gray-500">รหัสลูกค้า:</dt>
-                    <dd className="font-medium">C1601451</dd>
+                    <dt className="text-gray-500 shrink-0">รหัสลูกค้า:</dt>
+                    <dd className="border-b">
+                      {getCustomerField(customerInfo, [
+                        "ResaleID",
+                        "resaleID",
+                        "CUSTID",
+                        "CustID",
+                        "custId",
+                      ])}
+                      {getCustomerField(customerInfo, [
+                        "CusName",
+                        "cusName",
+                        "CustomerName",
+                        "customerName",
+                      ]) && (
+                        <>
+                          {" : "}
+                          {getCustomerField(customerInfo, [
+                            "CusName",
+                            "cusName",
+                            "CustomerName",
+                            "customerName",
+                          ])}
+                        </>
+                      )}
+                    </dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-gray-500">บริษัท:</dt>
-                    <dd className="font-medium">PTG GROUP</dd>
+                    <dt className="text-gray-500 shrink-0">ที่อยู่:</dt>
+                    <dd className="border-b">
+                      {formatCustomerAddress(customerInfo) ||
+                        "37/2 หมู่ที่ 5 ตำบลทรายขาว อำเภอทัวไทร จังหวัดนครศรีธรรมราช"}
+                    </dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-gray-500 shrink-0">โทรศัพท์:</dt>
+                    <dd className="border-b">
+                      {getCustomerField(customerInfo, [
+                        "PhoneNum",
+                        "phoneNum",
+                        "Phone",
+                        "phone",
+                        "Tel",
+                        "tel",
+                      ]) || "075-388157"}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -358,8 +553,17 @@ export default function PaymentListPage() {
             ))}
           </div>
 
+          {isLoading && (
+            <p className="text-sm text-gray-500 mb-4 px-1">
+              กำลังโหลดข้อมูล...
+            </p>
+          )}
+          {!isLoading && error && (
+            <p className="text-sm text-red-500 mb-4 px-1">{error}</p>
+          )}
+
           <div className="space-y-5">
-            {companies.map((company) => {
+            {companiesView.map((company) => {
               const companyTotal = company.rows.reduce(
                 (sum, row) => sum + row.amount,
                 0,

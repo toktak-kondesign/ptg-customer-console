@@ -25,6 +25,7 @@ const STORAGE_KEYS = {
   CUSTOMER_ACCESS_TOKEN: "ptg-customer-access-token",
   PTG_SYSTEM_LINK: "ptg-system-link",
   OUTSOURCE_SYSTEM_LINK: "outsource-system-link",
+  CUSTOMER_INFO: "ptg-customer-info",
 } as const;
 
 function getCookie(name: string): string | null {
@@ -114,6 +115,29 @@ export function setOutsourceSystemLink(link: string): void {
   localStorage.setItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK, link);
 }
 
+export const CUSTOMER_SESSION_CHANGED_EVENT = "ptg-customer-session-changed";
+
+export function notifyCustomerSessionChanged(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(CUSTOMER_SESSION_CHANGED_EVENT));
+}
+
+export function getCustomerInfo(): Record<string, unknown> | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(STORAGE_KEYS.CUSTOMER_INFO);
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+export function setCustomerInfo(info: Record<string, unknown>): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEYS.CUSTOMER_INFO, JSON.stringify(info));
+}
+
 export function clearAuth(): void {
   if (typeof window === "undefined") return;
 
@@ -121,6 +145,7 @@ export function clearAuth(): void {
   localStorage.removeItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.PTG_SYSTEM_LINK);
   localStorage.removeItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK);
+  localStorage.removeItem(STORAGE_KEYS.CUSTOMER_INFO);
 
   const expire = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
   document.cookie = `${STORAGE_KEYS.CUSTOMER_TOKEN}=; path=/; ${expire}; SameSite=Lax`;

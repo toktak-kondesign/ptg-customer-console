@@ -32,6 +32,7 @@ interface PtgSystemResponse {
   success: boolean;
   token?: string;
   link?: string;
+  customerInfo?: Record<string, unknown>;
   error?: string;
 }
 
@@ -54,20 +55,7 @@ export async function POST(
       );
     }
 
-    // Step 1: Build Customer from AuthenUserInfo and generate JWT
-    const customer: Customer = {
-      username: body.username ?? "",
-      userFullName: body.personName ?? "",
-      custID: custID,
-      customerName: body.custName ?? "",
-      positionLevel: 0,
-      pointSilver: 0,
-      pointGold: 0,
-      active: 1,
-    };
-    const token = generateCustomerAccessToken(customer);
-
-    // Step 2: Fetch ResaleID from customer-info API
+    // Step 1: Fetch customer info from customer-info API
     const customerInfoParams = new URLSearchParams({
       custID: custID,
       company: "PTG",
@@ -103,6 +91,19 @@ export async function POST(
       (customerRow.resaleID as string) ??
       (customerRow.RESALEID as string) ??
       "";
+
+    // Step 2: Build Customer from AuthenUserInfo + customer info, then generate JWT
+    const customer: Customer = {
+      username: body.username ?? "",
+      userFullName: body.personName ?? "",
+      custID: custID,
+      customerName: body.custName ?? "",
+      positionLevel: 0,
+      pointSilver: 0,
+      pointGold: 0,
+      active: 1,
+    };
+    const token = generateCustomerAccessToken(customer);
 
     // Step 3: Call createApproveLink with ref1=ResaleID, ref2=custID, ref3=custID
     const baseUrl = getApiBaseUrl();
@@ -147,6 +148,7 @@ export async function POST(
       success: true,
       token,
       link,
+      customerInfo: customerRow,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { setCustomerAccessToken, setPtgSystemLink } from "@/lib/auth";
+import {
+  setCustomerAccessToken,
+  setPtgSystemLink,
+  setCustomerInfo,
+  notifyCustomerSessionChanged,
+} from "@/lib/auth";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -74,37 +79,50 @@ export default function AuthHandler() {
         setCookie(TOKEN_COOKIE, token!);
         setCookie(USER_COOKIE, JSON.stringify(data));
 
-        // Step 1-3: Generate CustomerAccessToken (JWT), fetch ResaleID,
-        // and call createApproveLink. Store JWT and link UUID.
-        try {
-          const approveRes = await fetch("/api/approve-link/ptg-system", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              username: data.username,
-              personName: data.personName,
-              custID: data.custID,
-              custName: data.custName,
-            }),
-          });
-          const approveData = await approveRes.json();
-          if (approveData.success) {
-            if (approveData.token) setCustomerAccessToken(approveData.token);
-            if (approveData.link) setPtgSystemLink(approveData.link);
-          } else {
-            console.error(
-              "[AuthHandler] approve-link failed:",
-              approveData.error,
-            );
-          }
-        } catch (approveError) {
-          console.error("[AuthHandler] approve-link error:", approveError);
-        }
-
         setStatus("success");
         setMessage(`ยินดีต้อนรับ ${data.personName || data.custName || ""}`);
 
+        // Navigate immediately so the static layout renders without
+        // waiting for the approve-link round trip (customer-info +
+        // createApproveLink can take a while).
         router.push("/");
+
+        // Step 1-3: Generate CustomerAccessToken (JWT), fetch ResaleID,
+        // and call createApproveLink. Runs in the background — the page
+        // doesn't need to wait for this to finish. Store JWT and link UUID
+        // once it resolves.
+        fetch("/api/approve-link/ptg-system", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: data.username,
+            personName: data.personName,
+            custID: data.custID,
+            custName: data.custName,
+          }),
+        })
+          .then((res) => res.json())
+          .then((approveData) => {
+            if (approveData.success) {
+              if (approveData.token) setCustomerAccessToken(approveData.token);
+              if (approveData.link) setPtgSystemLink(approveData.link);
+              if (approveData.customerInfo)
+                setCustomerInfo(approveData.customerInfo);
+              // Notify subscribers (CustomerPointsContext, payment-list,
+              // etc.) that customer session data was just persisted, so
+              // they can re-read from localStorage without waiting for a
+              // page reload.
+              notifyCustomerSessionChanged();
+            } else {
+              console.error(
+                "[AuthHandler] approve-link failed:",
+                approveData.error,
+              );
+            }
+          })
+          .catch((approveError) => {
+            console.error("[AuthHandler] approve-link error:", approveError);
+          });
       } catch (error) {
         if (cancelled) return;
         setStatus("error");
