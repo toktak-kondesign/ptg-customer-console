@@ -1,28 +1,137 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
+import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import { getVanAccountsService } from "@/services/customer/van-accounts";
+import type { VanAccountDetails } from "@/interfaces/van-account";
+
+const COMPANY_BY_SLUG: Record<string, string> = {
+  ptg: "PTG",
+  ptg24: "PTG24",
+  ake: "AKET",
+  mono: "MONO",
+};
+
+function getCustomerField(
+  info: Record<string, unknown> | null,
+  names: string[],
+): string {
+  if (!info) return "";
+  const keys = Object.keys(info);
+  for (const name of names) {
+    const key = keys.find((item) => item.toLowerCase() === name.toLowerCase());
+    if (key && info[key] !== null && info[key] !== undefined) {
+      return String(info[key]).trim();
+    }
+  }
+  return "";
+}
+
+function formatVanNumber(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  return digits.length === 10
+    ? `${digits.slice(0, 4)}-${digits.slice(4, 5)}-${digits.slice(5, 9)}-${digits.slice(9)}`
+    : value;
+}
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
 
 export default function PaymentAccountDetailPage() {
   const params = useParams<{ slug: string }>();
   const company = getCompanyBySlug(params.slug);
+  const companyCode = COMPANY_BY_SLUG[params.slug];
   const [showAllAccounts, setShowAllAccounts] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [details, setDetails] = useState<VanAccountDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSessionInfo(getCustomerInfo());
+    const handleChanged = () => setSessionInfo(getCustomerInfo());
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () =>
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+  }, []);
+
+  const resaleID = getCustomerField(sessionInfo, [
+    "ResaleID",
+    "resaleID",
+    "CUSTID",
+    "CustID",
+    "custID",
+  ]);
+
+  useEffect(() => {
+    if (!companyCode || !resaleID) {
+      setDetails(null);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      const result = await getVanAccountsService(companyCode, resaleID);
+      if (cancelled) return;
+      if (result.status === "success") {
+        setDetails(result.results);
+      } else {
+        setDetails(null);
+        setError(result.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");
+      }
+      setIsLoading(false);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [companyCode, resaleID]);
 
   if (!company) return notFound();
 
-  const totalDue = company.rows.reduce((sum, row) => sum + row.amount, 0);
+  const customer = details?.customer;
+  const accounts = details?.accounts || [];
   const visibleAccounts = showAllAccounts
-    ? company.accounts
-    : company.accounts.filter((account) => account.accountNo);
-  const totalUsed = company.accounts.reduce(
-    (sum, account) => sum + (account.used ?? 0),
+    ? accounts
+    : accounts.filter((account) => account.IsShow === 0);
+  const totalUsed = accounts.reduce(
+    (sum, account) => sum + (Number(account.DocInvoiceAmt) || 0),
     0,
   );
+  const totalCredit = accounts.reduce(
+    (sum, account) => sum + (Number(account.CreditLemit) || 0),
+    0,
+  );
+  const address = customer
+    ? [
+        customer.Address1,
+        customer.Address2,
+        customer.Address3,
+        customer.City,
+        customer.State,
+        customer.Zip,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : "-";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
@@ -56,20 +165,21 @@ export default function PaymentAccountDetailPage() {
                 <dl className="mt-3 space-y-1 text-sm">
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">รหัสลูกค้า :</dt>
-                    <dd className="font-medium text-gray-800">
-                      0-803-60001-xx-x : หจก.ณัฐริกาค้าไม้
+                    <dd className="border-b text-gray-800">
+                      {customer
+                        ? `${customer.ResaleIDX || customer.ResaleID} : ${customer.Name}`
+                        : "-"}
                     </dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">ที่อยู่ :</dt>
-                    <dd className="font-medium text-gray-800">
-                      37/2 หมู่ที่ 5 ตำบลทรายขาว อำเภอหัวไทร
-                      จังหวัดนครศรีธรรมราช 80170
-                    </dd>
+                    <dd className="border-b text-gray-800">{address}</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">โทรศัพท์ :</dt>
-                    <dd className="font-medium text-gray-800">075-388157</dd>
+                    <dd className="border-b text-gray-800">
+                      {customer?.PhoneNum || "-"}
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -81,11 +191,11 @@ export default function PaymentAccountDetailPage() {
                     <span className="text-gray-400">(Total Amount)</span>
                   </p>
                   <p className="text-3xl font-bold text-blue-700 mt-1">
-                    {formatAmount(totalDue)}{" "}
+                    {formatAmount(Number(customer?.DocInvoiceAmt) || 0)}{" "}
                     <span className="text-sm font-normal">บาท</span>
                   </p>
                   <p className="text-xs text-blue-500 mt-1">
-                    ข้อมูล ณ วันที่ 15/12/2025 น.
+                    ข้อมูล ณ วันที่ {formatDate(customer?.LastDate)} น.
                   </p>
                 </div>
                 <button
@@ -110,6 +220,22 @@ export default function PaymentAccountDetailPage() {
             </div>
           </section>
 
+          {!resaleID && (
+            <p className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
+              ไม่พบ ResaleID ในข้อมูลลูกค้า กรุณาเข้าสู่ระบบใหม่
+            </p>
+          )}
+          {isLoading && (
+            <p className="mb-4 text-sm text-gray-500">
+              กำลังโหลดข้อมูลบัญชี...
+            </p>
+          )}
+          {error && (
+            <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
           <label className="inline-flex items-center gap-2 mb-4 cursor-pointer select-none px-1.5 py-1.5 bg-[#1156ac] text-white rounded-lg">
             <input
               type="checkbox"
@@ -123,10 +249,13 @@ export default function PaymentAccountDetailPage() {
           <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">
-                รายงานบัญชี สำนักงานใหญ่
+                รายงานบัญชี{" "}
+                {customer?.THBranchID === "00000"
+                  ? "สำนักงานใหญ่"
+                  : customer?.THBranchID || "-"}
               </h3>
               <p className="text-xl text-blue-600 font-medium">
-                วงเงินทั้งหมด : 0.00 บาท
+                วงเงินทั้งหมด : {formatAmount(totalCredit)} บาท
               </p>
             </div>
 
@@ -158,62 +287,56 @@ export default function PaymentAccountDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {visibleAccounts.map((account) => {
-                    const hasData = Boolean(account.accountNo);
+                  {visibleAccounts.map((account, index) => {
+                    const hasVanNumber = Boolean(account.VANNO);
+                    const dataClass = hasVanNumber
+                      ? "text-red-600"
+                      : "text-gray-400";
                     return (
-                      <tr key={account.no} className="hover:bg-gray-50">
-                        <td
-                          className={`px-6 py-3 ${hasData ? "text-red-600 font-medium" : "text-gray-400"}`}
-                        >
-                          {account.no}
+                      <tr
+                        key={`${account.CustID}-${account.VANNO}-${index}`}
+                        className="hover:bg-gray-50"
+                      >
+                        <td className={`px-6 py-3 ${dataClass} font-medium`}>
+                          {index + 1}
+                        </td>
+                        <td className={`px-6 py-3 ${dataClass} font-medium`}>
+                          {hasVanNumber
+                            ? formatVanNumber(account.VANNO)
+                            : "---"}
+                        </td>
+                        <td className={`px-6 py-3 ${dataClass}`}>
+                          {account.CreditDesc || "-"}
+                        </td>
+                        <td className="px-6 py-3 text-right text-gray-500">
+                          {formatAmount(Number(account.CreditLemit) || 0)}
                         </td>
                         <td
-                          className={
-                            hasData
-                              ? "px-6 py-3 text-red-600 font-medium"
-                              : "px-6 py-3 text-gray-400"
-                          }
+                          className={`px-6 py-3 text-right ${dataClass} font-medium`}
                         >
-                          {account.accountNo ?? "---"}
+                          {formatAmount(Number(account.DocInvoiceAmt) || 0)}
+                        </td>
+                        <td className="px-6 py-3 text-right text-gray-500">
+                          {formatAmount(Number(account.DocInvoiceBal) || 0)}
                         </td>
                         <td
-                          className={
-                            hasData
-                              ? "px-6 py-3 text-red-600"
-                              : "px-6 py-3 text-gray-400"
-                          }
+                          className={`px-6 py-3 text-center ${dataClass} font-medium`}
                         >
-                          {account.creditType ?? "-"}
-                        </td>
-                        <td className="px-6 py-3 text-right text-gray-400">
-                          {account.creditLimit ?? "-"}
-                        </td>
-                        <td
-                          className={
-                            hasData
-                              ? "px-6 py-3 text-right text-red-600 font-medium"
-                              : "px-6 py-3 text-right text-gray-400"
-                          }
-                        >
-                          {account.used !== undefined
-                            ? formatAmount(account.used)
-                            : "-"}
-                        </td>
-                        <td className="px-6 py-3 text-right text-gray-400">
-                          {account.remaining ?? "-"}
-                        </td>
-                        <td
-                          className={
-                            hasData
-                              ? "px-6 py-3 text-center text-red-600 font-medium"
-                              : "px-6 py-3 text-center text-gray-400"
-                          }
-                        >
-                          {account.status ?? "-"}
+                          {account.StatusCredit || "-"}
                         </td>
                       </tr>
                     );
                   })}
+                  {!isLoading && visibleAccounts.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-6 py-8 text-center text-gray-400"
+                      >
+                        ไม่พบข้อมูลบัญชี
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
                 <tfoot>
                   <tr className="bg-gray-100 font-semibold text-gray-800">
