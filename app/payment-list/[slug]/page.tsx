@@ -82,6 +82,7 @@ export default function PaymentAccountDetailPage() {
     if (!companyCode || !resaleID) {
       setDetails(null);
       setError(null);
+      setIsLoading(false);
       return;
     }
 
