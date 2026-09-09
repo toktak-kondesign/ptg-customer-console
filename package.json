@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "preinstall": "node -e \"const p=require('./package.json');const pkgs=['prisma','@prisma/config','@prisma/client','@prisma/adapter-mssql'];for(const k of pkgs){const v=p.dependencies?.[k]||p.devDependencies?.[k];if(v){const major=parseInt(v.replace(/^[^0-9]*/,''),10);if(major<7){console.error('ERROR: '+k+' is '+v+' in package.json — must be 7.x. Aborting install.');process.exit(1);}}}\""
   },
   "dependencies": {
     "@prisma/adapter-mssql": "^7.10.0",
