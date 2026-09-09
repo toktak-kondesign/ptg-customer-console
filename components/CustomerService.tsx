@@ -1,20 +1,47 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AnimatedSection from "./AnimatedSection";
-import { getApiBaseUrl } from "../lib/env";
+import { getApiBaseUrl, getRewardsBaseUrl } from "../lib/env";
+import {
+  getPtgSystemLink,
+  getCustomerInfo,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
+import { createOutsourceSystemLink } from "@/services/approve-link";
 
-const services = [
+interface ServiceEntry {
+  image: string;
+  title: string;
+  desc: string;
+  href?: string;
+  highlight?: boolean;
+  disabled?: boolean;
+  badge?: number;
+  // Append ?x={ptg-system-link} from localStorage at runtime
+  appendLink?: boolean;
+  // Fetch an outsource link via createOutsourceSystemLink on mount.
+  // ref3 = "custID" resolves to the customer's custID from localStorage.
+  outsourceLink?: { ref1: string; ref3: string };
+}
+
+const services: ServiceEntry[] = [
   {
     image: "/images/banner/e-tax_lnvoice.png",
     title: "e-TAX Invoice\n& Delivery note",
     desc: "ใบกำกับภาษีและใบส่งสินค้า",
+    // ?x={ptg-system-link} is appended at runtime from localStorage
     href: getApiBaseUrl() + "PTGWeb/CalendarBill",
+    appendLink: true,
   },
   {
     image: "/images/banner/My_credit.png",
     title: "My\nCredit",
     desc: "ข้อมูลวงเงินและเครดิตเทอม",
     href: getApiBaseUrl() + "PTGWeb/CustomerCredit",
+    appendLink: true,
   },
   {
     image: "/images/banner/Overdue_ltems.png",
@@ -27,7 +54,8 @@ const services = [
     title: "Reward\nPoint",
     desc: "ยอดคะแนนสะสม",
     highlight: true,
-    href: "link",
+    href: getRewardsBaseUrl() + "/home",
+    outsourceLink: { ref1: "ptg-rewards", ref3: "custID" },
   },
   {
     image: "/images/banner/PTG_L-M.png",
@@ -40,18 +68,21 @@ const services = [
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
     href: getApiBaseUrl() + "PTGWeb/TruckList",
+    appendLink: true,
   },
   {
     image: "/images/banner/tracking_logistic.png",
     title: "รายงาน\nส่งสินค้า",
     desc: "รายงานส่งสินค้า",
     href: getApiBaseUrl() + "Logistics/DeliveryProduct",
+    appendLink: true,
   },
   {
     image: "/images/banner/Order_purchase.png",
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
     href: getApiBaseUrl() + "PTGWeb/Orderpicker",
+    appendLink: true,
   },
   {
     image: "/images/banner/PTG-Messages.png",
@@ -66,7 +97,91 @@ const services = [
   },
 ];
 
+function resolveCustID(): string {
+  const info = getCustomerInfo();
+  if (!info) return "";
+  const keys = Object.keys(info);
+  for (const name of ["CustID", "CUSTID", "custId", "custID"]) {
+    const key = keys.find((k) => k.toLowerCase() === name.toLowerCase());
+    if (key) {
+      const value = info[key];
+      if (value !== null && value !== undefined) return String(value).trim();
+    }
+  }
+  return "";
+}
+
 export default function CustomerService() {
+  const [ptgSystemLink, setPtgSystemLink] = useState<string | null>(null);
+  const [outsourceLinks, setOutsourceLinks] = useState<Record<string, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    const read = () => setPtgSystemLink(getPtgSystemLink());
+    read();
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
+    return () => {
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchOutsourceLinks = async () => {
+      const custID = resolveCustID();
+      if (!custID) return;
+      for (const service of services) {
+        if (!service.outsourceLink) continue;
+        const ref3 =
+          service.outsourceLink.ref3 === "custID"
+            ? custID
+            : service.outsourceLink.ref3;
+        const result = await createOutsourceSystemLink(
+          service.outsourceLink.ref1,
+          ref3,
+          custID,
+        );
+        if (cancelled) return;
+        if (result.success && result.link) {
+          setOutsourceLinks((prev) => ({
+            ...prev,
+            [service.title]: result.link!,
+          }));
+        }
+      }
+    };
+    fetchOutsourceLinks();
+    const handler = () => {
+      void fetchOutsourceLinks();
+    };
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handler);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handler);
+    };
+  }, []);
+
+  const resolvedServices = services.map((service) => {
+    if (service.outsourceLink) {
+      const link = outsourceLinks[service.title] ?? "";
+      return {
+        ...service,
+        href: link
+          ? `${service.href}?id=${encodeURIComponent(link)}&systemid=${encodeURIComponent(service.outsourceLink.ref1)}`
+          : "",
+      };
+    }
+    if (service.appendLink) {
+      const link = ptgSystemLink ?? "";
+      return {
+        ...service,
+        href: link ? `${service.href}?x=${encodeURIComponent(link)}` : "",
+      };
+    }
+    return service;
+  });
+
   return (
     <section className="py-12 bg-white">
       <AnimatedSection>
@@ -79,7 +194,7 @@ export default function CustomerService() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-            {services.map((service) => (
+            {resolvedServices.map((service) => (
               <div
                 key={service.title}
                 className={`service-card border border-gray-200 rounded-xl p-3 sm:p-4 text-center shadow-md relative ${
