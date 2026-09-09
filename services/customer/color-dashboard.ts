@@ -1,7 +1,7 @@
 import type { ColorDashboardResponse } from "@/interfaces/color-dashboard";
 
 const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3100";
+  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
 
 export async function getColorDashboardService(
   custId: string

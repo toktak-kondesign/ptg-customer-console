@@ -4,7 +4,7 @@ import type {
 } from "@/interfaces/van-account";
 
 const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3100";
+  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
 
 const emptyResults: VanAccountDetails = {
   branches: [],

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3100";
+  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
 
 interface PtgSystemRequest {
   // AuthenUserInfo fields (from /api/auth/validate) — used to build Customer for JWT

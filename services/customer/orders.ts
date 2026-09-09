@@ -1,7 +1,7 @@
 import type { CustomerOrdersResponse } from "@/interfaces/order";
 
 const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3100";
+  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
 
 export async function getCustomerOrdersService(
   custId: string
