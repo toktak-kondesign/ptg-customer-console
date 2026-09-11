@@ -444,7 +444,7 @@ export default function PaymentListPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
-      <main className="flex-1 py-8 sm:py-12">
+      <main className="flex-1 py-8 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="mb-7">
             <p className="text-sm text-blue-600 mb-2">

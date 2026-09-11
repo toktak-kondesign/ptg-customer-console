@@ -56,3 +56,36 @@ export interface VanAccountResponse {
   results: VanAccountDetails;
   error?: string;
 }
+
+export interface VanAccountDtlRow {
+  Company: string;
+  CustID?: string;
+  Name: string;
+  ResaleID: string;
+  THBranchID: string;
+  ProdGroup?: string;
+  Description?: string;
+  ShipToNum?: string;
+  Address1?: string;
+  Legalnumber?: string;
+  InvoiceAmt: number;
+  DocInvoiceAmt: number;
+  NetPrice: number;
+  Color1: number;
+  InvoiceDate: string | null;
+  DueDate: string | null;
+  DueNew: string | null;
+  retroactive: number;
+  ODLine: number;
+  HeadNum?: string;
+  TxtMonth?: string;
+  TxtDate?: string;
+  xIsPDFFile_c: number;
+  WHTCode?: string;
+}
+
+export interface VanAccountDtlResponse {
+  status: string;
+  results: VanAccountDtlRow[];
+  error?: string;
+}

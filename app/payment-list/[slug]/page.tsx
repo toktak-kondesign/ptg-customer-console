@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import { getApiBaseUrl } from "@/lib/env";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
-import type { VanAccountDetails } from "@/interfaces/van-account";
+import type { VanAccount, VanAccountDetails } from "@/interfaces/van-account";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
   ptg: "PTG",
@@ -51,6 +52,7 @@ function formatDate(value: string | null | undefined): string {
 
 export default function PaymentAccountDetailPage() {
   const params = useParams<{ slug: string }>();
+  const router = useRouter();
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
   const [showAllAccounts, setShowAllAccounts] = useState(false);
@@ -108,6 +110,46 @@ export default function PaymentAccountDetailPage() {
 
   if (!company) return notFound();
 
+  const handleRowClick = (account: VanAccount) => {
+    if (!companyCode || !resaleID) {
+      alert("ไม่พบข้อมูลบริษัทหรือ ResaleID");
+      return;
+    }
+
+    const vannew = account.VANNO?.trim() || account.CustID?.trim();
+    if (!vannew) {
+      alert("ไม่พบเลขที่บัญชีหรือรหัสลูกค้า");
+      return;
+    }
+
+    router.push(`/payment-list/${params.slug}/${encodeURIComponent(vannew)}`);
+  };
+
+  const handlePlaceBillClick = async () => {
+    if (!companyCode || !resaleID) {
+      alert("ไม่พบข้อมูลบริษัทหรือ ResaleID");
+      return;
+    }
+
+    const x = `${resaleID}_${companyCode}`;
+    try {
+      const res = await fetch(
+        `/api/ptg/encrypt-url?x=${encodeURIComponent(x)}`,
+      );
+      if (!res.ok) {
+        throw new Error(`EncryptUrl failed: ${res.status}`);
+      }
+      const { encrypted } = await res.json();
+      if (!encrypted || typeof encrypted !== "string") {
+        throw new Error("Invalid encrypted response");
+      }
+      window.location.href = `${getApiBaseUrl()}layingbill/layingplacebill?x=${encodeURIComponent(encrypted)}`;
+    } catch (error) {
+      console.error("[handlePlaceBillClick]", error);
+      alert(error instanceof Error ? error.message : "เกิดข้อผิดพลาด");
+    }
+  };
+
   const customer = details?.customer;
   const accounts = details?.accounts || [];
   const visibleAccounts = showAllAccounts
@@ -137,7 +179,7 @@ export default function PaymentAccountDetailPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
-      <main className="flex-1 py-8 sm:py-12">
+      <main className="flex-1 py-8 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <p className="text-sm mb-6">
             <Link href="/" className="text-gray-500 hover:text-gray-700">
@@ -201,6 +243,7 @@ export default function PaymentAccountDetailPage() {
                 </div>
                 <button
                   type="button"
+                  onClick={handlePlaceBillClick}
                   className="flex items-center gap-3 border border-gray-200 rounded-md px-3 py-2 hover:bg-gray-50 transition-colors"
                 >
                   <div className="relative w-12 h-12 shrink-0">
@@ -296,7 +339,8 @@ export default function PaymentAccountDetailPage() {
                     return (
                       <tr
                         key={`${account.CustID}-${account.VANNO}-${index}`}
-                        className="hover:bg-gray-50"
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => handleRowClick(account)}
                       >
                         <td className={`px-6 py-3 ${dataClass} font-medium`}>
                           {index + 1}
