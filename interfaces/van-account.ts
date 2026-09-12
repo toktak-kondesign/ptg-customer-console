@@ -61,7 +61,7 @@ export interface VanAccountDtlRow {
   Company: string;
   CustID?: string;
   Name: string;
-  ResaleID: string;
+  ResaleID: string; 
   THBranchID: string;
   ProdGroup?: string;
   Description?: string;
