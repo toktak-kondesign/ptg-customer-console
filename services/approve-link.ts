@@ -2,6 +2,7 @@ import {
   getCustomerAccessToken,
   setOutsourceSystemLink,
 } from "@/lib/auth";
+import { BASE_PATH } from "@/lib/env";
 
 interface OutsourceApiResponse {
   success: boolean;
@@ -37,7 +38,7 @@ export async function createOutsourceSystemLink(
   }
 
   try {
-    const response = await fetch("/api/approve-link/outsource", {
+    const response = await fetch(`${BASE_PATH}/api/approve-link/outsource`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

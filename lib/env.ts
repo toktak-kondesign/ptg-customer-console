@@ -1,3 +1,9 @@
+// Subpath the app is deployed under (e.g. "/Customer-console"). Must be
+// prepended to same-origin fetch() calls to internal /api routes, since
+// Next.js's basePath does not rewrite fetch() automatically (only
+// next/link, next/image, next/script, etc.).
+export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 // Environment detection and API configuration
 export const getApiBaseUrl = (): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';

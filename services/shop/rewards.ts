@@ -1,4 +1,5 @@
 import type { RewardsQuery, RewardsResponse } from "@/interfaces/reward";
+import { BASE_PATH } from "@/lib/env";
 
 export async function getRewardsService(
   query: RewardsQuery,
@@ -10,7 +11,7 @@ export async function getRewardsService(
     });
 
     const response = await fetch(
-      `/api/customer/rewards?${params.toString()}`,
+      `${BASE_PATH}/api/customer/rewards?${params.toString()}`,
       {
         cache: "no-store",
         headers: {

@@ -12,6 +12,7 @@ import {
   CUSTOMER_SESSION_CHANGED_EVENT,
   type AuthenUserInfo,
 } from "@/lib/auth";
+import { BASE_PATH } from "@/lib/env";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -73,7 +74,7 @@ export default function Header() {
   const handleLogout = () => {
     clearAuth();
     setCustomer(null);
-    window.location.href = "/";
+    window.location.href = `${BASE_PATH}/`;
   };
 
   // ?x={ptg-system-link} is appended at runtime from localStorage

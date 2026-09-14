@@ -9,6 +9,7 @@ import {
   setCustomerInfo,
   notifyCustomerSessionChanged,
 } from "@/lib/auth";
+import { BASE_PATH } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -58,7 +59,9 @@ export default function AuthHandler() {
       setMessage("กำลังตรวจสอบสิทธิ์ผู้ใช้งาน...");
 
       try {
-        const response = await fetch(`/api/auth/validate?token=${token}`);
+        const response = await fetch(
+          `${BASE_PATH}/api/auth/validate?token=${token}`,
+        );
         const data: AuthenUserInfo = await response.json();
 
         if (cancelled) return;
@@ -91,7 +94,7 @@ export default function AuthHandler() {
         // and call createApproveLink. Runs in the background — the page
         // doesn't need to wait for this to finish. Store JWT and link UUID
         // once it resolves.
-        fetch("/api/approve-link/ptg-system", {
+        fetch(`${BASE_PATH}/api/approve-link/ptg-system`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
