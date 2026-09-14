@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
-  allowedDevOrigins: ['127.0.0.1', 'localhost','kds-app.kondesign.net','ptgdata-api.kondesign.net'],
+  allowedDevOrigins: ['127.0.0.1', 'localhost','kds-app.kondesign.net','ptgdata-api.kondesign.net','depwn2021.ptg.co.th','ptg.co.th'],
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 30,
