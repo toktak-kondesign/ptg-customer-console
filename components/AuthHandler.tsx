@@ -60,7 +60,7 @@ export default function AuthHandler() {
 
       try {
         const response = await fetch(
-          `${BASE_PATH}/api/auth/validate?token=${token}`,
+          `${BASE_PATH}/api/auth/validate/?token=${token}`,
         );
         const data: AuthenUserInfo = await response.json();
 
@@ -94,7 +94,7 @@ export default function AuthHandler() {
         // and call createApproveLink. Runs in the background — the page
         // doesn't need to wait for this to finish. Store JWT and link UUID
         // once it resolves.
-        fetch(`${BASE_PATH}/api/approve-link/ptg-system`, {
+        fetch(`${BASE_PATH}/api/approve-link/ptg-system/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

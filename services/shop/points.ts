@@ -9,7 +9,7 @@ export async function getCustomerPointsService(
 ): Promise<CustomerPointsResponse> {
   try {
     const params = new URLSearchParams({ custId: query.custId });
-    const response = await fetch(`${BASE_PATH}/api/customer/points?${params.toString()}`, {
+    const response = await fetch(`${BASE_PATH}/api/customer/points/?${params.toString()}`, {
       cache: "no-store",
     });
     const data: CustomerPointsResponse = await response.json();

@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   basePath,
+  // IIS ผูก /Customer-console/ เป็น virtual application และบังคับเติม
+  // trailing slash กลับเข้าไปเสมอเวลา path ตรงกับ root ของ application
+  // ถ้า Next.js canonical form เป็นแบบไม่มี slash จะเกิด redirect loop
+  // (IIS เติม slash → Next ตัด slash → วนซ้ำ) จึงต้องตั้งให้ตรงกัน
+  trailingSlash: true,
   allowedDevOrigins: ['127.0.0.1', 'localhost','kds-app.kondesign.net','ptgdata-api.kondesign.net','depwn2021.ptg.co.th','ptg.co.th'],
   images: {
     // IIS ไม่สามารถ serve Next.js Image Optimizer endpoint (/_next/image) ได้

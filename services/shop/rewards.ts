@@ -11,7 +11,7 @@ export async function getRewardsService(
     });
 
     const response = await fetch(
-      `${BASE_PATH}/api/customer/rewards?${params.toString()}`,
+      `${BASE_PATH}/api/customer/rewards/?${params.toString()}`,
       {
         cache: "no-store",
         headers: {

@@ -38,7 +38,7 @@ export async function createOutsourceSystemLink(
   }
 
   try {
-    const response = await fetch(`${BASE_PATH}/api/approve-link/outsource`, {
+    const response = await fetch(`${BASE_PATH}/api/approve-link/outsource/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
