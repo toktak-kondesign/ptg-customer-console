@@ -132,7 +132,16 @@ export async function GET(request: Request): Promise<Response> {
       },
     );
 
-    const upstreamData: CustomerLatestOrdersResponse = await upstreamResponse.json();
+    let upstreamData: CustomerLatestOrdersResponse;
+    try {
+      upstreamData = await upstreamResponse.json();
+    } catch {
+      const response: RewardsResponse = {
+        success: false,
+        error: `Rewards upstream returned non-JSON (status ${upstreamResponse.status})`,
+      };
+      return jsonResponse(response, 502);
+    }
 
     if (!upstreamResponse.ok || !upstreamData.success) {
       const response: RewardsResponse = {
@@ -155,10 +164,11 @@ export async function GET(request: Request): Promise<Response> {
 
     return jsonResponse(response);
   } catch (error) {
-    console.error("Failed to fetch customer rewards:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Failed to fetch customer rewards:", message);
     const response: RewardsResponse = {
       success: false,
-      error: "Failed to fetch customer rewards",
+      error: `Failed to fetch customer rewards: ${message}`,
     };
     return jsonResponse(response, 500);
   }
