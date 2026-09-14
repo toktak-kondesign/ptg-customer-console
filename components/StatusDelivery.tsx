@@ -112,7 +112,7 @@ export default function StatusDelivery() {
                 >
                   <div className="relative w-20 h-20 sm:w-[80px] sm:h-[80px] aspect-square shrink-0 mx-auto sm:mx-0 p-6">
                     <Image
-                      src="/images/delivered2.svg"
+                      src="/images/logistic-delivery.png"
                       alt="logistic delivery"
                       fill
                       sizes="(max-width: 640px) 80px, 80px"
