@@ -71,8 +71,10 @@ const services: ServiceEntry[] = [
     image: "/images/banner/ptg_truck.png",
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
-    href: getApiBaseUrl() + "PTGWeb/TruckList",
-    appendLink: true,
+    href:
+      getApiBaseUrl() +
+      "CustomerBase/ApproveLinkToPTG?x=0e6469e7-1d29-4844-a22a-b6dea1c8dae6",
+    //appendLink: true,
   },
   {
     image: "/images/banner/tracking_logistic.png",
