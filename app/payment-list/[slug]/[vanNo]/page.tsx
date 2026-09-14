@@ -72,13 +72,7 @@ function amountClass(color1: number | null | undefined): string {
   return "text-gray-900";
 }
 
-function BankIcon({
-  label,
-  color,
-}: {
-  label: string;
-  color: string;
-}) {
+function BankIcon({ label, color }: { label: string; color: string }) {
   return (
     <div
       className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center text-white text-xs font-bold shadow-sm`}
@@ -104,12 +98,14 @@ export default function VanAccountDetailPage() {
   const [rows, setRows] = useState<VanAccountDtlRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [paymentMethods, setPaymentMethods] = useState<Record<string, boolean>>({
-    "mobile-app": false,
-    "debit-uob": false,
-    "debit-ktb": false,
-  });
+  const [selectedCount, setSelectedCount] = useState(0);
+  const [paymentMethods, setPaymentMethods] = useState<Record<string, boolean>>(
+    {
+      "mobile-app": false,
+      "debit-uob": false,
+      "debit-ktb": false,
+    },
+  );
 
   useEffect(() => {
     setSessionInfo(getCustomerInfo());
@@ -189,32 +185,27 @@ export default function VanAccountDetailPage() {
   if (!company) return notFound();
 
   const totalAmount = rows.reduce(
-    (sum, row) => sum + (Number(row.DocInvoiceAmt) || 0),
+    (sum, row) => sum + (Number(row.InvoiceAmt) || 0),
     0,
   );
 
-  const selectedRows = rows.filter((_, index) => selected.has(index));
-  const selectedCount = selectedRows.length;
+  const selectedRows = rows.slice(0, selectedCount);
   const selectedTotal = selectedRows.reduce(
     (sum, row) => sum + (Number(row.DocInvoiceAmt) || 0),
     0,
   );
 
+  // การเลือกจ่ายต้องเรียงจากลำดับที่ 1 ถึงลำดับที่คลิกเสมอ
   const toggleRow = (index: number) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
+    setSelectedCount((prev) => (prev === index + 1 ? index : index + 1));
   };
 
   const selectAll = () => {
-    setSelected(new Set(rows.map((_, index) => index)));
+    setSelectedCount(rows.length);
   };
 
   const clearSelection = () => {
-    setSelected(new Set());
+    setSelectedCount(0);
   };
 
   const togglePaymentMethod = (key: string) => {
@@ -270,9 +261,7 @@ export default function VanAccountDetailPage() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">โทรศัพท์ :</dt>
-                    <dd className="border-b text-gray-800">
-                      {customerPhone}
-                    </dd>
+                    <dd className="border-b text-gray-800">{customerPhone}</dd>
                   </div>
                 </dl>
               </div>
@@ -379,9 +368,12 @@ export default function VanAccountDetailPage() {
                 <tbody className="divide-y divide-gray-100">
                   {rows.map((row, index) => {
                     const color = amountClass(row.Color1);
-                    const checked = selected.has(index);
+                    const checked = index < selectedCount;
                     return (
-                      <tr key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`} className="hover:bg-gray-50">
+                      <tr
+                        key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`}
+                        className="hover:bg-gray-50"
+                      >
                         <td className="px-4 py-3 text-center">
                           <input
                             type="checkbox"
@@ -408,7 +400,9 @@ export default function VanAccountDetailPage() {
                         <td className={`px-4 py-3 ${color}`}>
                           {row.Address1?.trim() || "-"}
                         </td>
-                        <td className={`px-4 py-3 text-right ${color} font-medium`}>
+                        <td
+                          className={`px-4 py-3 text-right ${color} font-medium`}
+                        >
                           {formatAmount(Number(row.DocInvoiceAmt) || 0)}
                         </td>
                         <td className={`px-4 py-3 ${color}`}>
@@ -433,7 +427,9 @@ export default function VanAccountDetailPage() {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 px-5 sm:px-6 py-4 border-t border-gray-200 bg-white">
               <div className="text-right text-sm text-gray-600">
-                <p className="text-xs text-gray-400">*** รายการที่ระบุปลายทางถูกต้องเรียบร้อย ***</p>
+                <p className="text-xs text-gray-400">
+                  *** รายการที่ระบุปลายทางถูกต้องเรียบร้อย ***
+                </p>
                 <p>
                   จำนวนรายการที่ต้องการจ่าย :{" "}
                   <span className="text-red-600 font-bold text-lg">
