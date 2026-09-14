@@ -33,15 +33,19 @@ const services: ServiceEntry[] = [
     title: "e-TAX Invoice\n& Delivery note",
     desc: "ใบกำกับภาษีและใบส่งสินค้า",
     // ?x={ptg-system-link} is appended at runtime from localStorage
-    href: getApiBaseUrl() + "PTGWeb/CalendarBill",
-    appendLink: true,
+    href:
+      getApiBaseUrl() +
+      "CustomerBase/ApproveLinkToPTG?x=bfd99068-5be6-4871-a557-beb0285b6cf0",
+    // appendLink: true,
   },
   {
     image: "/images/banner/My_credit.png",
     title: "My\nCredit",
     desc: "ข้อมูลวงเงินและเครดิตเทอม",
-    href: getApiBaseUrl() + "PTGWeb/CustomerCredit",
-    appendLink: true,
+    href:
+      getApiBaseUrl() +
+      "CustomerBase/ApproveLinkToPTG?x=f2cc1828-a424-4fc4-886e-fed4886953d1",
+    // appendLink: true,
   },
   {
     image: "/images/banner/Overdue_ltems.png",
