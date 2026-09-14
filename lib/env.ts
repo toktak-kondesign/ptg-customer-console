@@ -15,7 +15,8 @@ export const getApiBaseUrl = (): string => {
   if (isDevelopment) {
     return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
   } else {
-    return process.env.NEXT_PUBLIC_API_BASE || 'https://www.ptg.co.th/';
+    // return process.env.NEXT_PUBLIC_API_BASE || 'https://www.ptg.co.th/';
+    return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
   }
 };
 
