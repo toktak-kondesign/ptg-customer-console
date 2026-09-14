@@ -1,7 +1,5 @@
 import type { VanAccountDtlResponse } from "@/interfaces/van-account";
-
-const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
+import { BASE_PATH } from "@/lib/env";
 
 export async function getVanAccountDtlService(
   company: string,
@@ -11,7 +9,7 @@ export async function getVanAccountDtlService(
   try {
     const params = new URLSearchParams({ company, resaleID, vanNo });
     const response = await fetch(
-      `${PDF_API_URL}/api/customer-info/van-account-dtl?${params.toString()}`,
+      `${BASE_PATH}/api/customer-info/van-account-dtl/?${params.toString()}`,
       { cache: "no-store" },
     );
     const data: VanAccountDtlResponse = await response.json();

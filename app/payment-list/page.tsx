@@ -6,7 +6,11 @@ import Image from "next/image";
 import { Tooltip } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getCustomerInfo,
+  getAuthUser,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import {
   paymentStatuses,
   companies,
@@ -387,12 +391,10 @@ export default function PaymentListPage() {
     };
   }, []);
 
-  const custID = getCustomerField(customerInfo, [
-    "CustID",
-    "CUSTID",
-    "custId",
-    "custID",
-  ]);
+  const custID =
+    getCustomerField(customerInfo, ["CustID", "CUSTID", "custId", "custID"]) ||
+    getAuthUser()?.custID ||
+    "";
 
   useEffect(() => {
     if (!custID) {

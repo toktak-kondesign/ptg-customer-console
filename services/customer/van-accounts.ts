@@ -2,9 +2,7 @@ import type {
   VanAccountDetails,
   VanAccountResponse,
 } from "@/interfaces/van-account";
-
-const PDF_API_URL =
-  process.env.NEXT_PUBLIC_PDF_API_URL || "http://localhost:3400";
+import { BASE_PATH } from "@/lib/env";
 
 const emptyResults: VanAccountDetails = {
   branches: [],
@@ -19,7 +17,7 @@ export async function getVanAccountsService(
   try {
     const params = new URLSearchParams({ company, resaleID });
     const response = await fetch(
-      `${PDF_API_URL}/api/customer-info/van-accounts?${params.toString()}`,
+      `${BASE_PATH}/api/customer-info/van-accounts/?${params.toString()}`,
       { cache: "no-store" },
     );
     const data: VanAccountResponse = await response.json();
