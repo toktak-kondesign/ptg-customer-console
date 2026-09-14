@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { img } from "@/lib/env";
 
 const slides = [
-  { src: "/images/banner01.png", alt: "Banner 1" },
-  { src: "/images/banner02.jpg", alt: "Banner 2" },
-  { src: "/images/banner03.jpg", alt: "Banner 3" },
+  { src: img("/images/banner01.png"), alt: "Banner 1" },
+  { src: img("/images/banner02.jpg"), alt: "Banner 2" },
+  { src: img("/images/banner03.jpg"), alt: "Banner 3" },
 ];
 
 export default function HeroSlider() {

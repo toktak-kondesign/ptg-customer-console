@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
-import { getApiBaseUrl } from "@/lib/env";
+import { getApiBaseUrl, img } from "@/lib/env";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
 import type { VanAccount, VanAccountDetails } from "@/interfaces/van-account";
 
@@ -248,7 +248,7 @@ export default function PaymentAccountDetailPage() {
                 >
                   <div className="relative w-12 h-12 shrink-0">
                     <Image
-                      src="/images/placebill.jpg"
+                      src={img("/images/placebill.jpg")}
                       alt="รายการใบวางบิล"
                       fill
                       sizes="48px"
@@ -402,7 +402,7 @@ export default function PaymentAccountDetailPage() {
               <p className="text-sm flex items-center gap-2">
                 <span className="font-bold text-blue-900">
                   <Image
-                    src="/images/UOB-logo.png"
+                    src={img("/images/UOB-logo.png")}
                     alt="UOB"
                     width={60}
                     height={60}

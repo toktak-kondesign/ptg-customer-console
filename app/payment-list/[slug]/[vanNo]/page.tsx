@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
+import { img } from "@/lib/env";
 import type { VanAccountDtlRow } from "@/interfaces/van-account";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
@@ -466,7 +467,7 @@ export default function VanAccountDetailPage() {
                   </span>
                   <div className="relative w-10 h-10">
                     <Image
-                      src="/images/UOB-logo.png"
+                      src={img("/images/UOB-logo.png")}
                       alt="UOB"
                       fill
                       sizes="40px"
@@ -491,7 +492,7 @@ export default function VanAccountDetailPage() {
                 <BankIcon label="BAY" color="bg-[#6E2C91]" />
                 <div className="relative w-12 h-12">
                   <Image
-                    src="/images/UOB-logo.png"
+                    src={img("/images/UOB-logo.png")}
                     alt="UOB"
                     fill
                     sizes="48px"

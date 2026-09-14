@@ -12,7 +12,7 @@ import {
   CUSTOMER_SESSION_CHANGED_EVENT,
   type AuthenUserInfo,
 } from "@/lib/auth";
-import { BASE_PATH } from "@/lib/env";
+import { BASE_PATH, img } from "@/lib/env";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -91,7 +91,7 @@ export default function Header() {
             <Col xs={12} sm={6} md={4} lg={3}>
               <div className="relative h-8 w-[120px]">
                 <Image
-                  src="/logo/logo.svg"
+                  src={img("/logo/logo.svg")}
                   alt="PTG Logo"
                   fill
                   sizes="120px"
@@ -197,7 +197,7 @@ export default function Header() {
             aria-label="ตะกร้าของฉัน"
           >
             <Image
-              src="/images/carts-yellow.png"
+              src={img("/images/carts-yellow.png")}
               alt="ตะกร้าของฉัน"
               width={32}
               height={32}

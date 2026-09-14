@@ -4,6 +4,10 @@
 // next/link, next/image, next/script, etc.).
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
+// Prepend basePath to a static asset URL. Needed because <Image> with
+// `unoptimized: true` does not apply basePath to the src automatically.
+export const img = (path: string) => `${BASE_PATH}${path}`;
+
 // Environment detection and API configuration
 export const getApiBaseUrl = (): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';

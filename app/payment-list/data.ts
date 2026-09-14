@@ -1,3 +1,5 @@
+import { img } from "@/lib/env";
+
 export const paymentStatuses = [
   {
     key: "not-due",
@@ -64,7 +66,7 @@ export const companies: Company[] = [
     name: "บริษัท ผาทองทุ่งสง จำกัด",
     nameEn: "PHATHONG THUNGSONG Co.,Ltd",
     shortName: "ผาทองทุ่งสง",
-    logo: "/images/logo_company/logo_PTG_active.png",
+    logo: img("/images/logo_company/logo_PTG_active.png"),
     rows: [{ status: "not-due", count: 8, amount: 301587.35 }],
     accounts: emptySlots(6, [
       {
@@ -83,7 +85,7 @@ export const companies: Company[] = [
     name: "บริษัท ผาทอง24 จำกัด",
     nameEn: "PHATHONG24 Co.,Ltd",
     shortName: "ผาทอง24",
-    logo: "/images/logo_company/logo_PTG24_active.png",
+    logo: img("/images/logo_company/logo_PTG24_active.png"),
     rows: [
       { status: "overdue-30", count: 59, amount: 720762.12 },
       { status: "overdue-16-30", count: 14, amount: 80627.5 },
@@ -107,7 +109,7 @@ export const companies: Company[] = [
     name: "บริษัท เอกทรานสปอร์ต 2016 จำกัด",
     nameEn: "Ake Transport Co,Ltd",
     shortName: "เอกทรานสปอร์ต",
-    logo: "/images/logo_company/logo_ake_active.png",
+    logo: img("/images/logo_company/logo_ake_active.png"),
     rows: [],
     accounts: emptySlots(6),
   },
@@ -116,7 +118,7 @@ export const companies: Company[] = [
     name: "บริษัท โมโนเซเปียน จำกัด",
     nameEn: "Monosapian Co,Ltd",
     shortName: "โมโนเซเปียน",
-    logo: "/images/logo_company/logo_mono_active.png",
+    logo: img("/images/logo_company/logo_mono_active.png"),
     rows: [],
     accounts: emptySlots(6),
   },

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import AnimatedSection from "./AnimatedSection";
+import { img } from "@/lib/env";
 
 export default function BannerFooter() {
   return (
@@ -8,7 +9,7 @@ export default function BannerFooter() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="relative w-full aspect-[3/2] sm:aspect-[1774/887] overflow-hidden rounded-xl">
             <Image
-              src="/images/ad-ptg.png"
+              src={img("/images/ad-ptg.png")}
               alt="Banner Footer"
               fill
               sizes="(max-width: 1774px) 100vw, 1774px"

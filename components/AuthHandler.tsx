@@ -9,7 +9,7 @@ import {
   setCustomerInfo,
   notifyCustomerSessionChanged,
 } from "@/lib/auth";
-import { BASE_PATH } from "@/lib/env";
+import { BASE_PATH, img } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -154,7 +154,7 @@ export default function AuthHandler() {
             <div className="spinner-container">
               <div className="spinner"></div>
               <Image
-                src="/logo/logo.svg"
+                src={img("/logo/logo.svg")}
                 alt="Logo"
                 width={60}
                 height={15}

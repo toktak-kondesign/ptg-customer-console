@@ -6,6 +6,7 @@ import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
 import { Tooltip } from "antd";
 import { getAuthUser } from "@/lib/auth";
+import { img } from "@/lib/env";
 import { getCustomerOrdersService } from "@/services/customer/orders";
 import type { CustomerOrder } from "@/interfaces/order";
 
@@ -112,7 +113,7 @@ export default function StatusDelivery() {
                 >
                   <div className="relative w-20 h-20 sm:w-[80px] sm:h-[80px] aspect-square shrink-0 mx-auto sm:mx-0 p-6">
                     <Image
-                      src="/images/logistic-delivery.png"
+                      src={img("/images/logistic-delivery.png")}
                       alt="logistic delivery"
                       fill
                       sizes="(max-width: 640px) 80px, 80px"
@@ -142,7 +143,7 @@ export default function StatusDelivery() {
                   {order.custsign === 1 && (
                     <Tooltip title="ดูใบส่งสินค้า">
                       <Image
-                        src="/images/deliveryNote.svg"
+                        src={img("/images/deliveryNote.svg")}
                         alt="devivery note"
                         width={32}
                         height={32}
@@ -227,7 +228,7 @@ export default function StatusDelivery() {
                               className="inline-flex items-center justify-center cursor-pointer hover:opacity-70 transition"
                             >
                               <Image
-                                src="/images/deliveryNote.svg"
+                                src={img("/images/deliveryNote.svg")}
                                 alt="delivery note"
                                 width={28}
                                 height={28}

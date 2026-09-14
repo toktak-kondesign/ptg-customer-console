@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AnimatedSection from "./AnimatedSection";
-import { getApiBaseUrl, getRewardsBaseUrl } from "../lib/env";
+import { getApiBaseUrl, getRewardsBaseUrl, img } from "../lib/env";
 import {
   getPtgSystemLink,
   getCustomerInfo,
@@ -29,7 +29,7 @@ interface ServiceEntry {
 
 const services: ServiceEntry[] = [
   {
-    image: "/images/banner/e-tax_lnvoice.png",
+    image: img("/images/banner/e-tax_lnvoice.png"),
     title: "e-TAX Invoice\n& Delivery note",
     desc: "ใบกำกับภาษีและใบส่งสินค้า",
     // ?x={ptg-system-link} is appended at runtime from localStorage
@@ -39,7 +39,7 @@ const services: ServiceEntry[] = [
     // appendLink: true,
   },
   {
-    image: "/images/banner/My_credit.png",
+    image: img("/images/banner/My_credit.png"),
     title: "My\nCredit",
     desc: "ข้อมูลวงเงินและเครดิตเทอม",
     href:
@@ -48,13 +48,13 @@ const services: ServiceEntry[] = [
     // appendLink: true,
   },
   {
-    image: "/images/banner/Overdue_ltems.png",
+    image: img("/images/banner/Overdue_ltems.png"),
     title: "Payment\nList",
     desc: "รายการชำระเงิน",
     href: "/payment-list",
   },
   {
-    image: "/images/banner/Reward_Point.png",
+    image: img("/images/banner/Reward_Point.png"),
     title: "Reward\nPoint",
     desc: "ยอดคะแนนสะสม",
     highlight: true,
@@ -62,13 +62,13 @@ const services: ServiceEntry[] = [
     outsourceLink: { ref1: "ptg-rewards", ref3: "custID" },
   },
   {
-    image: "/images/banner/PTG_L-M.png",
+    image: img("/images/banner/PTG_L-M.png"),
     title: "ระบบ PTG\nLubricant",
     desc: "บริการงานหล่อลื่นบำรุงรักษา",
     disabled: true,
   },
   {
-    image: "/images/banner/ptg_truck.png",
+    image: img("/images/banner/ptg_truck.png"),
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
     href:
@@ -77,27 +77,27 @@ const services: ServiceEntry[] = [
     //appendLink: true,
   },
   {
-    image: "/images/banner/tracking_logistic.png",
+    image: img("/images/banner/tracking_logistic.png"),
     title: "รายงาน\nส่งสินค้า",
     desc: "รายงานส่งสินค้า",
     href: getApiBaseUrl() + "Logistics/DeliveryProduct",
     appendLink: true,
   },
   {
-    image: "/images/banner/Order_purchase.png",
+    image: img("/images/banner/Order_purchase.png"),
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
     href: getApiBaseUrl() + "PTGWeb/Orderpicker",
     appendLink: true,
   },
   {
-    image: "/images/banner/PTG-Messages.png",
+    image: img("/images/banner/PTG-Messages.png"),
     title: "PTG\nMessages",
     desc: "ข้อความจาก PTG",
     badge: 1,
   },
   {
-    image: "/images/banner/Order-online.png",
+    image: img("/images/banner/Order-online.png"),
     title: "สั่งซื้อสินค้า\nออนไลน์",
     desc: "สั่งซื้อสินค้าผ่านออนไลน์",
   },
