@@ -121,16 +121,35 @@ export async function GET(request: Request): Promise<Response> {
       limit: String(limit),
     });
 
-    const upstreamResponse = await fetch(
-      `${rewardsApiBaseUrl}/api/orders?${params.toString()}`,
-      {
-        cache: "no-store",
-        headers: {
-          Authorization: authHeader,
-          Accept: "*/*",
-        },
-      },
-    );
+    let upstreamResponse: Response | null = null;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        upstreamResponse = await fetch(
+          `${rewardsApiBaseUrl}/api/orders?${params.toString()}`,
+          {
+            cache: "no-store",
+            headers: {
+              Authorization: authHeader,
+              Accept: "*/*",
+            },
+          },
+        );
+        lastError = null;
+        break;
+      } catch (err) {
+        lastError = err;
+        if (attempt < 2) await new Promise((r) => setTimeout(r, 300));
+      }
+    }
+    if (!upstreamResponse || lastError) {
+      const msg = lastError instanceof Error ? lastError.message : String(lastError);
+      const response: RewardsResponse = {
+        success: false,
+        error: `Rewards upstream unreachable: ${msg}`,
+      };
+      return jsonResponse(response, 502);
+    }
 
     let upstreamData: CustomerLatestOrdersResponse;
     try {
