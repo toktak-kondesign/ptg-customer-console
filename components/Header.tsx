@@ -5,7 +5,13 @@ import Link from "next/link";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
-import { getAuthUser, clearAuth, type AuthenUserInfo } from "@/lib/auth";
+import {
+  getAuthUser,
+  clearAuth,
+  getPtgSystemLink,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  type AuthenUserInfo,
+} from "@/lib/auth";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -27,6 +33,16 @@ const navLinks = [
 export default function Header() {
   const [customer, setCustomer] = useState<AuthenUserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ptgSystemLink, setPtgSystemLink] = useState<string | null>(null);
+
+  useEffect(() => {
+    const read = () => setPtgSystemLink(getPtgSystemLink());
+    read();
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
+    return () => {
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
+    };
+  }, []);
 
   useEffect(() => {
     const loadCustomerData = () => {
@@ -59,6 +75,11 @@ export default function Header() {
     setCustomer(null);
     window.location.href = "/";
   };
+
+  // ?x={ptg-system-link} is appended at runtime from localStorage
+  const cartUrl = ptgSystemLink
+    ? `${NAV_CART_URL}?x=${encodeURIComponent(ptgSystemLink)}`
+    : NAV_CART_URL;
 
   return (
     <header className="w-full">
@@ -170,7 +191,7 @@ export default function Header() {
             ))}
           </div>
           <Link
-            href={NAV_CART_URL}
+            href={cartUrl}
             className="relative shrink-0"
             aria-label="ตะกร้าของฉัน"
           >
