@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { IBM_Plex_Sans_Thai } from "next/font/google";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import Providers from "@/components/Providers";
 import "./globals.css";
 
@@ -60,7 +61,9 @@ export default function RootLayout({
       <body
         className={`${chulabhornLikit.className} bg-white antialiased min-h-screen flex flex-col`}
       >
-        <Providers>{children}</Providers>
+        <AntdRegistry>
+          <Providers>{children}</Providers>
+        </AntdRegistry>
       </body>
     </html>
   );

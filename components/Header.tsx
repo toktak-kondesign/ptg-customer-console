@@ -12,7 +12,7 @@ import {
   CUSTOMER_SESSION_CHANGED_EVENT,
   type AuthenUserInfo,
 } from "@/lib/auth";
-import { BASE_PATH, img } from "@/lib/env";
+import { BASE_PATH, getApiBaseUrl, img } from "@/lib/env";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -79,7 +79,7 @@ export default function Header() {
 
   // ?x={ptg-system-link} is appended at runtime from localStorage
   const cartUrl = ptgSystemLink
-    ? `${NAV_CART_URL}?x=${encodeURIComponent(ptgSystemLink)}`
+    ? `${getApiBaseUrl()}CustomerBase/ApproveLinkToPTG?x=3047ff71-9480-4a92-a5ed-3c3ae940dd20`
     : NAV_CART_URL;
 
   return (

@@ -64,7 +64,7 @@ const services: ServiceEntry[] = [
   {
     image: img("/images/banner/PTG_L-M.png"),
     title: "ระบบ PTG\nLubricant",
-    desc: "บริการงานหล่อลื่นบำรุงรักษา",
+    desc: "บริการงานแจ้งซ่อม/บำรุงรักษา",
     disabled: true,
   },
   {
@@ -80,15 +80,19 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/tracking_logistic.png"),
     title: "รายงาน\nส่งสินค้า",
     desc: "รายงานส่งสินค้า",
-    href: getApiBaseUrl() + "Logistics/DeliveryProduct",
-    appendLink: true,
+    href:
+      getApiBaseUrl() +
+      "CustomerBase/ApproveLinkToPTG?x=b18d471d-27e0-4d5f-bea7-6fa7dcc98b90",
+    //appendLink: true,
   },
   {
     image: img("/images/banner/Order_purchase.png"),
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
-    href: getApiBaseUrl() + "PTGWeb/Orderpicker",
-    appendLink: true,
+    href:
+      getApiBaseUrl() +
+      "CustomerBase/ApproveLinkToPTG?x=947a801d-25ce-467c-9b47-ddf7b1d894de",
+    //appendLink: true,
   },
   {
     image: img("/images/banner/PTG-Messages.png"),
@@ -100,6 +104,11 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/Order-online.png"),
     title: "สั่งซื้อสินค้า\nออนไลน์",
     desc: "สั่งซื้อสินค้าผ่านออนไลน์",
+  },
+  {
+    image: img("/images/banner/Pallet-report.png"),
+    title: "รายงาน\nพาเลท",
+    desc: "รายงานพาเลท",
   },
 ];
 

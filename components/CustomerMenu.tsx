@@ -4,12 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { useCustomerPoints } from "@/lib/CustomerPointsContext";
 import { formatPoint } from "@/lib/pointPrecision";
 import type { AuthenUserInfo } from "@/lib/auth";
+import { getApiBaseUrl } from "@/lib/env";
 
 const CUSTOMER_INFO_URL =
   "https://depwn2021.ptg.co.th/ptgcustomer/CustomerInfo";
 const CUSTOMER_SERVICE_URL = "https://depwn2021.ptg.co.th/PTGWeb/customer";
-const CUSTOMER_CART_URL = "https://depwn2021.ptg.co.th/Site/mycart";
-const CUSTOMER_ORDER_HISTORY_URL = "https://depwn2021.ptg.co.th/Site/order";
+const CUSTOMER_CART_URL = `${getApiBaseUrl()}CustomerBase/ApproveLinkToPTG?x=3047ff71-9480-4a92-a5ed-3c3ae940dd20`;
+const CUSTOMER_ORDER_HISTORY_URL =
+  getApiBaseUrl() +
+  "CustomerBase/ApproveLinkToPTG?x=e82102fc-2fec-4580-abd9-5e4b145306d0";
 
 const menuLinkClass =
   "flex items-center gap-2.5 px-3 py-2 rounded-md bg-transparent text-[0.8rem] whitespace-nowrap transition no-underline text-[#cccccc] hover:text-white";

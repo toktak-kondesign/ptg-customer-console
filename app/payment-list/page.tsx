@@ -506,8 +506,7 @@ export default function PaymentListPage() {
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">ที่อยู่:</dt>
                     <dd className="border-b">
-                      {formatCustomerAddress(customerInfo) ||
-                        "37/2 หมู่ที่ 5 ตำบลทรายขาว อำเภอทัวไทร จังหวัดนครศรีธรรมราช"}
+                      {formatCustomerAddress(customerInfo) || ""}
                     </dd>
                   </div>
                   <div className="flex gap-2">
@@ -520,7 +519,7 @@ export default function PaymentListPage() {
                         "phone",
                         "Tel",
                         "tel",
-                      ]) || "075-388157"}
+                      ]) || ""}
                     </dd>
                   </div>
                 </dl>
