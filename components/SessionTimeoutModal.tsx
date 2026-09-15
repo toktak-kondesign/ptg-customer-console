@@ -42,7 +42,7 @@ export function SessionTimeoutModal({
     <Modal
       open={open}
       closable={false}
-      maskClosable={false}
+      mask={{ closable: false }}
       centered
       footer={null}
       width={360}
