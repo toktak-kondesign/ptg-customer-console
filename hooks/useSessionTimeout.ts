@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAuthToken, getAuthUser, clearAuth } from "@/lib/auth";
-import { BASE_PATH } from "@/lib/env";
+import { BASE_PATH, LOGIN_URL } from "@/lib/env";
 
 const STORAGE_KEYS = {
   expiresAt: "ptg-session-expires-at",
@@ -73,7 +73,7 @@ export function useSessionTimeout({
       }
 
       clearAuth();
-      window.location.href = `${BASE_PATH}/`;
+      window.location.href = LOGIN_URL;
     },
     [loggedOut]
   );

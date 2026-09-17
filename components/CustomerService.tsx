@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AnimatedSection from "./AnimatedSection";
-import { getApiBaseUrl, getRewardsBaseUrl, img } from "../lib/env";
+import { getRewardsBaseUrl, img } from "../lib/env";
 import {
   getPtgSystemLink,
   getCustomerInfo,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
-import { createOutsourceSystemLink } from "@/services/approve-link";
+import {
+  createOutsourceSystemLink,
+  getApproveLinkRedirectUrl,
+} from "@/services/approve-link";
 
 interface ServiceEntry {
   image: string;
@@ -25,6 +28,9 @@ interface ServiceEntry {
   // Fetch an outsource link via createOutsourceSystemLink on mount.
   // ref3 = "custID" resolves to the customer's custID from localStorage.
   outsourceLink?: { ref1: string; ref3: string };
+  // On click, find-or-create a tbApproveLinkToPTG row (ref1 = system key,
+  // ref2 = username, ref3 = custID) and open the resulting redirect URL.
+  approveLinkRef1?: string;
 }
 
 const services: ServiceEntry[] = [
@@ -32,20 +38,13 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/e-tax_lnvoice.png"),
     title: "e-TAX Invoice\n& Delivery note",
     desc: "ใบกำกับภาษีและใบส่งสินค้า",
-    // ?x={ptg-system-link} is appended at runtime from localStorage
-    href:
-      getApiBaseUrl() +
-      "CustomerBase/ApproveLinkToPTG?x=bfd99068-5be6-4871-a557-beb0285b6cf0",
-    // appendLink: true,
+    approveLinkRef1: "EtaxInvoice",
   },
   {
     image: img("/images/banner/My_credit.png"),
     title: "My\nCredit",
     desc: "ข้อมูลวงเงินและเครดิตเทอม",
-    href:
-      getApiBaseUrl() +
-      "CustomerBase/ApproveLinkToPTG?x=f2cc1828-a424-4fc4-886e-fed4886953d1",
-    // appendLink: true,
+    approveLinkRef1: "MyCredit",
   },
   {
     image: img("/images/banner/Overdue_ltems.png"),
@@ -71,28 +70,19 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/ptg_truck.png"),
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
-    href:
-      getApiBaseUrl() +
-      "CustomerBase/ApproveLinkToPTG?x=0e6469e7-1d29-4844-a22a-b6dea1c8dae6",
-    //appendLink: true,
+    approveLinkRef1: "Trucklist",
   },
   {
     image: img("/images/banner/tracking_logistic.png"),
     title: "รายงาน\nส่งสินค้า",
     desc: "รายงานส่งสินค้า",
-    href:
-      getApiBaseUrl() +
-      "CustomerBase/ApproveLinkToPTG?x=b18d471d-27e0-4d5f-bea7-6fa7dcc98b90",
-    //appendLink: true,
+    approveLinkRef1: "DeliveryProduct",
   },
   {
     image: img("/images/banner/Order_purchase.png"),
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
-    href:
-      getApiBaseUrl() +
-      "CustomerBase/ApproveLinkToPTG?x=947a801d-25ce-467c-9b47-ddf7b1d894de",
-    //appendLink: true,
+    approveLinkRef1: "OrderPicker",
   },
   {
     image: img("/images/banner/PTG-Messages.png"),
@@ -104,11 +94,13 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/Order-online.png"),
     title: "สั่งซื้อสินค้า\nออนไลน์",
     desc: "สั่งซื้อสินค้าผ่านออนไลน์",
+    approveLinkRef1: "myCart",
   },
   {
     image: img("/images/banner/Pallet-report.png"),
     title: "รายงาน\nพาเลท",
     desc: "รายงานพาเลท",
+    approveLinkRef1: "PalletReport",
   },
 ];
 
@@ -131,6 +123,7 @@ export default function CustomerService() {
   const [outsourceLinks, setOutsourceLinks] = useState<Record<string, string>>(
     {},
   );
+  const [resolvingTitle, setResolvingTitle] = useState<string | null>(null);
 
   useEffect(() => {
     const read = () => setPtgSystemLink(getPtgSystemLink());
@@ -197,6 +190,21 @@ export default function CustomerService() {
     return service;
   });
 
+  const handleApproveLinkClick = async (service: ServiceEntry) => {
+    if (!service.approveLinkRef1 || resolvingTitle) return;
+    setResolvingTitle(service.title);
+    try {
+      const result = await getApproveLinkRedirectUrl(service.approveLinkRef1);
+      if (result.success && result.url) {
+        window.open(result.url, "_blank", "noopener,noreferrer");
+      } else {
+        console.error("Failed to resolve approve link:", result.error);
+      }
+    } finally {
+      setResolvingTitle(null);
+    }
+  };
+
   return (
     <section className="py-12 bg-white">
       <AnimatedSection>
@@ -227,6 +235,20 @@ export default function CustomerService() {
                     className="absolute inset-0 z-10 rounded-xl"
                     aria-label={`เปิด ${service.title.replace(/\n/g, " ")} ในแท็บใหม่`}
                   />
+                )}
+                {service.approveLinkRef1 && !service.disabled && (
+                  <button
+                    type="button"
+                    onClick={() => handleApproveLinkClick(service)}
+                    disabled={resolvingTitle === service.title}
+                    className="absolute inset-0 z-10 rounded-xl disabled:cursor-wait"
+                    aria-label={`เปิด ${service.title.replace(/\n/g, " ")} ในแท็บใหม่`}
+                  />
+                )}
+                {resolvingTitle === service.title && (
+                  <div className="absolute inset-0 z-20 rounded-xl bg-white/70 flex items-center justify-center">
+                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500" />
+                  </div>
                 )}
                 {service.badge && (
                   <div className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">

@@ -5,14 +5,9 @@ import Link from "next/link";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
-import {
-  getAuthUser,
-  clearAuth,
-  getPtgSystemLink,
-  CUSTOMER_SESSION_CHANGED_EVENT,
-  type AuthenUserInfo,
-} from "@/lib/auth";
-import { BASE_PATH, getApiBaseUrl, img } from "@/lib/env";
+import { getAuthUser, clearAuth, type AuthenUserInfo } from "@/lib/auth";
+import { BASE_PATH, img } from "@/lib/env";
+import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
 const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
 const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
@@ -34,16 +29,7 @@ const navLinks = [
 export default function Header() {
   const [customer, setCustomer] = useState<AuthenUserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [ptgSystemLink, setPtgSystemLink] = useState<string | null>(null);
-
-  useEffect(() => {
-    const read = () => setPtgSystemLink(getPtgSystemLink());
-    read();
-    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
-    return () => {
-      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, read);
-    };
-  }, []);
+  const [resolvingCart, setResolvingCart] = useState(false);
 
   useEffect(() => {
     const loadCustomerData = () => {
@@ -77,10 +63,20 @@ export default function Header() {
     window.location.href = `${BASE_PATH}/`;
   };
 
-  // ?x={ptg-system-link} is appended at runtime from localStorage
-  const cartUrl = ptgSystemLink
-    ? `${getApiBaseUrl()}CustomerBase/ApproveLinkToPTG?x=3047ff71-9480-4a92-a5ed-3c3ae940dd20`
-    : NAV_CART_URL;
+  const handleCartClick = async () => {
+    if (!customer || resolvingCart) return;
+    setResolvingCart(true);
+    try {
+      const result = await getApproveLinkRedirectUrl("myCart");
+      if (result.success && result.url) {
+        window.location.href = result.url;
+      } else {
+        console.error("Failed to resolve approve link:", result.error);
+      }
+    } finally {
+      setResolvingCart(false);
+    }
+  };
 
   return (
     <header className="w-full">
@@ -191,22 +187,43 @@ export default function Header() {
               </Link>
             ))}
           </div>
-          <Link
-            href={cartUrl}
-            className="relative shrink-0"
-            aria-label="ตะกร้าของฉัน"
-          >
-            <Image
-              src={img("/images/carts-yellow.png")}
-              alt="ตะกร้าของฉัน"
-              width={32}
-              height={32}
-              className="object-contain"
-            />
-            <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-medium rounded-full flex items-center justify-center">
-              {CART_COUNT}
-            </span>
-          </Link>
+          {customer ? (
+            <button
+              type="button"
+              onClick={handleCartClick}
+              disabled={resolvingCart}
+              className="relative shrink-0 disabled:opacity-60"
+              aria-label="ตะกร้าของฉัน"
+            >
+              <Image
+                src={img("/images/carts-yellow.png")}
+                alt="ตะกร้าของฉัน"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-medium rounded-full flex items-center justify-center">
+                {CART_COUNT}
+              </span>
+            </button>
+          ) : (
+            <Link
+              href={NAV_CART_URL}
+              className="relative shrink-0"
+              aria-label="ตะกร้าของฉัน"
+            >
+              <Image
+                src={img("/images/carts-yellow.png")}
+                alt="ตะกร้าของฉัน"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+              <span className="absolute -top-2 -right-2 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-medium rounded-full flex items-center justify-center">
+                {CART_COUNT}
+              </span>
+            </Link>
+          )}
         </div>
       </nav>
     </header>

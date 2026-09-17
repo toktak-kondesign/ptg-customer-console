@@ -8,8 +8,9 @@ import {
   setPtgSystemLink,
   setCustomerInfo,
   notifyCustomerSessionChanged,
+  getAuthUser,
 } from "@/lib/auth";
-import { BASE_PATH, img } from "@/lib/env";
+import { BASE_PATH, LOGIN_URL, img } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -50,7 +51,16 @@ export default function AuthHandler() {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      // No login token in the URL — if there's no stored session either,
+      // this visitor is unauthenticated, so send them to the login page.
+      if (!getAuthUser()) {
+        setStatus("loading");
+        setMessage("กำลังไปยังหน้าเข้าสู่ระบบ...");
+        window.location.href = LOGIN_URL;
+      }
+      return;
+    }
 
     let cancelled = false;
 

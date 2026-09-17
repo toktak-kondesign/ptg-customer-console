@@ -11,6 +11,7 @@ import AnimatedSection from "./AnimatedSection";
 import { RewardDetailModal } from "./RewardDetailModal";
 import { getRewardsService } from "@/services/shop/rewards";
 import type { RewardOrder } from "@/interfaces/reward";
+import { getRewardsBaseUrl } from "@/lib/env";
 
 type ViewMode = "cards" | "table";
 
@@ -36,52 +37,7 @@ function getAuthFromStorage(): { custId: string | null; token: string | null } {
   }
 }
 
-const fallbackRewards: RewardOrder[] = [
-  {
-    id: "RW20260721180335",
-    status: "จัดเตรียมสินค้า",
-    statusType: "preparing",
-    date: "21 กรกฎาคม 2569",
-    total: 2144,
-    tier: "Silver Points",
-    address:
-      "บ้านเลขที่ 47/1 ม. - ซ. - ถ.ท่านน้ำใส ต.ป่าแพรก อ.ทุ่งสง จ.นครศรีธรรมราช 80110",
-    items: [{ name: "แก้วนมดี", qty: 2, points: 2144 }],
-  },
-  {
-    id: "RW20260720143417",
-    status: "จัดส่งสำเร็จ",
-    statusType: "delivered",
-    date: "20 กรกฎาคม 2569",
-    total: 6953,
-    tier: "Silver Points",
-    address:
-      "บ้านเลขที่ 47/1 ม. - ซ. - ถ.ท่านน้ำใส ต.ป่าแพรก อ.ทุ่งสง จ.นครศรีธรรมราช 80110",
-    items: [
-      { name: "ปากกา", qty: 2, points: 92 },
-      { name: "Mi Compact Bluetooth Speaker 2", qty: 1, points: 3240 },
-      { name: "Mi Window and Door Sensor", qty: 1, points: 3621 },
-    ],
-  },
-  {
-    id: "RW20260715105859",
-    status: "จัดส่งสำเร็จ",
-    statusType: "delivered",
-    date: "15 กรกฎาคม 2569",
-    total: 11969,
-    tier: "Silver Points",
-    address:
-      "บ้านเลขที่ 123/4 ม.8 ซ.2 ถ.8 ต.หนองจั๊บวัชระ อ.พระนครศรีอยุธยา จ.พระนครศรีอยุธยา 13000",
-    items: [
-      { name: "หม้อหุงข้าวดิจิตอล 1.8 ลิตร", qty: 1, points: 7419 },
-      {
-        name: "เครื่องทำน้ำอุ่น กำลังไฟ 1800 วัตต์ หน้าเครื่องคลีนบอร์กันดีด",
-        qty: 1,
-        points: 4550,
-      },
-    ],
-  },
-];
+const fallbackRewards: RewardOrder[] = [];
 
 const statusClass = (type: RewardOrder["statusType"]) =>
   type === "preparing"
@@ -236,7 +192,7 @@ export default function Reward() {
               </button>
             </div>
             <a
-              href="https://deprewards.ptg.co.th/history"
+              href={`${getRewardsBaseUrl()}/history`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-600 text-sm font-medium hover:text-primary-900 hidden sm:inline"

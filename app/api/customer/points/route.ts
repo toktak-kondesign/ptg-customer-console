@@ -38,7 +38,7 @@ async function getCustomerPointsFromProcedure(
   custId: string
 ): Promise<CustomerPointProcedureRow | null> {
   const rows = await prismaDataCenter.$queryRaw<CustomerPointProcedureRow[]>`
-    EXEC dbo.prDash_Point2017_Test ${custId}
+    EXEC dbo.prDash_Point2017_optimize ${custId}
   `;
 
   return rows[0] ?? null;

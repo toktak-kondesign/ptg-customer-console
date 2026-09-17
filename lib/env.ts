@@ -34,6 +34,16 @@ export const getRewardsBaseUrl = (): string => {
 
 export const REWARDS_BASE_URL = getRewardsBaseUrl();
 
+// PTG login page (dev/prod aware) — used when session expires or user logs out
+export const getLoginUrl = (): string => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return isDevelopment
+    ? 'https://depwn2021.ptg.co.th/Site/Authentication/login'
+    : 'https://www.ptg.co.th/Site/Authentication/login';
+};
+
+export const LOGIN_URL = getLoginUrl();
+
 // API endpoints
 export const API_ENDPOINTS = {
   LOGIN: (uuid: string) => `${API_BASE_URL}approvalapiex/v1/auth/customer/userlogin/${uuid}`,
