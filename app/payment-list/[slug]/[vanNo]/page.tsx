@@ -9,8 +9,9 @@ import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
+import { getLogPayCustService } from "@/services/customer/log-pay-cust";
 import { img } from "@/lib/env";
-import type { VanAccountDtlRow } from "@/interfaces/van-account";
+import type { LogPayCustRow, VanAccountDtlRow } from "@/interfaces/van-account";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
   ptg: "PTG",
@@ -67,6 +68,10 @@ function formatThaiLongDate(value: Date | string | null | undefined): string {
   }
 }
 
+function extractLastPayDate(rows: LogPayCustRow[]): string {
+  return rows[0]?.Date01 || rows[0]?.Date1 || "";
+}
+
 function amountClass(color1: number | null | undefined): string {
   if (color1 === 3) return "text-red-600";
   if (color1 === 4) return "text-green-600";
@@ -97,6 +102,7 @@ export default function VanAccountDetailPage() {
     unknown
   > | null>(null);
   const [rows, setRows] = useState<VanAccountDtlRow[]>([]);
+  const [lastPayDate, setLastPayDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCount, setSelectedCount] = useState(0);
@@ -154,6 +160,7 @@ export default function VanAccountDetailPage() {
   useEffect(() => {
     if (!companyCode || !resaleID || !vanNoRaw) {
       setRows([]);
+      setLastPayDate("");
       setError(null);
       setIsLoading(false);
       return;
@@ -163,14 +170,23 @@ export default function VanAccountDetailPage() {
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const result = await getVanAccountDtlService(
-        companyCode,
-        resaleID,
-        vanNoRaw,
-      );
+      const [result, logPayResult] = await Promise.all([
+        getVanAccountDtlService(companyCode, resaleID, vanNoRaw),
+        getLogPayCustService(companyCode, resaleID, vanNoRaw),
+      ]);
       if (cancelled) return;
+      setLastPayDate(
+        logPayResult.status === "success"
+          ? extractLastPayDate(logPayResult.results || [])
+          : "",
+      );
       if (result.status === "success") {
-        setRows(result.results || []);
+        //แยกรายการที่เป็นหนี้ค้างชำระ กับเงินสดออกจากกัน 4 = เงินสด
+        setRows(
+          (result.results || []).filter(
+            (row) => Number(row.xSalesType_c) !== 4,
+          ),
+        );
       } else {
         setRows([]);
         setError(result.error || "ไม่สามารถโหลดรายละเอียดบัญชีได้");
@@ -279,7 +295,7 @@ export default function VanAccountDetailPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-gray-500">
-                    ยอดค้างชำระทั้งสิ้{" "}
+                    ยอดค้างชำระทั้งสิ้น{" "}
                     <span className="text-gray-400">(Total Amount)</span>
                   </p>
                   <p className="text-3xl font-bold text-blue-700 mt-1">
@@ -316,17 +332,26 @@ export default function VanAccountDetailPage() {
                 รายละเอียดบัญชีเลขที่ {vanNoDisplay}
               </h3>
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-gray-600 mr-4 bg-emerald-100 px-3 py-1 rounded-lg">
+                  <img
+                    src="/images/payment-method.png"
+                    alt="payment method"
+                    className="w-5 h-5"
+                  />
+                  วันที่ชำระครั้งล่าสุด{" "}
+                  {lastPayDate ? formatThaiLongDate(lastPayDate) : "-"}
+                </div>
                 <button
                   type="button"
                   onClick={selectAll}
-                  className="px-4 py-1.5 text-sm font-medium text-white bg-[#00C853] hover:bg-[#00a344] rounded-lg transition"
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition"
                 >
                   เลือกทั้งหมด
                 </button>
                 <button
                   type="button"
                   onClick={clearSelection}
-                  className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                  className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-orange-100 hover:bg-orange-200 rounded-lg transition"
                 >
                   ยกเลิก
                 </button>
@@ -474,7 +499,6 @@ export default function VanAccountDetailPage() {
                       className="object-contain"
                     />
                   </div>
-                  <span className="font-semibold text-[#0B132B]">UOB</span>
                 </div>
               </label>
               <p className="mt-2 text-sm text-gray-600">
@@ -486,24 +510,106 @@ export default function VanAccountDetailPage() {
               <h4 className="font-semibold text-gray-900 mb-4">
                 การชำระเงินโอน/เดบิต
               </h4>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <BankIcon label="KB" color="bg-[#1BA5E0]" />
-                <BankIcon label="KS" color="bg-[#00A651]" />
-                <BankIcon label="BAY" color="bg-[#6E2C91]" />
-                <div className="relative w-12 h-12">
+              <div className="grid grid-cols-12 gap-2 mb-4">
+                <div className="relative w-10 h-10">
                   <Image
-                    src={img("/images/UOB-logo.png")}
-                    alt="UOB"
+                    src={img("/images/bank_acc_img/SCB.png")}
+                    alt="ธนาคารไทยพาณิชย์"
                     fill
-                    sizes="48px"
+                    sizes="36px"
                     className="object-contain"
                   />
                 </div>
-                <BankIcon label="TTB" color="bg-[#0056A6]" />
-                <BankIcon label="SCB" color="bg-[#4E2A84]" />
-                <BankIcon label="KB" color="bg-[#FFD400]" />
-                <BankIcon label="SCB" color="bg-[#F37021]" />
-                <BankIcon label="KTB" color="bg-[#1E479C]" />
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/KBANK.png")}
+                    alt="ธนาคารกสิกรไทย"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/KTB.png")}
+                    alt="ธนาคารกรุงไทย"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/UOB.png")}
+                    alt="ธนาคารยูโอบี"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/TTB.png")}
+                    alt="ธนาคารทหารไทยธนชาต (ttb)"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/GSB.png")}
+                    alt="ธนาคารออมสิน"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/BAY.png")}
+                    alt="ธนาคารกรุงศรีอยุธยา"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/BAAC.png")}
+                    alt="ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (BAAC)"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/GHB.png")}
+                    alt="ธนาคารอาคารสงเคราะห์"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/BBL.png")}
+                    alt="ธนาคารกรุงเทพ"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
+                <div className="relative w-10 h-10">
+                  <Image
+                    src={img("/images/bank_acc_img/i-bank.png")}
+                    alt="ธนาคารอิสลามแห่งประเทศไทย"
+                    fill
+                    sizes="36px"
+                    className="object-contain"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -523,7 +629,7 @@ export default function VanAccountDetailPage() {
                     className="w-5 h-5 accent-green-600"
                   />
                   <span className="text-sm text-gray-700">
-                    จ่ายโดยเดบิต (UOB)
+                    จ่ายโดยเช็ค (UOB)
                   </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -534,7 +640,7 @@ export default function VanAccountDetailPage() {
                     className="w-5 h-5 accent-green-600"
                   />
                   <span className="text-sm text-gray-700">
-                    จ่ายโดยเดบิต (กรุงไทย)
+                    จ่ายโดยเช็ค (กรุงไทย)
                   </span>
                 </label>
               </div>

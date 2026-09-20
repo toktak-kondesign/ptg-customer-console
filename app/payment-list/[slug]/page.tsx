@@ -95,7 +95,13 @@ export default function PaymentAccountDetailPage() {
       const result = await getVanAccountsService(companyCode, resaleID);
       if (cancelled) return;
       if (result.status === "success") {
-        setDetails(result.results);
+        setDetails({
+          ...result.results,
+          //แยกรายการที่เป็นหนี้ค้างชำระ กับเงินสดออกจากกัน 4 = เงินสด
+          accounts: (result.results.accounts || []).filter(
+            (account) => Number(account.xSalesType_c) !== 4,
+          ),
+        });
       } else {
         setDetails(null);
         setError(result.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");

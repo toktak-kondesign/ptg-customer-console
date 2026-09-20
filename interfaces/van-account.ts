@@ -43,6 +43,7 @@ export interface VanAccount extends VanBranch {
   EndDate: string | null;
   CreditCompany: string;
   IsShow: number;
+  xSalesType_c?: number | null;
 }
 
 export interface VanAccountDetails {
@@ -82,10 +83,22 @@ export interface VanAccountDtlRow {
   TxtDate?: string;
   xIsPDFFile_c: number;
   WHTCode?: string;
+  xSalesType_c?: number | null;
 }
 
 export interface VanAccountDtlResponse {
   status: string;
   results: VanAccountDtlRow[];
+  error?: string;
+}
+
+export interface LogPayCustRow {
+  Date1?: string;
+  Date01?: string;
+}
+
+export interface LogPayCustResponse {
+  status: string;
+  results: LogPayCustRow[];
   error?: string;
 }

@@ -4,6 +4,7 @@ export interface ColorDashboardRow {
   Color1: number;
   Cmt: number;
   Amt: number;
+  xSalesType_c?: number | null;
 }
 
 export interface ColorDashboardResponse {

@@ -230,10 +230,11 @@ export default function CustomerService() {
                 {service.href && !service.disabled && (
                   <Link
                     href={service.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    {...(service.href.startsWith("http")
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
                     className="absolute inset-0 z-10 rounded-xl"
-                    aria-label={`เปิด ${service.title.replace(/\n/g, " ")} ในแท็บใหม่`}
+                    aria-label={`เปิด ${service.title.replace(/\n/g, " ")}`}
                   />
                 )}
                 {service.approveLinkRef1 && !service.disabled && (

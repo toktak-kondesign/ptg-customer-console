@@ -409,7 +409,10 @@ export default function PaymentListPage() {
       const result = await getColorDashboardService(custID);
       if (cancelled) return;
       if (result.status === "success") {
-        setApiRows(result.results);
+        setApiRows(
+          //แยกรายการที่เป็นหนี้ค้างชำระ กับเงินสดออกจากกัน 4 = เงินสด
+          result.results.filter((row) => Number(row.xSalesType_c) !== 4),
+        );
         setError(null);
       } else {
         setApiRows([]);
