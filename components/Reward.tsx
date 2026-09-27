@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
 import { RewardDetailModal } from "./RewardDetailModal";
+import { useVisibleOnce } from "@/hooks/useVisibleOnce";
 import { getRewardsService } from "@/services/shop/rewards";
 import type { RewardOrder } from "@/interfaces/reward";
 import { getRewardsBaseUrl } from "@/lib/env";
@@ -122,9 +123,15 @@ export default function Reward() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<RewardOrder | null>(null);
+  const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
 
+  // Fetch only when the section scrolls into view — it is below the fold,
+  // and firing it on mount competes for connections with critical requests.
   useEffect(() => {
+    if (!visible) return;
+
     let cancelled = false;
+    const controller = new AbortController();
 
     async function fetchRewards() {
       const { custId, token } = getAuthFromStorage();
@@ -136,7 +143,10 @@ export default function Reward() {
       setIsLoading(true);
       setError(null);
 
-      const result = await getRewardsService({ custId, token, limit: 5 });
+      const result = await getRewardsService(
+        { custId, token, limit: 5 },
+        controller.signal,
+      );
 
       if (cancelled) return;
 
@@ -153,11 +163,12 @@ export default function Reward() {
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
-  }, []);
+  }, [visible]);
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section ref={sectionRef} className="py-12 bg-gray-50">
       <AnimatedSection className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
           <div>

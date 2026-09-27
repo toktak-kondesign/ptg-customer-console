@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useCustomerPoints } from "@/lib/CustomerPointsContext";
 import { formatPoint } from "@/lib/pointPrecision";
 import type { AuthenUserInfo } from "@/lib/auth";
+import { getSessionCustomerId } from "@/lib/auth";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
 const CUSTOMER_INFO_URL =
@@ -97,6 +99,11 @@ export default function CustomerMenu({
     );
   }
 
+  const sessionCustId = getSessionCustomerId();
+  const customerInfoHref = sessionCustId
+    ? `/customer/${encodeURIComponent(sessionCustId)}`
+    : CUSTOMER_INFO_URL;
+
   return (
     <div
       className="relative pl-2 sm:pl-3 border-l border-slate-200"
@@ -149,13 +156,13 @@ export default function CustomerMenu({
           aria-label="เมนูบัญชีผู้ใช้"
           className="absolute top-full right-0 mt-2 p-1.5 min-w-[180px] bg-[#444444] text-[#cccccc] rounded-lg shadow-2xl z-50"
         >
-          <a
-            href={CUSTOMER_INFO_URL}
+          <Link
+            href={customerInfoHref}
             className={menuLinkClass}
             onClick={() => setShowMenu(false)}
           >
             ข้อมูลทั่วไป
-          </a>
+          </Link>
           <a
             href={CUSTOMER_SERVICE_URL}
             className={menuLinkClass}

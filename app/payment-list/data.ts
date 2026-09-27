@@ -44,14 +44,33 @@ export type AccountSlot = {
   status?: string;
 };
 
+/** ข้อมูลผู้รับชำระที่ใช้พิมพ์บนใบนำจ่าย / ใบนำฝากธนาคาร */
+export type CompanyPayee = {
+  /** ที่อยู่ในกล่อง "ชำระเงินเข้าบัญชี" */
+  address: string;
+  /** ชื่อบัญชีและเลขบัญชีกรุงไทย บนใบรับฝากเงิน (DEPOSIT SLIP) */
+  ktbAccountName: string;
+  ktbAccountNo: string;
+  /** สาขาที่นำฝากบนใบรับฝากเงินกรุงไทย */
+  ktbBranch: string;
+};
+
 export type Company = {
   slug: string;
   name: string;
   nameEn: string;
   shortName: string;
   logo: string;
+  payee: CompanyPayee;
   rows: { status: PaymentStatusKey; count: number; amount: number }[];
   accounts: AccountSlot[];
+};
+
+const EMPTY_PAYEE: CompanyPayee = {
+  address: "47/1 ถ.ท่าแพใต้ ต.ปากแพรก อ.ทุ่งสง จ.นครศรีธรรมราช 80110",
+  ktbAccountName: "",
+  ktbAccountNo: "",
+  ktbBranch: "",
 };
 
 const emptySlots = (count: number, filled?: Partial<AccountSlot>[]): AccountSlot[] =>
@@ -67,6 +86,13 @@ export const companies: Company[] = [
     nameEn: "PHATHONG THUNGSONG Co.,Ltd",
     shortName: "ผาทองทุ่งสง",
     logo: img("/images/logo_company/logo_PTG_active.png"),
+    payee: {
+      // TODO: ยืนยันที่อยู่ของผาทองทุ่งสงกับฝ่ายบัญชี
+      address: "47/1 ถ.ท่าแพใต้ ต.ปากแพรก อ.ทุ่งสง จ.นครศรีธรรมราช 80110",
+      ktbAccountName: "บริษัท ผาทอง ทุ่งสง จำกัด",
+      ktbAccountNo: "815-6-01076-0",
+      ktbBranch: "ทุ่งสง",
+    },
     rows: [{ status: "not-due", count: 8, amount: 301587.35 }],
     accounts: emptySlots(6, [
       {
@@ -86,6 +112,13 @@ export const companies: Company[] = [
     nameEn: "PHATHONG24 Co.,Ltd",
     shortName: "ผาทอง24",
     logo: img("/images/logo_company/logo_PTG24_active.png"),
+    payee: {
+      address: "47/1 ถ.ท่าแพใต้ ต.ปากแพรก อ.ทุ่งสง จ.นครศรีธรรมราช 80110",
+      // TODO: ยืนยันชื่อ/เลขบัญชี/สาขากรุงไทยของผาทอง24 กับฝ่ายบัญชี
+      ktbAccountName: "",
+      ktbAccountNo: "",
+      ktbBranch: "",
+    },
     rows: [
       { status: "overdue-30", count: 59, amount: 720762.12 },
       { status: "overdue-16-30", count: 14, amount: 80627.5 },
@@ -110,6 +143,8 @@ export const companies: Company[] = [
     nameEn: "Ake Transport Co,Ltd",
     shortName: "เอกทรานสปอร์ต",
     logo: img("/images/logo_company/logo_ake_active.png"),
+    // TODO: รอข้อมูลผู้รับชำระของเอกทรานสปอร์ต
+    payee: EMPTY_PAYEE,
     rows: [],
     accounts: emptySlots(6),
   },
@@ -119,6 +154,8 @@ export const companies: Company[] = [
     nameEn: "Monosapian Co,Ltd",
     shortName: "โมโนเซเปียน",
     logo: img("/images/logo_company/logo_mono_active.png"),
+    // TODO: รอข้อมูลผู้รับชำระของโมโนเซเปียน
+    payee: EMPTY_PAYEE,
     rows: [],
     accounts: emptySlots(6),
   },

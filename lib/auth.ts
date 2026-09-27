@@ -133,6 +133,42 @@ export function getCustomerInfo(): Record<string, unknown> | null {
   }
 }
 
+function pickField(
+  source: Record<string, unknown> | null,
+  names: string[],
+): string {
+  if (!source) return "";
+  const keys = Object.keys(source);
+  for (const name of names) {
+    const key = keys.find((k) => k.toLowerCase() === name.toLowerCase());
+    if (key && source[key] !== null && source[key] !== undefined) {
+      const value = String(source[key]).trim();
+      if (value) return value;
+    }
+  }
+  return "";
+}
+
+// รหัสลูกค้าสำหรับ route /customer/[customerId]
+// field name ใน auth user / customer-info response ไม่คงที่ระหว่าง
+// environment (custID / custId / CustID) จึงค้นหาแบบ case-insensitive
+// และ fallback ไปที่ resaleID ของ customer-info ด้วย
+export function getSessionCustomerId(): string {
+  const user = getAuthUser();
+  const fromUser = pickField(
+    user as unknown as Record<string, unknown> | null,
+    ["custID", "custId", "customerID", "customerId"],
+  );
+  if (fromUser) return fromUser;
+  return pickField(getCustomerInfo(), [
+    "custID",
+    "custId",
+    "customerID",
+    "customerId",
+    "resaleID",
+  ]);
+}
+
 export function setCustomerInfo(info: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS.CUSTOMER_INFO, JSON.stringify(info));

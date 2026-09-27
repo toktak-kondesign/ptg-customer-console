@@ -89,3 +89,16 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* ใบนำจ่าย / ใบนำฝากเช็ค — พิมพ์ A4 แนวตั้ง ไม่มี margin เพิ่มของ browser */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+}

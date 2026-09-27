@@ -5,12 +5,14 @@ import type {
 import { BASE_PATH } from "@/lib/env";
 
 export async function getCustomerPointsService(
-  query: CustomerPointQuery
+  query: CustomerPointQuery,
+  signal?: AbortSignal
 ): Promise<CustomerPointsResponse> {
   try {
     const params = new URLSearchParams({ custId: query.custId });
     const response = await fetch(`${BASE_PATH}/api/customer/points/?${params.toString()}`, {
       cache: "no-store",
+      signal,
     });
     const data: CustomerPointsResponse = await response.json();
 

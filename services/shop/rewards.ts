@@ -3,6 +3,7 @@ import { BASE_PATH } from "@/lib/env";
 
 export async function getRewardsService(
   query: RewardsQuery,
+  signal?: AbortSignal,
 ): Promise<RewardsResponse> {
   try {
     const params = new URLSearchParams({
@@ -14,6 +15,7 @@ export async function getRewardsService(
       `${BASE_PATH}/api/customer/rewards/?${params.toString()}`,
       {
         cache: "no-store",
+        signal,
         headers: {
           Authorization: `Bearer ${query.token}`,
         },

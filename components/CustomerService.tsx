@@ -136,10 +136,12 @@ export default function CustomerService() {
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     const fetchOutsourceLinks = async () => {
       const custID = resolveCustID();
       if (!custID) return;
       for (const service of services) {
+        if (cancelled || controller.signal.aborted) return;
         if (!service.outsourceLink) continue;
         const ref3 =
           service.outsourceLink.ref3 === "custID"
@@ -149,6 +151,7 @@ export default function CustomerService() {
           service.outsourceLink.ref1,
           ref3,
           custID,
+          controller.signal,
         );
         if (cancelled) return;
         if (result.success && result.link) {
@@ -159,13 +162,29 @@ export default function CustomerService() {
         }
       }
     };
-    fetchOutsourceLinks();
+    // The link is only needed when the user clicks a card — run at idle
+    // time so it doesn't hold a connection during the initial load burst.
+    const runInitial = () => {
+      void fetchOutsourceLinks();
+    };
+    const cancelIdle =
+      typeof window.requestIdleCallback === "function"
+        ? (() => {
+            const id = window.requestIdleCallback(runInitial);
+            return () => window.cancelIdleCallback(id);
+          })()
+        : (() => {
+            const id = window.setTimeout(runInitial, 2000);
+            return () => window.clearTimeout(id);
+          })();
     const handler = () => {
       void fetchOutsourceLinks();
     };
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handler);
     return () => {
       cancelled = true;
+      controller.abort();
+      cancelIdle();
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handler);
     };
   }, []);

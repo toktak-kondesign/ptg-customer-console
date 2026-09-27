@@ -103,39 +103,46 @@ export default function AuthHandler() {
         // Step 1-3: Generate CustomerAccessToken (JWT), fetch ResaleID,
         // and call createApproveLink. Runs in the background — the page
         // doesn't need to wait for this to finish. Store JWT and link UUID
-        // once it resolves.
-        fetch(`${BASE_PATH}/api/approve-link/ptg-system/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: data.username,
-            personName: data.personName,
-            custID: data.custID,
-            custName: data.custName,
-          }),
-        })
-          .then((res) => res.json())
-          .then((approveData) => {
-            if (approveData.success) {
-              if (approveData.token) setCustomerAccessToken(approveData.token);
-              if (approveData.link) setPtgSystemLink(approveData.link);
-              if (approveData.customerInfo)
-                setCustomerInfo(approveData.customerInfo);
-              // Notify subscribers (CustomerPointsContext, payment-list,
-              // etc.) that customer session data was just persisted, so
-              // they can re-read from localStorage without waiting for a
-              // page reload.
-              notifyCustomerSessionChanged();
-            } else {
-              console.error(
-                "[AuthHandler] approve-link failed:",
-                approveData.error,
-              );
-            }
+        // once it resolves. Delayed slightly so it doesn't compete for
+        // connections with the page's critical requests on load.
+        window.setTimeout(() => {
+          // Intentionally not gated on `cancelled`: this writes to
+          // localStorage (no component state) and must still run after
+          // router.push("/") re-runs this effect.
+          fetch(`${BASE_PATH}/api/approve-link/ptg-system/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: data.username,
+              personName: data.personName,
+              custID: data.custID,
+              custName: data.custName,
+            }),
           })
-          .catch((approveError) => {
-            console.error("[AuthHandler] approve-link error:", approveError);
-          });
+            .then((res) => res.json())
+            .then((approveData) => {
+              if (approveData.success) {
+                if (approveData.token)
+                  setCustomerAccessToken(approveData.token);
+                if (approveData.link) setPtgSystemLink(approveData.link);
+                if (approveData.customerInfo)
+                  setCustomerInfo(approveData.customerInfo);
+                // Notify subscribers (CustomerPointsContext, payment-list,
+                // etc.) that customer session data was just persisted, so
+                // they can re-read from localStorage without waiting for a
+                // page reload.
+                notifyCustomerSessionChanged();
+              } else {
+                console.error(
+                  "[AuthHandler] approve-link failed:",
+                  approveData.error,
+                );
+              }
+            })
+            .catch((approveError) => {
+              console.error("[AuthHandler] approve-link error:", approveError);
+            });
+        }, 1500);
       } catch (error) {
         if (cancelled) return;
         setStatus("error");

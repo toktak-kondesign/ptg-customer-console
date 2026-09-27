@@ -14,6 +14,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 
 /**
+ * Model PtgPayingBill
+ * 
+ */
+export type PtgPayingBill = $Result.DefaultSelection<Prisma.$PtgPayingBillPayload>
+/**
  * Model TbCustPointSilverCurrent2017
  * 
  */
@@ -43,8 +48,8 @@ export type TbCustGoldToAdjust = $Result.DefaultSelection<Prisma.$TbCustGoldToAd
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more TbCustPointSilverCurrent2017s
- * const tbCustPointSilverCurrent2017s = await prisma.tbCustPointSilverCurrent2017.findMany()
+ * // Fetch zero or more PtgPayingBills
+ * const ptgPayingBills = await prisma.ptgPayingBill.findMany()
  * ```
  *
  *
@@ -66,8 +71,8 @@ export class PrismaClient<
    * const prisma = new PrismaClient({
    *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
    * })
-   * // Fetch zero or more TbCustPointSilverCurrent2017s
-   * const tbCustPointSilverCurrent2017s = await prisma.tbCustPointSilverCurrent2017.findMany()
+   * // Fetch zero or more PtgPayingBills
+   * const ptgPayingBills = await prisma.ptgPayingBill.findMany()
    * ```
    *
    *
@@ -156,6 +161,16 @@ export class PrismaClient<
   }>>
 
       /**
+   * `prisma.ptgPayingBill`: Exposes CRUD operations for the **PtgPayingBill** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PtgPayingBills
+    * const ptgPayingBills = await prisma.ptgPayingBill.findMany()
+    * ```
+    */
+  get ptgPayingBill(): Prisma.PtgPayingBillDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.tbCustPointSilverCurrent2017`: Exposes CRUD operations for the **TbCustPointSilverCurrent2017** model.
     * Example usage:
     * ```ts
@@ -641,6 +656,7 @@ export namespace Prisma {
 
 
   export const ModelName: {
+    PtgPayingBill: 'PtgPayingBill',
     TbCustPointSilverCurrent2017: 'TbCustPointSilverCurrent2017',
     TbCustPointGoldCurrent2017: 'TbCustPointGoldCurrent2017',
     TbCustPointSilverCashCurrent: 'TbCustPointSilverCashCurrent',
@@ -660,10 +676,76 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "tbCustPointSilverCurrent2017" | "tbCustPointGoldCurrent2017" | "tbCustPointSilverCashCurrent" | "tbCustGoldToAdjust"
+      modelProps: "ptgPayingBill" | "tbCustPointSilverCurrent2017" | "tbCustPointGoldCurrent2017" | "tbCustPointSilverCashCurrent" | "tbCustGoldToAdjust"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
+      PtgPayingBill: {
+        payload: Prisma.$PtgPayingBillPayload<ExtArgs>
+        fields: Prisma.PtgPayingBillFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PtgPayingBillFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PtgPayingBillFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          findFirst: {
+            args: Prisma.PtgPayingBillFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PtgPayingBillFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          findMany: {
+            args: Prisma.PtgPayingBillFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>[]
+          }
+          create: {
+            args: Prisma.PtgPayingBillCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          createMany: {
+            args: Prisma.PtgPayingBillCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PtgPayingBillDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          update: {
+            args: Prisma.PtgPayingBillUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          deleteMany: {
+            args: Prisma.PtgPayingBillDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PtgPayingBillUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PtgPayingBillUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PtgPayingBillPayload>
+          }
+          aggregate: {
+            args: Prisma.PtgPayingBillAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePtgPayingBill>
+          }
+          groupBy: {
+            args: Prisma.PtgPayingBillGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PtgPayingBillGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PtgPayingBillCountArgs<ExtArgs>
+            result: $Utils.Optional<PtgPayingBillCountAggregateOutputType> | number
+          }
+        }
+      }
       TbCustPointSilverCurrent2017: {
         payload: Prisma.$TbCustPointSilverCurrent2017Payload<ExtArgs>
         fields: Prisma.TbCustPointSilverCurrent2017FieldRefs
@@ -1051,6 +1133,7 @@ export namespace Prisma {
     comments?: runtime.SqlCommenterPlugin[]
   }
   export type GlobalOmitConfig = {
+    ptgPayingBill?: PtgPayingBillOmit
     tbCustPointSilverCurrent2017?: TbCustPointSilverCurrent2017Omit
     tbCustPointGoldCurrent2017?: TbCustPointGoldCurrent2017Omit
     tbCustPointSilverCashCurrent?: TbCustPointSilverCashCurrentOmit
@@ -1134,6 +1217,1180 @@ export namespace Prisma {
   /**
    * Models
    */
+
+  /**
+   * Model PtgPayingBill
+   */
+
+  export type AggregatePtgPayingBill = {
+    _count: PtgPayingBillCountAggregateOutputType | null
+    _avg: PtgPayingBillAvgAggregateOutputType | null
+    _sum: PtgPayingBillSumAggregateOutputType | null
+    _min: PtgPayingBillMinAggregateOutputType | null
+    _max: PtgPayingBillMaxAggregateOutputType | null
+  }
+
+  export type PtgPayingBillAvgAggregateOutputType = {
+    itemId: number | null
+    amount: number | null
+    isActive: number | null
+    receivingType: number | null
+  }
+
+  export type PtgPayingBillSumAggregateOutputType = {
+    itemId: number | null
+    amount: number | null
+    isActive: number | null
+    receivingType: number | null
+  }
+
+  export type PtgPayingBillMinAggregateOutputType = {
+    itemId: number | null
+    runno: string | null
+    company: string | null
+    custId13: string | null
+    custId: string | null
+    branchId: string | null
+    vanNo: string | null
+    type: string | null
+    amount: number | null
+    bankType: string | null
+    bankReceipt: string | null
+    checkNo: string | null
+    billDate: Date | null
+    tranferTime: string | null
+    typeBill: string | null
+    receiveDate: Date | null
+    bankBranch: string | null
+    createDate: Date | null
+    userCreate: string | null
+    isActive: number | null
+    chequeStatus: string | null
+    dateChequeReceipt01: Date | null
+    dateChequeReceipt02: Date | null
+    receiptPerson: string | null
+    receiptPerson02: string | null
+    remarkCancer: string | null
+    receivingType: number | null
+  }
+
+  export type PtgPayingBillMaxAggregateOutputType = {
+    itemId: number | null
+    runno: string | null
+    company: string | null
+    custId13: string | null
+    custId: string | null
+    branchId: string | null
+    vanNo: string | null
+    type: string | null
+    amount: number | null
+    bankType: string | null
+    bankReceipt: string | null
+    checkNo: string | null
+    billDate: Date | null
+    tranferTime: string | null
+    typeBill: string | null
+    receiveDate: Date | null
+    bankBranch: string | null
+    createDate: Date | null
+    userCreate: string | null
+    isActive: number | null
+    chequeStatus: string | null
+    dateChequeReceipt01: Date | null
+    dateChequeReceipt02: Date | null
+    receiptPerson: string | null
+    receiptPerson02: string | null
+    remarkCancer: string | null
+    receivingType: number | null
+  }
+
+  export type PtgPayingBillCountAggregateOutputType = {
+    itemId: number
+    runno: number
+    company: number
+    custId13: number
+    custId: number
+    branchId: number
+    vanNo: number
+    type: number
+    amount: number
+    bankType: number
+    bankReceipt: number
+    checkNo: number
+    billDate: number
+    tranferTime: number
+    typeBill: number
+    receiveDate: number
+    bankBranch: number
+    createDate: number
+    userCreate: number
+    isActive: number
+    chequeStatus: number
+    dateChequeReceipt01: number
+    dateChequeReceipt02: number
+    receiptPerson: number
+    receiptPerson02: number
+    remarkCancer: number
+    receivingType: number
+    _all: number
+  }
+
+
+  export type PtgPayingBillAvgAggregateInputType = {
+    itemId?: true
+    amount?: true
+    isActive?: true
+    receivingType?: true
+  }
+
+  export type PtgPayingBillSumAggregateInputType = {
+    itemId?: true
+    amount?: true
+    isActive?: true
+    receivingType?: true
+  }
+
+  export type PtgPayingBillMinAggregateInputType = {
+    itemId?: true
+    runno?: true
+    company?: true
+    custId13?: true
+    custId?: true
+    branchId?: true
+    vanNo?: true
+    type?: true
+    amount?: true
+    bankType?: true
+    bankReceipt?: true
+    checkNo?: true
+    billDate?: true
+    tranferTime?: true
+    typeBill?: true
+    receiveDate?: true
+    bankBranch?: true
+    createDate?: true
+    userCreate?: true
+    isActive?: true
+    chequeStatus?: true
+    dateChequeReceipt01?: true
+    dateChequeReceipt02?: true
+    receiptPerson?: true
+    receiptPerson02?: true
+    remarkCancer?: true
+    receivingType?: true
+  }
+
+  export type PtgPayingBillMaxAggregateInputType = {
+    itemId?: true
+    runno?: true
+    company?: true
+    custId13?: true
+    custId?: true
+    branchId?: true
+    vanNo?: true
+    type?: true
+    amount?: true
+    bankType?: true
+    bankReceipt?: true
+    checkNo?: true
+    billDate?: true
+    tranferTime?: true
+    typeBill?: true
+    receiveDate?: true
+    bankBranch?: true
+    createDate?: true
+    userCreate?: true
+    isActive?: true
+    chequeStatus?: true
+    dateChequeReceipt01?: true
+    dateChequeReceipt02?: true
+    receiptPerson?: true
+    receiptPerson02?: true
+    remarkCancer?: true
+    receivingType?: true
+  }
+
+  export type PtgPayingBillCountAggregateInputType = {
+    itemId?: true
+    runno?: true
+    company?: true
+    custId13?: true
+    custId?: true
+    branchId?: true
+    vanNo?: true
+    type?: true
+    amount?: true
+    bankType?: true
+    bankReceipt?: true
+    checkNo?: true
+    billDate?: true
+    tranferTime?: true
+    typeBill?: true
+    receiveDate?: true
+    bankBranch?: true
+    createDate?: true
+    userCreate?: true
+    isActive?: true
+    chequeStatus?: true
+    dateChequeReceipt01?: true
+    dateChequeReceipt02?: true
+    receiptPerson?: true
+    receiptPerson02?: true
+    remarkCancer?: true
+    receivingType?: true
+    _all?: true
+  }
+
+  export type PtgPayingBillAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PtgPayingBill to aggregate.
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PtgPayingBills to fetch.
+     */
+    orderBy?: PtgPayingBillOrderByWithRelationInput | PtgPayingBillOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PtgPayingBillWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PtgPayingBills from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PtgPayingBills.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PtgPayingBills
+    **/
+    _count?: true | PtgPayingBillCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PtgPayingBillAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PtgPayingBillSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PtgPayingBillMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PtgPayingBillMaxAggregateInputType
+  }
+
+  export type GetPtgPayingBillAggregateType<T extends PtgPayingBillAggregateArgs> = {
+        [P in keyof T & keyof AggregatePtgPayingBill]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePtgPayingBill[P]>
+      : GetScalarType<T[P], AggregatePtgPayingBill[P]>
+  }
+
+
+
+
+  export type PtgPayingBillGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PtgPayingBillWhereInput
+    orderBy?: PtgPayingBillOrderByWithAggregationInput | PtgPayingBillOrderByWithAggregationInput[]
+    by: PtgPayingBillScalarFieldEnum[] | PtgPayingBillScalarFieldEnum
+    having?: PtgPayingBillScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PtgPayingBillCountAggregateInputType | true
+    _avg?: PtgPayingBillAvgAggregateInputType
+    _sum?: PtgPayingBillSumAggregateInputType
+    _min?: PtgPayingBillMinAggregateInputType
+    _max?: PtgPayingBillMaxAggregateInputType
+  }
+
+  export type PtgPayingBillGroupByOutputType = {
+    itemId: number
+    runno: string | null
+    company: string | null
+    custId13: string | null
+    custId: string | null
+    branchId: string | null
+    vanNo: string | null
+    type: string | null
+    amount: number | null
+    bankType: string | null
+    bankReceipt: string | null
+    checkNo: string | null
+    billDate: Date | null
+    tranferTime: string | null
+    typeBill: string | null
+    receiveDate: Date | null
+    bankBranch: string | null
+    createDate: Date | null
+    userCreate: string | null
+    isActive: number
+    chequeStatus: string | null
+    dateChequeReceipt01: Date | null
+    dateChequeReceipt02: Date | null
+    receiptPerson: string | null
+    receiptPerson02: string | null
+    remarkCancer: string | null
+    receivingType: number | null
+    _count: PtgPayingBillCountAggregateOutputType | null
+    _avg: PtgPayingBillAvgAggregateOutputType | null
+    _sum: PtgPayingBillSumAggregateOutputType | null
+    _min: PtgPayingBillMinAggregateOutputType | null
+    _max: PtgPayingBillMaxAggregateOutputType | null
+  }
+
+  type GetPtgPayingBillGroupByPayload<T extends PtgPayingBillGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PtgPayingBillGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PtgPayingBillGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PtgPayingBillGroupByOutputType[P]>
+            : GetScalarType<T[P], PtgPayingBillGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PtgPayingBillSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    itemId?: boolean
+    runno?: boolean
+    company?: boolean
+    custId13?: boolean
+    custId?: boolean
+    branchId?: boolean
+    vanNo?: boolean
+    type?: boolean
+    amount?: boolean
+    bankType?: boolean
+    bankReceipt?: boolean
+    checkNo?: boolean
+    billDate?: boolean
+    tranferTime?: boolean
+    typeBill?: boolean
+    receiveDate?: boolean
+    bankBranch?: boolean
+    createDate?: boolean
+    userCreate?: boolean
+    isActive?: boolean
+    chequeStatus?: boolean
+    dateChequeReceipt01?: boolean
+    dateChequeReceipt02?: boolean
+    receiptPerson?: boolean
+    receiptPerson02?: boolean
+    remarkCancer?: boolean
+    receivingType?: boolean
+  }, ExtArgs["result"]["ptgPayingBill"]>
+
+
+
+  export type PtgPayingBillSelectScalar = {
+    itemId?: boolean
+    runno?: boolean
+    company?: boolean
+    custId13?: boolean
+    custId?: boolean
+    branchId?: boolean
+    vanNo?: boolean
+    type?: boolean
+    amount?: boolean
+    bankType?: boolean
+    bankReceipt?: boolean
+    checkNo?: boolean
+    billDate?: boolean
+    tranferTime?: boolean
+    typeBill?: boolean
+    receiveDate?: boolean
+    bankBranch?: boolean
+    createDate?: boolean
+    userCreate?: boolean
+    isActive?: boolean
+    chequeStatus?: boolean
+    dateChequeReceipt01?: boolean
+    dateChequeReceipt02?: boolean
+    receiptPerson?: boolean
+    receiptPerson02?: boolean
+    remarkCancer?: boolean
+    receivingType?: boolean
+  }
+
+  export type PtgPayingBillOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"itemId" | "runno" | "company" | "custId13" | "custId" | "branchId" | "vanNo" | "type" | "amount" | "bankType" | "bankReceipt" | "checkNo" | "billDate" | "tranferTime" | "typeBill" | "receiveDate" | "bankBranch" | "createDate" | "userCreate" | "isActive" | "chequeStatus" | "dateChequeReceipt01" | "dateChequeReceipt02" | "receiptPerson" | "receiptPerson02" | "remarkCancer" | "receivingType", ExtArgs["result"]["ptgPayingBill"]>
+
+  export type $PtgPayingBillPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PtgPayingBill"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      itemId: number
+      runno: string | null
+      company: string | null
+      custId13: string | null
+      custId: string | null
+      branchId: string | null
+      vanNo: string | null
+      type: string | null
+      amount: number | null
+      bankType: string | null
+      bankReceipt: string | null
+      checkNo: string | null
+      billDate: Date | null
+      tranferTime: string | null
+      typeBill: string | null
+      receiveDate: Date | null
+      bankBranch: string | null
+      createDate: Date | null
+      userCreate: string | null
+      isActive: number
+      chequeStatus: string | null
+      dateChequeReceipt01: Date | null
+      dateChequeReceipt02: Date | null
+      receiptPerson: string | null
+      receiptPerson02: string | null
+      remarkCancer: string | null
+      receivingType: number | null
+    }, ExtArgs["result"]["ptgPayingBill"]>
+    composites: {}
+  }
+
+  type PtgPayingBillGetPayload<S extends boolean | null | undefined | PtgPayingBillDefaultArgs> = $Result.GetResult<Prisma.$PtgPayingBillPayload, S>
+
+  type PtgPayingBillCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PtgPayingBillFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PtgPayingBillCountAggregateInputType | true
+    }
+
+  export interface PtgPayingBillDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PtgPayingBill'], meta: { name: 'PtgPayingBill' } }
+    /**
+     * Find zero or one PtgPayingBill that matches the filter.
+     * @param {PtgPayingBillFindUniqueArgs} args - Arguments to find a PtgPayingBill
+     * @example
+     * // Get one PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PtgPayingBillFindUniqueArgs>(args: SelectSubset<T, PtgPayingBillFindUniqueArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PtgPayingBill that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PtgPayingBillFindUniqueOrThrowArgs} args - Arguments to find a PtgPayingBill
+     * @example
+     * // Get one PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PtgPayingBillFindUniqueOrThrowArgs>(args: SelectSubset<T, PtgPayingBillFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PtgPayingBill that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillFindFirstArgs} args - Arguments to find a PtgPayingBill
+     * @example
+     * // Get one PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PtgPayingBillFindFirstArgs>(args?: SelectSubset<T, PtgPayingBillFindFirstArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PtgPayingBill that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillFindFirstOrThrowArgs} args - Arguments to find a PtgPayingBill
+     * @example
+     * // Get one PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PtgPayingBillFindFirstOrThrowArgs>(args?: SelectSubset<T, PtgPayingBillFindFirstOrThrowArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PtgPayingBills that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PtgPayingBills
+     * const ptgPayingBills = await prisma.ptgPayingBill.findMany()
+     * 
+     * // Get first 10 PtgPayingBills
+     * const ptgPayingBills = await prisma.ptgPayingBill.findMany({ take: 10 })
+     * 
+     * // Only select the `itemId`
+     * const ptgPayingBillWithItemIdOnly = await prisma.ptgPayingBill.findMany({ select: { itemId: true } })
+     * 
+     */
+    findMany<T extends PtgPayingBillFindManyArgs>(args?: SelectSubset<T, PtgPayingBillFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PtgPayingBill.
+     * @param {PtgPayingBillCreateArgs} args - Arguments to create a PtgPayingBill.
+     * @example
+     * // Create one PtgPayingBill
+     * const PtgPayingBill = await prisma.ptgPayingBill.create({
+     *   data: {
+     *     // ... data to create a PtgPayingBill
+     *   }
+     * })
+     * 
+     */
+    create<T extends PtgPayingBillCreateArgs>(args: SelectSubset<T, PtgPayingBillCreateArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PtgPayingBills.
+     * @param {PtgPayingBillCreateManyArgs} args - Arguments to create many PtgPayingBills.
+     * @example
+     * // Create many PtgPayingBills
+     * const ptgPayingBill = await prisma.ptgPayingBill.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PtgPayingBillCreateManyArgs>(args?: SelectSubset<T, PtgPayingBillCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PtgPayingBill.
+     * @param {PtgPayingBillDeleteArgs} args - Arguments to delete one PtgPayingBill.
+     * @example
+     * // Delete one PtgPayingBill
+     * const PtgPayingBill = await prisma.ptgPayingBill.delete({
+     *   where: {
+     *     // ... filter to delete one PtgPayingBill
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PtgPayingBillDeleteArgs>(args: SelectSubset<T, PtgPayingBillDeleteArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PtgPayingBill.
+     * @param {PtgPayingBillUpdateArgs} args - Arguments to update one PtgPayingBill.
+     * @example
+     * // Update one PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PtgPayingBillUpdateArgs>(args: SelectSubset<T, PtgPayingBillUpdateArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PtgPayingBills.
+     * @param {PtgPayingBillDeleteManyArgs} args - Arguments to filter PtgPayingBills to delete.
+     * @example
+     * // Delete a few PtgPayingBills
+     * const { count } = await prisma.ptgPayingBill.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PtgPayingBillDeleteManyArgs>(args?: SelectSubset<T, PtgPayingBillDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PtgPayingBills.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PtgPayingBills
+     * const ptgPayingBill = await prisma.ptgPayingBill.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PtgPayingBillUpdateManyArgs>(args: SelectSubset<T, PtgPayingBillUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PtgPayingBill.
+     * @param {PtgPayingBillUpsertArgs} args - Arguments to update or create a PtgPayingBill.
+     * @example
+     * // Update or create a PtgPayingBill
+     * const ptgPayingBill = await prisma.ptgPayingBill.upsert({
+     *   create: {
+     *     // ... data to create a PtgPayingBill
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PtgPayingBill we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PtgPayingBillUpsertArgs>(args: SelectSubset<T, PtgPayingBillUpsertArgs<ExtArgs>>): Prisma__PtgPayingBillClient<$Result.GetResult<Prisma.$PtgPayingBillPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PtgPayingBills.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillCountArgs} args - Arguments to filter PtgPayingBills to count.
+     * @example
+     * // Count the number of PtgPayingBills
+     * const count = await prisma.ptgPayingBill.count({
+     *   where: {
+     *     // ... the filter for the PtgPayingBills we want to count
+     *   }
+     * })
+    **/
+    count<T extends PtgPayingBillCountArgs>(
+      args?: Subset<T, PtgPayingBillCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PtgPayingBillCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PtgPayingBill.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PtgPayingBillAggregateArgs>(args: Subset<T, PtgPayingBillAggregateArgs>): Prisma.PrismaPromise<GetPtgPayingBillAggregateType<T>>
+
+    /**
+     * Group by PtgPayingBill.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PtgPayingBillGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PtgPayingBillGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PtgPayingBillGroupByArgs['orderBy'] }
+        : { orderBy?: PtgPayingBillGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PtgPayingBillGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPtgPayingBillGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PtgPayingBill model
+   */
+  readonly fields: PtgPayingBillFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PtgPayingBill.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PtgPayingBillClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PtgPayingBill model
+   */
+  interface PtgPayingBillFieldRefs {
+    readonly itemId: FieldRef<"PtgPayingBill", 'Int'>
+    readonly runno: FieldRef<"PtgPayingBill", 'String'>
+    readonly company: FieldRef<"PtgPayingBill", 'String'>
+    readonly custId13: FieldRef<"PtgPayingBill", 'String'>
+    readonly custId: FieldRef<"PtgPayingBill", 'String'>
+    readonly branchId: FieldRef<"PtgPayingBill", 'String'>
+    readonly vanNo: FieldRef<"PtgPayingBill", 'String'>
+    readonly type: FieldRef<"PtgPayingBill", 'String'>
+    readonly amount: FieldRef<"PtgPayingBill", 'Float'>
+    readonly bankType: FieldRef<"PtgPayingBill", 'String'>
+    readonly bankReceipt: FieldRef<"PtgPayingBill", 'String'>
+    readonly checkNo: FieldRef<"PtgPayingBill", 'String'>
+    readonly billDate: FieldRef<"PtgPayingBill", 'DateTime'>
+    readonly tranferTime: FieldRef<"PtgPayingBill", 'String'>
+    readonly typeBill: FieldRef<"PtgPayingBill", 'String'>
+    readonly receiveDate: FieldRef<"PtgPayingBill", 'DateTime'>
+    readonly bankBranch: FieldRef<"PtgPayingBill", 'String'>
+    readonly createDate: FieldRef<"PtgPayingBill", 'DateTime'>
+    readonly userCreate: FieldRef<"PtgPayingBill", 'String'>
+    readonly isActive: FieldRef<"PtgPayingBill", 'Int'>
+    readonly chequeStatus: FieldRef<"PtgPayingBill", 'String'>
+    readonly dateChequeReceipt01: FieldRef<"PtgPayingBill", 'DateTime'>
+    readonly dateChequeReceipt02: FieldRef<"PtgPayingBill", 'DateTime'>
+    readonly receiptPerson: FieldRef<"PtgPayingBill", 'String'>
+    readonly receiptPerson02: FieldRef<"PtgPayingBill", 'String'>
+    readonly remarkCancer: FieldRef<"PtgPayingBill", 'String'>
+    readonly receivingType: FieldRef<"PtgPayingBill", 'Int'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PtgPayingBill findUnique
+   */
+  export type PtgPayingBillFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter, which PtgPayingBill to fetch.
+     */
+    where: PtgPayingBillWhereUniqueInput
+  }
+
+  /**
+   * PtgPayingBill findUniqueOrThrow
+   */
+  export type PtgPayingBillFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter, which PtgPayingBill to fetch.
+     */
+    where: PtgPayingBillWhereUniqueInput
+  }
+
+  /**
+   * PtgPayingBill findFirst
+   */
+  export type PtgPayingBillFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter, which PtgPayingBill to fetch.
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PtgPayingBills to fetch.
+     */
+    orderBy?: PtgPayingBillOrderByWithRelationInput | PtgPayingBillOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PtgPayingBills.
+     */
+    cursor?: PtgPayingBillWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PtgPayingBills from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PtgPayingBills.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PtgPayingBills.
+     */
+    distinct?: PtgPayingBillScalarFieldEnum | PtgPayingBillScalarFieldEnum[]
+  }
+
+  /**
+   * PtgPayingBill findFirstOrThrow
+   */
+  export type PtgPayingBillFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter, which PtgPayingBill to fetch.
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PtgPayingBills to fetch.
+     */
+    orderBy?: PtgPayingBillOrderByWithRelationInput | PtgPayingBillOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PtgPayingBills.
+     */
+    cursor?: PtgPayingBillWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PtgPayingBills from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PtgPayingBills.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PtgPayingBills.
+     */
+    distinct?: PtgPayingBillScalarFieldEnum | PtgPayingBillScalarFieldEnum[]
+  }
+
+  /**
+   * PtgPayingBill findMany
+   */
+  export type PtgPayingBillFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter, which PtgPayingBills to fetch.
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PtgPayingBills to fetch.
+     */
+    orderBy?: PtgPayingBillOrderByWithRelationInput | PtgPayingBillOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PtgPayingBills.
+     */
+    cursor?: PtgPayingBillWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PtgPayingBills from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PtgPayingBills.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PtgPayingBills.
+     */
+    distinct?: PtgPayingBillScalarFieldEnum | PtgPayingBillScalarFieldEnum[]
+  }
+
+  /**
+   * PtgPayingBill create
+   */
+  export type PtgPayingBillCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PtgPayingBill.
+     */
+    data?: XOR<PtgPayingBillCreateInput, PtgPayingBillUncheckedCreateInput>
+  }
+
+  /**
+   * PtgPayingBill createMany
+   */
+  export type PtgPayingBillCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PtgPayingBills.
+     */
+    data: PtgPayingBillCreateManyInput | PtgPayingBillCreateManyInput[]
+  }
+
+  /**
+   * PtgPayingBill update
+   */
+  export type PtgPayingBillUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PtgPayingBill.
+     */
+    data: XOR<PtgPayingBillUpdateInput, PtgPayingBillUncheckedUpdateInput>
+    /**
+     * Choose, which PtgPayingBill to update.
+     */
+    where: PtgPayingBillWhereUniqueInput
+  }
+
+  /**
+   * PtgPayingBill updateMany
+   */
+  export type PtgPayingBillUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PtgPayingBills.
+     */
+    data: XOR<PtgPayingBillUpdateManyMutationInput, PtgPayingBillUncheckedUpdateManyInput>
+    /**
+     * Filter which PtgPayingBills to update
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * Limit how many PtgPayingBills to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PtgPayingBill upsert
+   */
+  export type PtgPayingBillUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PtgPayingBill to update in case it exists.
+     */
+    where: PtgPayingBillWhereUniqueInput
+    /**
+     * In case the PtgPayingBill found by the `where` argument doesn't exist, create a new PtgPayingBill with this data.
+     */
+    create: XOR<PtgPayingBillCreateInput, PtgPayingBillUncheckedCreateInput>
+    /**
+     * In case the PtgPayingBill was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PtgPayingBillUpdateInput, PtgPayingBillUncheckedUpdateInput>
+  }
+
+  /**
+   * PtgPayingBill delete
+   */
+  export type PtgPayingBillDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+    /**
+     * Filter which PtgPayingBill to delete.
+     */
+    where: PtgPayingBillWhereUniqueInput
+  }
+
+  /**
+   * PtgPayingBill deleteMany
+   */
+  export type PtgPayingBillDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PtgPayingBills to delete
+     */
+    where?: PtgPayingBillWhereInput
+    /**
+     * Limit how many PtgPayingBills to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PtgPayingBill without action
+   */
+  export type PtgPayingBillDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PtgPayingBill
+     */
+    select?: PtgPayingBillSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PtgPayingBill
+     */
+    omit?: PtgPayingBillOmit<ExtArgs> | null
+  }
+
 
   /**
    * Model TbCustPointSilverCurrent2017
@@ -4969,6 +6226,39 @@ export namespace Prisma {
   export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+  export const PtgPayingBillScalarFieldEnum: {
+    itemId: 'itemId',
+    runno: 'runno',
+    company: 'company',
+    custId13: 'custId13',
+    custId: 'custId',
+    branchId: 'branchId',
+    vanNo: 'vanNo',
+    type: 'type',
+    amount: 'amount',
+    bankType: 'bankType',
+    bankReceipt: 'bankReceipt',
+    checkNo: 'checkNo',
+    billDate: 'billDate',
+    tranferTime: 'tranferTime',
+    typeBill: 'typeBill',
+    receiveDate: 'receiveDate',
+    bankBranch: 'bankBranch',
+    createDate: 'createDate',
+    userCreate: 'userCreate',
+    isActive: 'isActive',
+    chequeStatus: 'chequeStatus',
+    dateChequeReceipt01: 'dateChequeReceipt01',
+    dateChequeReceipt02: 'dateChequeReceipt02',
+    receiptPerson: 'receiptPerson',
+    receiptPerson02: 'receiptPerson02',
+    remarkCancer: 'remarkCancer',
+    receivingType: 'receivingType'
+  };
+
+  export type PtgPayingBillScalarFieldEnum = (typeof PtgPayingBillScalarFieldEnum)[keyof typeof PtgPayingBillScalarFieldEnum]
+
+
   export const TbCustPointSilverCurrent2017ScalarFieldEnum: {
     itemId: 'itemId',
     custId: 'custId',
@@ -5073,6 +6363,170 @@ export namespace Prisma {
    * Deep Input Types
    */
 
+
+  export type PtgPayingBillWhereInput = {
+    AND?: PtgPayingBillWhereInput | PtgPayingBillWhereInput[]
+    OR?: PtgPayingBillWhereInput[]
+    NOT?: PtgPayingBillWhereInput | PtgPayingBillWhereInput[]
+    itemId?: IntFilter<"PtgPayingBill"> | number
+    runno?: StringNullableFilter<"PtgPayingBill"> | string | null
+    company?: StringNullableFilter<"PtgPayingBill"> | string | null
+    custId13?: StringNullableFilter<"PtgPayingBill"> | string | null
+    custId?: StringNullableFilter<"PtgPayingBill"> | string | null
+    branchId?: StringNullableFilter<"PtgPayingBill"> | string | null
+    vanNo?: StringNullableFilter<"PtgPayingBill"> | string | null
+    type?: StringNullableFilter<"PtgPayingBill"> | string | null
+    amount?: FloatNullableFilter<"PtgPayingBill"> | number | null
+    bankType?: StringNullableFilter<"PtgPayingBill"> | string | null
+    bankReceipt?: StringNullableFilter<"PtgPayingBill"> | string | null
+    checkNo?: StringNullableFilter<"PtgPayingBill"> | string | null
+    billDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    tranferTime?: StringNullableFilter<"PtgPayingBill"> | string | null
+    typeBill?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receiveDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    bankBranch?: StringNullableFilter<"PtgPayingBill"> | string | null
+    createDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    userCreate?: StringNullableFilter<"PtgPayingBill"> | string | null
+    isActive?: IntFilter<"PtgPayingBill"> | number
+    chequeStatus?: StringNullableFilter<"PtgPayingBill"> | string | null
+    dateChequeReceipt01?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    dateChequeReceipt02?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    receiptPerson?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receiptPerson02?: StringNullableFilter<"PtgPayingBill"> | string | null
+    remarkCancer?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receivingType?: IntNullableFilter<"PtgPayingBill"> | number | null
+  }
+
+  export type PtgPayingBillOrderByWithRelationInput = {
+    itemId?: SortOrder
+    runno?: SortOrderInput | SortOrder
+    company?: SortOrderInput | SortOrder
+    custId13?: SortOrderInput | SortOrder
+    custId?: SortOrderInput | SortOrder
+    branchId?: SortOrderInput | SortOrder
+    vanNo?: SortOrderInput | SortOrder
+    type?: SortOrderInput | SortOrder
+    amount?: SortOrderInput | SortOrder
+    bankType?: SortOrderInput | SortOrder
+    bankReceipt?: SortOrderInput | SortOrder
+    checkNo?: SortOrderInput | SortOrder
+    billDate?: SortOrderInput | SortOrder
+    tranferTime?: SortOrderInput | SortOrder
+    typeBill?: SortOrderInput | SortOrder
+    receiveDate?: SortOrderInput | SortOrder
+    bankBranch?: SortOrderInput | SortOrder
+    createDate?: SortOrderInput | SortOrder
+    userCreate?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    chequeStatus?: SortOrderInput | SortOrder
+    dateChequeReceipt01?: SortOrderInput | SortOrder
+    dateChequeReceipt02?: SortOrderInput | SortOrder
+    receiptPerson?: SortOrderInput | SortOrder
+    receiptPerson02?: SortOrderInput | SortOrder
+    remarkCancer?: SortOrderInput | SortOrder
+    receivingType?: SortOrderInput | SortOrder
+  }
+
+  export type PtgPayingBillWhereUniqueInput = Prisma.AtLeast<{
+    itemId?: number
+    AND?: PtgPayingBillWhereInput | PtgPayingBillWhereInput[]
+    OR?: PtgPayingBillWhereInput[]
+    NOT?: PtgPayingBillWhereInput | PtgPayingBillWhereInput[]
+    runno?: StringNullableFilter<"PtgPayingBill"> | string | null
+    company?: StringNullableFilter<"PtgPayingBill"> | string | null
+    custId13?: StringNullableFilter<"PtgPayingBill"> | string | null
+    custId?: StringNullableFilter<"PtgPayingBill"> | string | null
+    branchId?: StringNullableFilter<"PtgPayingBill"> | string | null
+    vanNo?: StringNullableFilter<"PtgPayingBill"> | string | null
+    type?: StringNullableFilter<"PtgPayingBill"> | string | null
+    amount?: FloatNullableFilter<"PtgPayingBill"> | number | null
+    bankType?: StringNullableFilter<"PtgPayingBill"> | string | null
+    bankReceipt?: StringNullableFilter<"PtgPayingBill"> | string | null
+    checkNo?: StringNullableFilter<"PtgPayingBill"> | string | null
+    billDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    tranferTime?: StringNullableFilter<"PtgPayingBill"> | string | null
+    typeBill?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receiveDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    bankBranch?: StringNullableFilter<"PtgPayingBill"> | string | null
+    createDate?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    userCreate?: StringNullableFilter<"PtgPayingBill"> | string | null
+    isActive?: IntFilter<"PtgPayingBill"> | number
+    chequeStatus?: StringNullableFilter<"PtgPayingBill"> | string | null
+    dateChequeReceipt01?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    dateChequeReceipt02?: DateTimeNullableFilter<"PtgPayingBill"> | Date | string | null
+    receiptPerson?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receiptPerson02?: StringNullableFilter<"PtgPayingBill"> | string | null
+    remarkCancer?: StringNullableFilter<"PtgPayingBill"> | string | null
+    receivingType?: IntNullableFilter<"PtgPayingBill"> | number | null
+  }, "itemId">
+
+  export type PtgPayingBillOrderByWithAggregationInput = {
+    itemId?: SortOrder
+    runno?: SortOrderInput | SortOrder
+    company?: SortOrderInput | SortOrder
+    custId13?: SortOrderInput | SortOrder
+    custId?: SortOrderInput | SortOrder
+    branchId?: SortOrderInput | SortOrder
+    vanNo?: SortOrderInput | SortOrder
+    type?: SortOrderInput | SortOrder
+    amount?: SortOrderInput | SortOrder
+    bankType?: SortOrderInput | SortOrder
+    bankReceipt?: SortOrderInput | SortOrder
+    checkNo?: SortOrderInput | SortOrder
+    billDate?: SortOrderInput | SortOrder
+    tranferTime?: SortOrderInput | SortOrder
+    typeBill?: SortOrderInput | SortOrder
+    receiveDate?: SortOrderInput | SortOrder
+    bankBranch?: SortOrderInput | SortOrder
+    createDate?: SortOrderInput | SortOrder
+    userCreate?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    chequeStatus?: SortOrderInput | SortOrder
+    dateChequeReceipt01?: SortOrderInput | SortOrder
+    dateChequeReceipt02?: SortOrderInput | SortOrder
+    receiptPerson?: SortOrderInput | SortOrder
+    receiptPerson02?: SortOrderInput | SortOrder
+    remarkCancer?: SortOrderInput | SortOrder
+    receivingType?: SortOrderInput | SortOrder
+    _count?: PtgPayingBillCountOrderByAggregateInput
+    _avg?: PtgPayingBillAvgOrderByAggregateInput
+    _max?: PtgPayingBillMaxOrderByAggregateInput
+    _min?: PtgPayingBillMinOrderByAggregateInput
+    _sum?: PtgPayingBillSumOrderByAggregateInput
+  }
+
+  export type PtgPayingBillScalarWhereWithAggregatesInput = {
+    AND?: PtgPayingBillScalarWhereWithAggregatesInput | PtgPayingBillScalarWhereWithAggregatesInput[]
+    OR?: PtgPayingBillScalarWhereWithAggregatesInput[]
+    NOT?: PtgPayingBillScalarWhereWithAggregatesInput | PtgPayingBillScalarWhereWithAggregatesInput[]
+    itemId?: IntWithAggregatesFilter<"PtgPayingBill"> | number
+    runno?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    company?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    custId13?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    custId?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    branchId?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    vanNo?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    type?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    amount?: FloatNullableWithAggregatesFilter<"PtgPayingBill"> | number | null
+    bankType?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    bankReceipt?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    checkNo?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    billDate?: DateTimeNullableWithAggregatesFilter<"PtgPayingBill"> | Date | string | null
+    tranferTime?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    typeBill?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    receiveDate?: DateTimeNullableWithAggregatesFilter<"PtgPayingBill"> | Date | string | null
+    bankBranch?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    createDate?: DateTimeNullableWithAggregatesFilter<"PtgPayingBill"> | Date | string | null
+    userCreate?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    isActive?: IntWithAggregatesFilter<"PtgPayingBill"> | number
+    chequeStatus?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    dateChequeReceipt01?: DateTimeNullableWithAggregatesFilter<"PtgPayingBill"> | Date | string | null
+    dateChequeReceipt02?: DateTimeNullableWithAggregatesFilter<"PtgPayingBill"> | Date | string | null
+    receiptPerson?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    receiptPerson02?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    remarkCancer?: StringNullableWithAggregatesFilter<"PtgPayingBill"> | string | null
+    receivingType?: IntNullableWithAggregatesFilter<"PtgPayingBill"> | number | null
+  }
 
   export type TbCustPointSilverCurrent2017WhereInput = {
     AND?: TbCustPointSilverCurrent2017WhereInput | TbCustPointSilverCurrent2017WhereInput[]
@@ -5333,6 +6787,212 @@ export namespace Prisma {
     status2017?: IntNullableWithAggregatesFilter<"TbCustGoldToAdjust"> | number | null
     expireDate?: DateTimeNullableWithAggregatesFilter<"TbCustGoldToAdjust"> | Date | string | null
     remarck?: StringNullableWithAggregatesFilter<"TbCustGoldToAdjust"> | string | null
+  }
+
+  export type PtgPayingBillCreateInput = {
+    runno?: string | null
+    company?: string | null
+    custId13?: string | null
+    custId?: string | null
+    branchId?: string | null
+    vanNo?: string | null
+    type?: string | null
+    amount?: number | null
+    bankType?: string | null
+    bankReceipt?: string | null
+    checkNo?: string | null
+    billDate?: Date | string | null
+    tranferTime?: string | null
+    typeBill?: string | null
+    receiveDate?: Date | string | null
+    bankBranch?: string | null
+    createDate?: Date | string | null
+    userCreate?: string | null
+    isActive?: number
+    chequeStatus?: string | null
+    dateChequeReceipt01?: Date | string | null
+    dateChequeReceipt02?: Date | string | null
+    receiptPerson?: string | null
+    receiptPerson02?: string | null
+    remarkCancer?: string | null
+    receivingType?: number | null
+  }
+
+  export type PtgPayingBillUncheckedCreateInput = {
+    itemId?: number
+    runno?: string | null
+    company?: string | null
+    custId13?: string | null
+    custId?: string | null
+    branchId?: string | null
+    vanNo?: string | null
+    type?: string | null
+    amount?: number | null
+    bankType?: string | null
+    bankReceipt?: string | null
+    checkNo?: string | null
+    billDate?: Date | string | null
+    tranferTime?: string | null
+    typeBill?: string | null
+    receiveDate?: Date | string | null
+    bankBranch?: string | null
+    createDate?: Date | string | null
+    userCreate?: string | null
+    isActive?: number
+    chequeStatus?: string | null
+    dateChequeReceipt01?: Date | string | null
+    dateChequeReceipt02?: Date | string | null
+    receiptPerson?: string | null
+    receiptPerson02?: string | null
+    remarkCancer?: string | null
+    receivingType?: number | null
+  }
+
+  export type PtgPayingBillUpdateInput = {
+    runno?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    custId13?: NullableStringFieldUpdateOperationsInput | string | null
+    custId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vanNo?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableFloatFieldUpdateOperationsInput | number | null
+    bankType?: NullableStringFieldUpdateOperationsInput | string | null
+    bankReceipt?: NullableStringFieldUpdateOperationsInput | string | null
+    checkNo?: NullableStringFieldUpdateOperationsInput | string | null
+    billDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tranferTime?: NullableStringFieldUpdateOperationsInput | string | null
+    typeBill?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    createDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userCreate?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: IntFieldUpdateOperationsInput | number
+    chequeStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    dateChequeReceipt01?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateChequeReceipt02?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptPerson?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptPerson02?: NullableStringFieldUpdateOperationsInput | string | null
+    remarkCancer?: NullableStringFieldUpdateOperationsInput | string | null
+    receivingType?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PtgPayingBillUncheckedUpdateInput = {
+    itemId?: IntFieldUpdateOperationsInput | number
+    runno?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    custId13?: NullableStringFieldUpdateOperationsInput | string | null
+    custId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vanNo?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableFloatFieldUpdateOperationsInput | number | null
+    bankType?: NullableStringFieldUpdateOperationsInput | string | null
+    bankReceipt?: NullableStringFieldUpdateOperationsInput | string | null
+    checkNo?: NullableStringFieldUpdateOperationsInput | string | null
+    billDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tranferTime?: NullableStringFieldUpdateOperationsInput | string | null
+    typeBill?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    createDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userCreate?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: IntFieldUpdateOperationsInput | number
+    chequeStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    dateChequeReceipt01?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateChequeReceipt02?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptPerson?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptPerson02?: NullableStringFieldUpdateOperationsInput | string | null
+    remarkCancer?: NullableStringFieldUpdateOperationsInput | string | null
+    receivingType?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PtgPayingBillCreateManyInput = {
+    runno?: string | null
+    company?: string | null
+    custId13?: string | null
+    custId?: string | null
+    branchId?: string | null
+    vanNo?: string | null
+    type?: string | null
+    amount?: number | null
+    bankType?: string | null
+    bankReceipt?: string | null
+    checkNo?: string | null
+    billDate?: Date | string | null
+    tranferTime?: string | null
+    typeBill?: string | null
+    receiveDate?: Date | string | null
+    bankBranch?: string | null
+    createDate?: Date | string | null
+    userCreate?: string | null
+    isActive?: number
+    chequeStatus?: string | null
+    dateChequeReceipt01?: Date | string | null
+    dateChequeReceipt02?: Date | string | null
+    receiptPerson?: string | null
+    receiptPerson02?: string | null
+    remarkCancer?: string | null
+    receivingType?: number | null
+  }
+
+  export type PtgPayingBillUpdateManyMutationInput = {
+    runno?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    custId13?: NullableStringFieldUpdateOperationsInput | string | null
+    custId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vanNo?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableFloatFieldUpdateOperationsInput | number | null
+    bankType?: NullableStringFieldUpdateOperationsInput | string | null
+    bankReceipt?: NullableStringFieldUpdateOperationsInput | string | null
+    checkNo?: NullableStringFieldUpdateOperationsInput | string | null
+    billDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tranferTime?: NullableStringFieldUpdateOperationsInput | string | null
+    typeBill?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    createDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userCreate?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: IntFieldUpdateOperationsInput | number
+    chequeStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    dateChequeReceipt01?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateChequeReceipt02?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptPerson?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptPerson02?: NullableStringFieldUpdateOperationsInput | string | null
+    remarkCancer?: NullableStringFieldUpdateOperationsInput | string | null
+    receivingType?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type PtgPayingBillUncheckedUpdateManyInput = {
+    itemId?: IntFieldUpdateOperationsInput | number
+    runno?: NullableStringFieldUpdateOperationsInput | string | null
+    company?: NullableStringFieldUpdateOperationsInput | string | null
+    custId13?: NullableStringFieldUpdateOperationsInput | string | null
+    custId?: NullableStringFieldUpdateOperationsInput | string | null
+    branchId?: NullableStringFieldUpdateOperationsInput | string | null
+    vanNo?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: NullableFloatFieldUpdateOperationsInput | number | null
+    bankType?: NullableStringFieldUpdateOperationsInput | string | null
+    bankReceipt?: NullableStringFieldUpdateOperationsInput | string | null
+    checkNo?: NullableStringFieldUpdateOperationsInput | string | null
+    billDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tranferTime?: NullableStringFieldUpdateOperationsInput | string | null
+    typeBill?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bankBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    createDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    userCreate?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: IntFieldUpdateOperationsInput | number
+    chequeStatus?: NullableStringFieldUpdateOperationsInput | string | null
+    dateChequeReceipt01?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dateChequeReceipt02?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    receiptPerson?: NullableStringFieldUpdateOperationsInput | string | null
+    receiptPerson02?: NullableStringFieldUpdateOperationsInput | string | null
+    remarkCancer?: NullableStringFieldUpdateOperationsInput | string | null
+    receivingType?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type TbCustPointSilverCurrent2017CreateInput = {
@@ -5642,6 +7302,17 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -5658,37 +7329,108 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type TbCustPointSilverCurrent2017CountOrderByAggregateInput = {
+  export type PtgPayingBillCountOrderByAggregateInput = {
     itemId?: SortOrder
+    runno?: SortOrder
+    company?: SortOrder
+    custId13?: SortOrder
     custId?: SortOrder
-    currentPoint?: SortOrder
-    xStatus?: SortOrder
+    branchId?: SortOrder
+    vanNo?: SortOrder
+    type?: SortOrder
+    amount?: SortOrder
+    bankType?: SortOrder
+    bankReceipt?: SortOrder
+    checkNo?: SortOrder
+    billDate?: SortOrder
+    tranferTime?: SortOrder
+    typeBill?: SortOrder
+    receiveDate?: SortOrder
+    bankBranch?: SortOrder
+    createDate?: SortOrder
+    userCreate?: SortOrder
+    isActive?: SortOrder
+    chequeStatus?: SortOrder
+    dateChequeReceipt01?: SortOrder
+    dateChequeReceipt02?: SortOrder
+    receiptPerson?: SortOrder
+    receiptPerson02?: SortOrder
+    remarkCancer?: SortOrder
+    receivingType?: SortOrder
   }
 
-  export type TbCustPointSilverCurrent2017AvgOrderByAggregateInput = {
+  export type PtgPayingBillAvgOrderByAggregateInput = {
     itemId?: SortOrder
-    currentPoint?: SortOrder
-    xStatus?: SortOrder
+    amount?: SortOrder
+    isActive?: SortOrder
+    receivingType?: SortOrder
   }
 
-  export type TbCustPointSilverCurrent2017MaxOrderByAggregateInput = {
+  export type PtgPayingBillMaxOrderByAggregateInput = {
     itemId?: SortOrder
+    runno?: SortOrder
+    company?: SortOrder
+    custId13?: SortOrder
     custId?: SortOrder
-    currentPoint?: SortOrder
-    xStatus?: SortOrder
+    branchId?: SortOrder
+    vanNo?: SortOrder
+    type?: SortOrder
+    amount?: SortOrder
+    bankType?: SortOrder
+    bankReceipt?: SortOrder
+    checkNo?: SortOrder
+    billDate?: SortOrder
+    tranferTime?: SortOrder
+    typeBill?: SortOrder
+    receiveDate?: SortOrder
+    bankBranch?: SortOrder
+    createDate?: SortOrder
+    userCreate?: SortOrder
+    isActive?: SortOrder
+    chequeStatus?: SortOrder
+    dateChequeReceipt01?: SortOrder
+    dateChequeReceipt02?: SortOrder
+    receiptPerson?: SortOrder
+    receiptPerson02?: SortOrder
+    remarkCancer?: SortOrder
+    receivingType?: SortOrder
   }
 
-  export type TbCustPointSilverCurrent2017MinOrderByAggregateInput = {
+  export type PtgPayingBillMinOrderByAggregateInput = {
     itemId?: SortOrder
+    runno?: SortOrder
+    company?: SortOrder
+    custId13?: SortOrder
     custId?: SortOrder
-    currentPoint?: SortOrder
-    xStatus?: SortOrder
+    branchId?: SortOrder
+    vanNo?: SortOrder
+    type?: SortOrder
+    amount?: SortOrder
+    bankType?: SortOrder
+    bankReceipt?: SortOrder
+    checkNo?: SortOrder
+    billDate?: SortOrder
+    tranferTime?: SortOrder
+    typeBill?: SortOrder
+    receiveDate?: SortOrder
+    bankBranch?: SortOrder
+    createDate?: SortOrder
+    userCreate?: SortOrder
+    isActive?: SortOrder
+    chequeStatus?: SortOrder
+    dateChequeReceipt01?: SortOrder
+    dateChequeReceipt02?: SortOrder
+    receiptPerson?: SortOrder
+    receiptPerson02?: SortOrder
+    remarkCancer?: SortOrder
+    receivingType?: SortOrder
   }
 
-  export type TbCustPointSilverCurrent2017SumOrderByAggregateInput = {
+  export type PtgPayingBillSumOrderByAggregateInput = {
     itemId?: SortOrder
-    currentPoint?: SortOrder
-    xStatus?: SortOrder
+    amount?: SortOrder
+    isActive?: SortOrder
+    receivingType?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -5740,6 +7482,20 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -5754,6 +7510,39 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type TbCustPointSilverCurrent2017CountOrderByAggregateInput = {
+    itemId?: SortOrder
+    custId?: SortOrder
+    currentPoint?: SortOrder
+    xStatus?: SortOrder
+  }
+
+  export type TbCustPointSilverCurrent2017AvgOrderByAggregateInput = {
+    itemId?: SortOrder
+    currentPoint?: SortOrder
+    xStatus?: SortOrder
+  }
+
+  export type TbCustPointSilverCurrent2017MaxOrderByAggregateInput = {
+    itemId?: SortOrder
+    custId?: SortOrder
+    currentPoint?: SortOrder
+    xStatus?: SortOrder
+  }
+
+  export type TbCustPointSilverCurrent2017MinOrderByAggregateInput = {
+    itemId?: SortOrder
+    custId?: SortOrder
+    currentPoint?: SortOrder
+    xStatus?: SortOrder
+  }
+
+  export type TbCustPointSilverCurrent2017SumOrderByAggregateInput = {
+    itemId?: SortOrder
+    currentPoint?: SortOrder
+    xStatus?: SortOrder
   }
 
   export type TbCustPointGoldCurrent2017CountOrderByAggregateInput = {
@@ -5792,17 +7581,6 @@ export namespace Prisma {
     currentPoint?: SortOrder
     unfundedPoint?: SortOrder
     xStatus?: SortOrder
-  }
-
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type TbCustPointSilverCashCurrentCountOrderByAggregateInput = {
@@ -5851,20 +7629,6 @@ export namespace Prisma {
     itemId?: SortOrder
     currentCashPoint?: SortOrder
     status2017?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type TbCustGoldToAdjustCountOrderByAggregateInput = {
@@ -5935,12 +7699,8 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -5951,8 +7711,12 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -5989,6 +7753,17 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedIntNullableFilter<$PrismaModel = never> = {
@@ -6062,6 +7837,20 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | null
+    notIn?: Date[] | string[] | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
@@ -6076,31 +7865,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | null
-    notIn?: Date[] | string[] | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
 

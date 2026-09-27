@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import type { CustomerPointsData } from "@/interfaces/point";
@@ -41,6 +42,7 @@ export function CustomerPointsProvider({
   const [points, setPoints] = useState<CustomerPointsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const getTargetCustId = useCallback((): string | null => {
     if (typeof window === "undefined") return null;
@@ -50,6 +52,10 @@ export function CustomerPointsProvider({
   }, []);
 
   const refresh = useCallback(async () => {
+    // Abort any in-flight refresh so superseded requests release their
+    // connection immediately instead of lingering on the wire.
+    abortRef.current?.abort();
+
     const custId = getTargetCustId();
     if (!custId) {
       setPoints(null);
@@ -58,8 +64,15 @@ export function CustomerPointsProvider({
       return;
     }
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setIsLoading(true);
-    const result = await getCustomerPointsService({ custId });
+    const result = await getCustomerPointsService(
+      { custId },
+      controller.signal,
+    );
+    if (controller.signal.aborted) return;
     if (result.success && result.data) {
       setPoints(result.data);
       setError(null);
@@ -103,6 +116,7 @@ export function CustomerPointsProvider({
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       window.clearTimeout(initialLoadTimeout);
+      abortRef.current?.abort();
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(
         CUSTOMER_SESSION_CHANGED_EVENT,

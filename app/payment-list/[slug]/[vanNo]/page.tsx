@@ -1,17 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../data";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getAuthUser,
+  getCustomerInfo,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
 import { getLogPayCustService } from "@/services/customer/log-pay-cust";
+import { createPayingBillService } from "@/services/customer/paying-bill";
+import { BANKS } from "@/lib/banks";
 import { img } from "@/lib/env";
+import PayingBillModal from "./PayingBillModal";
 import type { LogPayCustRow, VanAccountDtlRow } from "@/interfaces/van-account";
+import type {
+  PaymentMethodKey,
+  PayingBillFormValues,
+} from "@/interfaces/paying-bill";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
   ptg: "PTG",
@@ -78,18 +89,8 @@ function amountClass(color1: number | null | undefined): string {
   return "text-gray-900";
 }
 
-function BankIcon({ label, color }: { label: string; color: string }) {
-  return (
-    <div
-      className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center text-white text-xs font-bold shadow-sm`}
-      title={label}
-    >
-      {label}
-    </div>
-  );
-}
-
 export default function VanAccountDetailPage() {
+  const router = useRouter();
   const params = useParams<{ slug: string; vanNo: string }>();
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
@@ -106,13 +107,13 @@ export default function VanAccountDetailPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCount, setSelectedCount] = useState(0);
-  const [paymentMethods, setPaymentMethods] = useState<Record<string, boolean>>(
-    {
-      "mobile-app": false,
-      "debit-uob": false,
-      "debit-ktb": false,
-    },
+  // เลือกวิธีชำระเงินได้ครั้งละหนึ่งวิธีเท่านั้น
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey | null>(
+    null,
   );
+  const [modalMethod, setModalMethod] = useState<PaymentMethodKey | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     setSessionInfo(getCustomerInfo());
@@ -129,6 +130,13 @@ export default function VanAccountDetailPage() {
     "CustID",
     "custID",
   ]);
+
+  // CustID ของ user ที่ login (เช่น C1500392) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
+  const custId = getCustomerField(sessionInfo, ["CustID", "CUSTID", "custID"]);
+  const branchID =
+    getCustomerField(sessionInfo, ["THBranchID", "BranchID"]) ||
+    rows[0]?.THBranchID ||
+    "00000";
 
   const customerName =
     getCustomerField(sessionInfo, ["CusName", "customerName", "Name"]) ||
@@ -225,11 +233,56 @@ export default function VanAccountDetailPage() {
     setSelectedCount(0);
   };
 
-  const togglePaymentMethod = (key: string) => {
-    setPaymentMethods((prev) => ({ ...prev, [key]: !prev[key] }));
+  // เลือกได้ครั้งละตัว — คลิกซ้ำที่ตัวเดิมคือยกเลิก
+  const togglePaymentMethod = (key: PaymentMethodKey) => {
+    if (selectedMethod === key) {
+      setSelectedMethod(null);
+      return;
+    }
+    if (selectedCount === 0) {
+      setSaveError("กรุณาเลือกรายการที่ต้องการชำระก่อน");
+      return;
+    }
+    setSelectedMethod(key);
+    setSaveError(null);
+    setModalMethod(key);
   };
 
-  const anyPaymentMethod = Object.values(paymentMethods).some(Boolean);
+  const closeModal = () => {
+    if (isSaving) return;
+    setModalMethod(null);
+    setSelectedMethod(null);
+    setSaveError(null);
+  };
+
+  const handleSubmitPayingBill = async (values: PayingBillFormValues) => {
+    if (!modalMethod || !companyCode) return;
+    const username = getAuthUser()?.username ?? "";
+
+    setIsSaving(true);
+    setSaveError(null);
+    const result = await createPayingBillService({
+      method: modalMethod,
+      company: companyCode,
+      custId13: resaleID,
+      custId,
+      branchId: branchID,
+      vanNo: vanNoDigits,
+      userCreate: username,
+      ...values,
+    });
+    setIsSaving(false);
+
+    if (!result.success || !result.data?.runno) {
+      setSaveError(result.error ?? "บันทึกข้อมูลไม่สำเร็จ");
+      return;
+    }
+
+    setModalMethod(null);
+    router.push(
+      `/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/paying-bill/${modalMethod}/${encodeURIComponent(result.data.runno)}/`,
+    );
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
@@ -482,8 +535,8 @@ export default function VanAccountDetailPage() {
               <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition">
                 <input
                   type="checkbox"
-                  checked={paymentMethods["mobile-app"]}
-                  onChange={() => togglePaymentMethod("mobile-app")}
+                  checked={selectedMethod === "van"}
+                  onChange={() => togglePaymentMethod("van")}
                   className="w-5 h-5 accent-green-600"
                 />
                 <div className="flex items-center gap-3">
@@ -511,121 +564,43 @@ export default function VanAccountDetailPage() {
                 การชำระเงินโอน/เดบิต
               </h4>
               <div className="grid grid-cols-12 gap-2 mb-4">
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/SCB.png")}
-                    alt="ธนาคารไทยพาณิชย์"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/KBANK.png")}
-                    alt="ธนาคารกสิกรไทย"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/KTB.png")}
-                    alt="ธนาคารกรุงไทย"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/UOB.png")}
-                    alt="ธนาคารยูโอบี"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/TTB.png")}
-                    alt="ธนาคารทหารไทยธนชาต (ttb)"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/GSB.png")}
-                    alt="ธนาคารออมสิน"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/BAY.png")}
-                    alt="ธนาคารกรุงศรีอยุธยา"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/BAAC.png")}
-                    alt="ธนาคารเพื่อการเกษตรและสหกรณ์การเกษตร (BAAC)"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/GHB.png")}
-                    alt="ธนาคารอาคารสงเคราะห์"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/BBL.png")}
-                    alt="ธนาคารกรุงเทพ"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
-                <div className="relative w-10 h-10">
-                  <Image
-                    src={img("/images/bank_acc_img/i-bank.png")}
-                    alt="ธนาคารอิสลามแห่งประเทศไทย"
-                    fill
-                    sizes="36px"
-                    className="object-contain"
-                  />
-                </div>
+                {BANKS.map((bank) => (
+                  <div
+                    key={bank.code}
+                    className="relative w-10 h-10"
+                    title={bank.name}
+                  >
+                    {bank.logo ? (
+                      <Image
+                        src={img(`/images/bank_acc_img/${bank.logo}`)}
+                        alt={bank.name}
+                        fill
+                        sizes="36px"
+                        className="object-contain"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center text-[10px] text-gray-600 font-medium border border-gray-200">
+                        {bank.code}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={paymentMethods["mobile-app"]}
-                    onChange={() => togglePaymentMethod("mobile-app")}
+                    checked={selectedMethod === "bank"}
+                    onChange={() => togglePaymentMethod("bank")}
                     className="w-5 h-5 accent-green-600"
                   />
-                  <span className="text-sm text-gray-700">โอนผ่านแอปฯ</span>
+                  <span className="text-sm text-gray-700">โอนผ่านธนาคาร</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={paymentMethods["debit-uob"]}
-                    onChange={() => togglePaymentMethod("debit-uob")}
+                    checked={selectedMethod === "cheque-uob"}
+                    onChange={() => togglePaymentMethod("cheque-uob")}
                     className="w-5 h-5 accent-green-600"
                   />
                   <span className="text-sm text-gray-700">
@@ -635,8 +610,8 @@ export default function VanAccountDetailPage() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={paymentMethods["debit-ktb"]}
-                    onChange={() => togglePaymentMethod("debit-ktb")}
+                    checked={selectedMethod === "cheque-ktb"}
+                    onChange={() => togglePaymentMethod("cheque-ktb")}
                     className="w-5 h-5 accent-green-600"
                   />
                   <span className="text-sm text-gray-700">
@@ -647,10 +622,17 @@ export default function VanAccountDetailPage() {
             </div>
           </section>
 
+          {saveError && (
+            <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+              {saveError}
+            </p>
+          )}
+
           <div className="flex justify-end mb-8">
             <button
               type="button"
-              disabled={selectedCount === 0 || !anyPaymentMethod}
+              disabled={selectedCount === 0 || !selectedMethod}
+              onClick={() => selectedMethod && setModalMethod(selectedMethod)}
               className="px-6 py-2.5 text-sm font-medium text-white bg-[#0B132B] hover:bg-[#1a2744] disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition"
             >
               ยืนยันการชำระเงิน
@@ -659,6 +641,17 @@ export default function VanAccountDetailPage() {
         </div>
       </main>
       <Footer />
+
+      <PayingBillModal
+        open={modalMethod !== null}
+        method={modalMethod}
+        defaultAmount={selectedTotal}
+        customerName={customerName}
+        saving={isSaving}
+        error={saveError}
+        onClose={closeModal}
+        onSubmit={handleSubmitPayingBill}
+      />
     </div>
   );
 }

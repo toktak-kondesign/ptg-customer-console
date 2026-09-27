@@ -121,6 +121,36 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Snapshot: 'Snapshot'
 });
 
+exports.Prisma.PtgPayingBillScalarFieldEnum = {
+  itemId: 'itemId',
+  runno: 'runno',
+  company: 'company',
+  custId13: 'custId13',
+  custId: 'custId',
+  branchId: 'branchId',
+  vanNo: 'vanNo',
+  type: 'type',
+  amount: 'amount',
+  bankType: 'bankType',
+  bankReceipt: 'bankReceipt',
+  checkNo: 'checkNo',
+  billDate: 'billDate',
+  tranferTime: 'tranferTime',
+  typeBill: 'typeBill',
+  receiveDate: 'receiveDate',
+  bankBranch: 'bankBranch',
+  createDate: 'createDate',
+  userCreate: 'userCreate',
+  isActive: 'isActive',
+  chequeStatus: 'chequeStatus',
+  dateChequeReceipt01: 'dateChequeReceipt01',
+  dateChequeReceipt02: 'dateChequeReceipt02',
+  receiptPerson: 'receiptPerson',
+  receiptPerson02: 'receiptPerson02',
+  remarkCancer: 'remarkCancer',
+  receivingType: 'receivingType'
+};
+
 exports.Prisma.TbCustPointSilverCurrent2017ScalarFieldEnum = {
   itemId: 'itemId',
   custId: 'custId',
@@ -174,6 +204,7 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
+  PtgPayingBill: 'PtgPayingBill',
   TbCustPointSilverCurrent2017: 'TbCustPointSilverCurrent2017',
   TbCustPointGoldCurrent2017: 'TbCustPointGoldCurrent2017',
   TbCustPointSilverCashCurrent: 'TbCustPointSilverCashCurrent',

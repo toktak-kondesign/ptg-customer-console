@@ -2,13 +2,14 @@ import type { CustomerOrdersResponse } from "@/interfaces/order";
 import { BASE_PATH } from "@/lib/env";
 
 export async function getCustomerOrdersService(
-  custId: string
+  custId: string,
+  signal?: AbortSignal
 ): Promise<CustomerOrdersResponse> {
   try {
     const params = new URLSearchParams({ custID: custId });
     const response = await fetch(
       `${BASE_PATH}/api/customer-info/orders/?${params.toString()}`,
-      { cache: "no-store" }
+      { cache: "no-store", signal }
     );
     const data: CustomerOrdersResponse = await response.json();
 

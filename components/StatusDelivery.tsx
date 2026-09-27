@@ -7,6 +7,7 @@ import AnimatedSection from "./AnimatedSection";
 import { Tooltip } from "antd";
 import { getAuthUser } from "@/lib/auth";
 import { img } from "@/lib/env";
+import { useVisibleOnce } from "@/hooks/useVisibleOnce";
 import { getCustomerOrdersService } from "@/services/customer/orders";
 import type { CustomerOrder } from "@/interfaces/order";
 
@@ -29,8 +30,16 @@ export default function StatusDelivery() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
 
+  // Fetch only when the section scrolls into view — it is below the fold,
+  // and firing it on mount competes for connections with critical requests.
   useEffect(() => {
+    if (!visible) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+
     const loadOrders = async () => {
       const user = getAuthUser();
       if (!user?.custID) {
@@ -39,7 +48,11 @@ export default function StatusDelivery() {
       }
 
       setIsLoading(true);
-      const result = await getCustomerOrdersService(user.custID);
+      const result = await getCustomerOrdersService(
+        user.custID,
+        controller.signal,
+      );
+      if (cancelled) return;
       if (result.status === "success") {
         setOrders(result.results);
         setError(null);
@@ -51,10 +64,15 @@ export default function StatusDelivery() {
     };
 
     loadOrders();
-  }, []);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [visible]);
 
   return (
-    <section className="py-12 bg-white">
+    <section ref={sectionRef} className="py-12 bg-white">
       <AnimatedSection className="max-w-7xl mx-auto px-6 shadow-lg py-4">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
           <div>

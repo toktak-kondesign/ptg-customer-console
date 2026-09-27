@@ -32,6 +32,7 @@ export async function createOutsourceSystemLink(
   ref1: string,
   ref3: string,
   custID: string,
+  signal?: AbortSignal,
 ): Promise<CreateOutsourceLinkResult> {
   const token = getCustomerAccessToken();
   if (!token) {
@@ -41,6 +42,7 @@ export async function createOutsourceSystemLink(
   try {
     const response = await fetch(`${BASE_PATH}/api/approve-link/outsource/`, {
       method: "POST",
+      signal,
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
