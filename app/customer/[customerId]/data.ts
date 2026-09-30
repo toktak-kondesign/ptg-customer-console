@@ -1,3 +1,4 @@
+import type { CustomerImages } from "@/interfaces/customer";
 import { floorPointToOneDecimal } from "@/lib/pointPrecision";
 
 export interface CustomerProfile {
@@ -16,29 +17,33 @@ export interface CustomerProfile {
   email: string;
   line: string;
   ongoingProjects: number;
+  caretakerCode: string;
   caretakerName: string;
   caretakerPhone: string;
+  images: CustomerImages;
 }
 
 export const mockCustomer: CustomerProfile = {
-  id: "C2005794",
+  id: "",
   type: "Other",
-  name: "1 หมู่ที่ 1 ตำบลสะมาย อำเภอทุ่งสง จังหวัดนครศรีธรรมราช 80110",
-  taxId: "1111111111111",
-  addressLine1: "1 หมู่ที่ 1 ตำบลสะมาย อำเภอทุ่งสง",
-  addressLine2: "จังหวัดนครศรีธรรมราช 80110",
+  name: "",
+  taxId: "",
+  addressLine1: "",
+  addressLine2: "",
   addressFull:
-    "1 หมู่ที่ 1 ตำบลสะมาย อำเภอทุ่งสง จังหวัดนครศรีธรรมราช 80110",
+    "",
   lat: 8.155269489364073,
   lng: 99.699725254207192,
   goldPoints: 10,
   silverPoints: 0,
-  phone: "081-1111111",
-  email: "cs@ptg.co.th",
-  line: "0872794306",
+  phone: "-",
+  email: "-",
+  line: "-",
   ongoingProjects: 14,
-  caretakerName: "นางสาววาโชติกา สิงห์พันธ์ (น้อย)",
-  caretakerPhone: "0910350148",
+  caretakerCode: "",
+  caretakerName: "",
+  caretakerPhone: "",
+  images: { logo: null, interior: [], exterior: [] },
 };
 
 function getField(
@@ -62,10 +67,17 @@ export function formatPointValue(value: number): string {
   });
 }
 
+function toCoordinate(raw: string): number | null {
+  if (!raw) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
 export function resolveCustomerProfile(
   customerId: string,
   info: Record<string, unknown> | null,
   points: { goldPoints: number; silverPoints: number },
+  images: CustomerImages = mockCustomer.images,
 ): CustomerProfile {
   const streetParts = [
     getField(info, ["Address1", "address1"]),
@@ -79,8 +91,18 @@ export function resolveCustomerProfile(
   ].filter(Boolean);
   const addressFull = [...streetParts, ...provinceParts].join(" ");
   const name =
-    getField(info, ["CusName", "cusName", "CustomerName", "customerName"]) ||
-    mockCustomer.name;
+    getField(info, [
+      "CusName",
+      "cusName",
+      "CustomerName",
+      "customerName",
+      "Name",
+      "name",
+    ]) || mockCustomer.name;
+  const lat = toCoordinate(getField(info, ["Latitude", "latitude", "lat"]));
+  const lng = toCoordinate(
+    getField(info, ["Longitude", "longitude", "long", "lng"]),
+  );
 
   return {
     ...mockCustomer,
@@ -89,13 +111,46 @@ export function resolveCustomerProfile(
       getField(info, ["GroupDesc", "groupDesc", "CustType", "custType"]) ||
       mockCustomer.type,
     name,
+    taxId:
+      getField(info, ["ResaleID", "resaleID", "TaxID", "taxId"]) ||
+      mockCustomer.taxId,
     addressFull: addressFull || mockCustomer.addressFull,
     addressLine1: streetParts.join(" ") || mockCustomer.addressLine1,
     addressLine2: provinceParts.join(" ") || mockCustomer.addressLine2,
+    lat: lat ?? mockCustomer.lat,
+    lng: lng ?? mockCustomer.lng,
     phone:
-      getField(info, ["PhoneNum", "phoneNum", "Phone", "phone", "Tel"]) ||
-      mockCustomer.phone,
+      getField(info, [
+        "PhoneNum",
+        "phoneNum",
+        "Phone",
+        "phone",
+        "Tel",
+        "Tel1",
+        "tel1",
+      ]) || mockCustomer.phone,
+    line:
+      getField(info, ["LineID", "lineID", "lineId", "Line"]) ||
+      mockCustomer.line,
+    caretakerCode:
+      getField(info, ["SalesRepCode", "salesRepCode"]) ||
+      mockCustomer.caretakerCode,
+    caretakerName:
+      getField(info, [
+        "PersonName",
+        "personName",
+        "CaretakerName",
+        "caretakerName",
+      ]) || mockCustomer.caretakerName,
+    caretakerPhone:
+      getField(info, [
+        "OfficePhone",
+        "officePhone",
+        "CaretakerPhone",
+        "caretakerPhone",
+      ]) || mockCustomer.caretakerPhone,
     goldPoints: points.goldPoints,
     silverPoints: points.silverPoints,
+    images,
   };
 }

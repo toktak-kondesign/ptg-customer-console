@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   MailFilled,
   MessageFilled,
@@ -10,6 +11,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { formatPointValue, type CustomerProfile } from "./data";
+import { img } from "@/lib/env";
 
 const chevronClass =
   "ml-auto shrink-0 text-xs text-[#8BA2BF] transition-transform group-hover:translate-x-0.5";
@@ -128,6 +130,46 @@ function ContactCard({ customer }: { customer: CustomerProfile }) {
     </section>
   );
 }
+{
+  /* ---------- ผู้ดูแล ---------------*/
+}
+function StaffCard({ customer }: { customer: CustomerProfile }) {
+  return (
+    <div className="mt-3.5 sm:max-w-[360px]">
+      <button
+        type="button"
+        onClick={() => console.log("open caretaker")}
+        className="group flex w-full items-center gap-4 rounded-xl border border-[#DCE8F5] bg-white px-4 py-3.5 text-left transition hover:border-[#AECDEF] hover:bg-[#F7FBFF] hover:shadow-[0_4px_14px_rgba(21,93,255,0.08)]"
+      >
+        <span className="relative h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm">
+          <Image
+            src={
+              customer.caretakerCode
+                ? `https://wn2013.ptg.co.th/Upload/Employee/${customer.caretakerCode}.jpg`
+                : img("/images/avatar-caretaker.svg")
+            }
+            alt={customer.caretakerName}
+            width={56}
+            height={56}
+            sizes="56px"
+            className="object-cover"
+            style={{ width: "100%", height: "auto" }}
+          />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-[#8BA2BF]">ผู้ดูแล</span>
+          <span className="mt-0.5 block truncate text-sm font-semibold text-[#1B3A6E]">
+            {customer.caretakerName}
+          </span>
+          <span className="block text-[13px] text-[#54677E]">
+            {customer.caretakerPhone}
+          </span>
+        </span>
+        <RightOutlined className={chevronClass} />
+      </button>
+    </div>
+  );
+}
 
 export default function CustomerSidebar({
   customer,
@@ -138,6 +180,7 @@ export default function CustomerSidebar({
     <aside className="flex flex-col gap-5">
       <AccountCard customer={customer} />
       <ContactCard customer={customer} />
+      <StaffCard customer={customer} />
     </aside>
   );
 }

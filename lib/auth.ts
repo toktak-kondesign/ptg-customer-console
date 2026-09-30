@@ -26,6 +26,9 @@ const STORAGE_KEYS = {
   PTG_SYSTEM_LINK: "ptg-system-link",
   OUTSOURCE_SYSTEM_LINK: "outsource-system-link",
   CUSTOMER_INFO: "ptg-customer-info",
+  // รหัสลูกค้าที่กำลังดูอยู่ — ถูกเขียนโดยฝั่ง staff console และฟีเจอร์สลับบัญชี
+  // (CustomerPointsContext อ่าน key นี้เพื่อโหลดคะแนนของบัญชีที่เลือก)
+  VIEWED_CUSTOMER_ID: "ptg_staff_cid",
 } as const;
 
 function getCookie(name: string): string | null {
@@ -149,11 +152,31 @@ function pickField(
   return "";
 }
 
+// รหัสลูกค้าที่กำลังถูกดูอยู่ — เขียนโดยฟีเจอร์ "สลับบัญชี" หรือ staff console
+// ส่ง null เพื่อเคลียร์กลับไปใช้บัญชีของ user ที่ login
+export function getViewedCustomerId(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID)?.trim() ?? "";
+}
+
+export function setViewedCustomerId(custId: string | null): void {
+  if (typeof window === "undefined") return;
+  if (custId) {
+    localStorage.setItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID, custId);
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID);
+  }
+  notifyCustomerSessionChanged();
+}
+
 // รหัสลูกค้าสำหรับ route /customer/[customerId]
+// ถ้ามีการเลือกบัญชีผ่าน "สลับบัญชี" (หรือ staff view) ให้ใช้ตัวนั้นก่อน
 // field name ใน auth user / customer-info response ไม่คงที่ระหว่าง
 // environment (custID / custId / CustID) จึงค้นหาแบบ case-insensitive
 // และ fallback ไปที่ resaleID ของ customer-info ด้วย
 export function getSessionCustomerId(): string {
+  const viewed = getViewedCustomerId();
+  if (viewed) return viewed;
   const user = getAuthUser();
   const fromUser = pickField(
     user as unknown as Record<string, unknown> | null,
@@ -182,6 +205,7 @@ export function clearAuth(): void {
   localStorage.removeItem(STORAGE_KEYS.PTG_SYSTEM_LINK);
   localStorage.removeItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK);
   localStorage.removeItem(STORAGE_KEYS.CUSTOMER_INFO);
+  localStorage.removeItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID);
 
   const expire = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
   document.cookie = `${STORAGE_KEYS.CUSTOMER_TOKEN}=; path=/; ${expire}; SameSite=Lax`;

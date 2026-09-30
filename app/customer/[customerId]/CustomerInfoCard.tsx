@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import LocalImage from "next/image";
+import { Image as PreviewImage } from "antd";
 import {
   AimOutlined,
   AppstoreOutlined,
@@ -14,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import { img } from "@/lib/env";
 import MapPreview from "./MapPreview";
+import type { CustomerImage } from "@/interfaces/customer";
 import type { CustomerProfile } from "./data";
 
 const ICON_TILE =
@@ -94,6 +96,33 @@ function RelatedCard({
   );
 }
 
+function ImageGallery({
+  images,
+  emptyText,
+}: {
+  images: CustomerImage[];
+  emptyText: string;
+}) {
+  if (images.length === 0) {
+    return <p className="mt-4 text-sm text-[#8BA2BF]">{emptyText}</p>;
+  }
+
+  return (
+    <PreviewImage.PreviewGroup>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {images.map((image) => (
+          <PreviewImage
+            key={image.id}
+            src={image.src}
+            alt={image.name}
+            className="h-32 w-full rounded-xl object-cover sm:h-36"
+          />
+        ))}
+      </div>
+    </PreviewImage.PreviewGroup>
+  );
+}
+
 export default function CustomerInfoCard({
   customer,
 }: {
@@ -121,7 +150,7 @@ export default function CustomerInfoCard({
 
       {/* ── ข้อมูลพื้นฐาน ─────────────────────────────── */}
       <div className="flex gap-4 px-5 py-5 sm:px-7">
-        <BankOutlined className="mt-0.5 shrink-0 text-[30px] text-[#2E7FE0]" />
+        {/* <BankOutlined className="mt-0.5 shrink-0 text-[30px] text-[#2E7FE0]" /> */}
         <div className="min-w-0">
           <p className="text-[15px] font-semibold text-[#1B3A6E]">ชื่อ</p>
           <p className="mt-1 text-sm leading-relaxed text-[#54677E]">
@@ -141,9 +170,12 @@ export default function CustomerInfoCard({
             onClick={() => console.log("open address")}
             className="group flex items-center gap-3.5 p-4 text-left transition hover:bg-[#F7FBFF] md:rounded-l-xl"
           >
-            <span className={ICON_TILE}>
-              <EnvironmentOutlined className="text-xl" />
-            </span>
+            <LocalImage
+              src="/images/home-address.png"
+              alt="map"
+              width={48}
+              height={48}
+            />
             <span className="min-w-0 flex-1">
               <span className="block text-[15px] font-semibold text-[#1B3A6E]">
                 ที่อยู่
@@ -163,12 +195,22 @@ export default function CustomerInfoCard({
 
           <button
             type="button"
-            onClick={() => console.log("open map")}
+            onClick={() =>
+              window.open(
+                `https://www.google.com/maps?q=${customer.lat},${customer.lng}`,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
             className="group flex items-center gap-3.5 p-4 text-left transition hover:bg-[#F7FBFF] md:rounded-r-xl"
           >
-            <span className={ICON_TILE}>
-              <AimOutlined className="text-xl" />
-            </span>
+            <LocalImage
+              src="/images/icon-map1.png"
+              alt="map"
+              width={48}
+              height={48}
+            />
+
             <span className="min-w-0 flex-1">
               <span className="block text-[15px] font-semibold text-[#1B3A6E]">
                 พิกัดตำแหน่งที่อยู่
@@ -187,8 +229,47 @@ export default function CustomerInfoCard({
         </div>
       </div>
 
-      {/* ── รายการที่เกี่ยวข้อง ─────────────────────────────── */}
+      {/* ── รูปภาพภายในร้าน ─────────────────────────────── */}
       <div className="px-5 pb-6 sm:px-7 sm:pb-7">
+        <div className="flex items-center gap-3">
+          <LocalImage
+            src="/images/image-gallery.png"
+            alt="map"
+            width={32}
+            height={32}
+          />
+          <h3 className="text-[16px] font-bold text-[#1B3A6E]">
+            รูปภาพภายในร้าน
+          </h3>
+          <div className="h-px flex-1 bg-[#E4EEF9]" />
+        </div>
+        <ImageGallery
+          images={customer.images.interior}
+          emptyText="ไม่พบรูปภาพภายในร้าน"
+        />
+      </div>
+
+      {/* ── รูปภาพภายนอกร้าน ─────────────────────────────── */}
+      <div className="px-5 pb-6 sm:px-7 sm:pb-7">
+        <div className="flex items-center gap-3">
+          <LocalImage
+            src="/images/image-gallery.png"
+            alt="map"
+            width={32}
+            height={32}
+          />
+          <h3 className="text-[16px] font-bold text-[#1B3A6E]">
+            รูปภาพภายนอกร้าน
+          </h3>
+          <div className="h-px flex-1 bg-[#E4EEF9]" />
+        </div>
+        <ImageGallery
+          images={customer.images.exterior}
+          emptyText="ไม่พบรูปภาพภายนอกร้าน"
+        />
+      </div>
+      {/* ── รายการที่เกี่ยวข้อง ─────────────────────────────── */}
+      {/* <div className="px-5 pb-6 sm:px-7 sm:pb-7">
         <div className="flex items-center gap-3">
           <AppstoreOutlined className="text-[24px] text-[#2E7FE0]" />
           <h3 className="text-[16px] font-bold text-[#1B3A6E]">
@@ -236,35 +317,7 @@ export default function CustomerInfoCard({
             onClick={() => console.log("open hardware support")}
           />
         </div>
-
-        <div className="mt-3.5 sm:max-w-[360px]">
-          <button
-            type="button"
-            onClick={() => console.log("open caretaker")}
-            className="group flex w-full items-center gap-4 rounded-xl border border-[#DCE8F5] bg-white px-4 py-3.5 text-left transition hover:border-[#AECDEF] hover:bg-[#F7FBFF] hover:shadow-[0_4px_14px_rgba(21,93,255,0.08)]"
-          >
-            <span className="relative h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm">
-              <Image
-                src={img("/images/avatar-caretaker.svg")}
-                alt={customer.caretakerName}
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-xs text-[#8BA2BF]">ผู้ดูแล</span>
-              <span className="mt-0.5 block truncate text-sm font-semibold text-[#1B3A6E]">
-                {customer.caretakerName}
-              </span>
-              <span className="block text-[13px] text-[#54677E]">
-                {customer.caretakerPhone}
-              </span>
-            </span>
-            <RightOutlined className={chevronClass} />
-          </button>
-        </div>
-      </div>
+      </div> */}
     </section>
   );
 }

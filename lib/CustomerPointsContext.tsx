@@ -10,7 +10,10 @@ import {
   useState,
 } from "react";
 import type { CustomerPointsData } from "@/interfaces/point";
-import { CUSTOMER_SESSION_CHANGED_EVENT, getAuthUser } from "@/lib/auth";
+import {
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  getSessionCustomerId,
+} from "@/lib/auth";
 import { floorPointToOneDecimal } from "@/lib/pointPrecision";
 import { getCustomerPointsService } from "@/services/shop/points";
 
@@ -46,9 +49,7 @@ export function CustomerPointsProvider({
 
   const getTargetCustId = useCallback((): string | null => {
     if (typeof window === "undefined") return null;
-    return (
-      localStorage.getItem("ptg_staff_cid") ?? getAuthUser()?.custID ?? null
-    );
+    return getSessionCustomerId() || null;
   }, []);
 
   const refresh = useCallback(async () => {

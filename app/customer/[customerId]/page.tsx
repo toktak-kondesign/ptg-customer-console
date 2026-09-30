@@ -9,8 +9,11 @@ import Footer from "@/components/Footer";
 import {
   getAuthUser,
   getCustomerInfo,
+  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
+import type { CustomerImages } from "@/interfaces/customer";
+import { getCustomerProfileService } from "@/services/customer/profile";
 import { useCustomerPoints } from "@/lib/CustomerPointsContext";
 import { mockCustomer, resolveCustomerProfile } from "./data";
 import CustomerHero from "./CustomerHero";
@@ -22,6 +25,7 @@ export default function CustomerPage() {
   const customerId = decodeURIComponent(params?.customerId ?? "");
   const [info, setInfo] = useState<Record<string, unknown> | null>(null);
   const [hasSession, setHasSession] = useState(false);
+  const [images, setImages] = useState<CustomerImages>(mockCustomer.images);
   const { goldPoints, silverPoints } = useCustomerPoints();
 
   useEffect(() => {
@@ -35,6 +39,29 @@ export default function CustomerPage() {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, load);
   }, []);
 
+  // ดึง customer profile จาก API ด้วย custID ของ user ที่ login อยู่
+  // (fallback เป็น route param) — ถ้าโหลดไม่ได้จะใช้ข้อมูลจาก localStorage ต่อ
+  useEffect(() => {
+    const sessionCustId = getSessionCustomerId() || customerId;
+    if (!sessionCustId) return;
+
+    let cancelled = false;
+    const load = () => {
+      getCustomerProfileService(sessionCustId).then((res) => {
+        if (!cancelled && res.status === "success" && res.results.length > 0) {
+          setInfo(res.results[0]);
+          setImages(res.images ?? mockCustomer.images);
+        }
+      });
+    };
+    load();
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, load);
+    };
+  }, [customerId]);
+
   const customer = resolveCustomerProfile(
     customerId,
     info,
@@ -44,6 +71,7 @@ export default function CustomerPage() {
           goldPoints: mockCustomer.goldPoints,
           silverPoints: mockCustomer.silverPoints,
         },
+    images,
   );
 
   return (
