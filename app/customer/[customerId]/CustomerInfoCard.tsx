@@ -171,7 +171,7 @@ export default function CustomerInfoCard({
             className="group flex items-center gap-3.5 p-4 text-left transition hover:bg-[#F7FBFF] md:rounded-l-xl"
           >
             <LocalImage
-              src="/images/home-address.png"
+              src="images/home-address.png"
               alt="map"
               width={48}
               height={48}
@@ -205,7 +205,7 @@ export default function CustomerInfoCard({
             className="group flex items-center gap-3.5 p-4 text-left transition hover:bg-[#F7FBFF] md:rounded-r-xl"
           >
             <LocalImage
-              src="/images/icon-map1.png"
+              src="images/icon-map1.png"
               alt="map"
               width={48}
               height={48}
@@ -233,7 +233,7 @@ export default function CustomerInfoCard({
       <div className="px-5 pb-6 sm:px-7 sm:pb-7">
         <div className="flex items-center gap-3">
           <LocalImage
-            src="/images/image-gallery.png"
+            src="images/image-gallery.png"
             alt="map"
             width={32}
             height={32}
@@ -253,7 +253,7 @@ export default function CustomerInfoCard({
       <div className="px-5 pb-6 sm:px-7 sm:pb-7">
         <div className="flex items-center gap-3">
           <LocalImage
-            src="/images/image-gallery.png"
+            src="images/image-gallery.png"
             alt="map"
             width={32}
             height={32}
