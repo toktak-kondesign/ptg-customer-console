@@ -8,7 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
-import { getApiBaseUrl, img } from "@/lib/env";
+import { img } from "@/lib/env";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
 import type { VanAccount, VanAccountDetails } from "@/interfaces/van-account";
 
@@ -131,29 +131,8 @@ export default function PaymentAccountDetailPage() {
     router.push(`/payment-list/${params.slug}/${encodeURIComponent(vannew)}`);
   };
 
-  const handlePlaceBillClick = async () => {
-    if (!companyCode || !resaleID) {
-      alert("ไม่พบข้อมูลบริษัทหรือ ResaleID");
-      return;
-    }
-
-    const x = `${resaleID}_${companyCode}`;
-    try {
-      const res = await fetch(
-        `/api/ptg/encrypt-url?x=${encodeURIComponent(x)}`,
-      );
-      if (!res.ok) {
-        throw new Error(`EncryptUrl failed: ${res.status}`);
-      }
-      const { encrypted } = await res.json();
-      if (!encrypted || typeof encrypted !== "string") {
-        throw new Error("Invalid encrypted response");
-      }
-      window.location.href = `${getApiBaseUrl()}layingbill/layingplacebill?x=${encodeURIComponent(encrypted)}`;
-    } catch (error) {
-      console.error("[handlePlaceBillClick]", error);
-      alert(error instanceof Error ? error.message : "เกิดข้อผิดพลาด");
-    }
+  const handlePlaceBillClick = () => {
+    router.push(`/payment-list/${params.slug}/place-bill`);
   };
 
   const customer = details?.customer;

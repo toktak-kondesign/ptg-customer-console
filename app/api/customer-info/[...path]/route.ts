@@ -180,16 +180,32 @@ async function getCustomerImages(
 
 export async function GET(request: NextRequest): Promise<Response> {
   const path = request.nextUrl.pathname.replace(/^\/api\/customer-info\/?/, "");
+  const normalizedPath = path.replace(/\/$/, "");
   const query = request.nextUrl.search;
   const upstreamUrl = `${PDF_API_URL}/api/customer-info/${path}${query}`;
 
   try {
     const profilePromise = fetch(upstreamUrl, { cache: "no-store" });
     const customerId = request.nextUrl.searchParams.get("custID")?.trim() ?? "";
-    const imagePromise = path.replace(/\/$/, "") === "profile" && customerId
+    const imagePromise = normalizedPath === "profile" && customerId
       ? getCustomerImages(customerId, request.headers.get("usertoken") ?? "")
       : Promise.resolve(null);
     const [upstream, imageResult] = await Promise.all([profilePromise, imagePromise]);
+
+    if (normalizedPath === "place-bill-pdf") {
+      const headers = new Headers({
+        "Content-Type":
+          upstream.headers.get("content-type") ?? "application/pdf",
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      });
+      const disposition = upstream.headers.get("content-disposition");
+      if (disposition) headers.set("Content-Disposition", disposition);
+      return new Response(await upstream.arrayBuffer(), {
+        status: upstream.status,
+        headers,
+      });
+    }
+
     const body = await upstream.text();
 
     if (!imageResult) {
