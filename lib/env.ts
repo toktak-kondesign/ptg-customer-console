@@ -39,7 +39,8 @@ export const getLoginUrl = (): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   return isDevelopment
     ? 'https://depwn2021.ptg.co.th/Site/Authentication/login'
-    : 'https://www.ptg.co.th/Site/Authentication/login';
+    : 'https://depwn2021.ptg.co.th/Site/Authentication/login';
+    // : 'https://www.ptg.co.th/Site/Authentication/login';
 };
 
 export const LOGIN_URL = getLoginUrl();

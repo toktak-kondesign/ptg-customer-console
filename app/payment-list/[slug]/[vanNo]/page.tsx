@@ -386,7 +386,7 @@ export default function VanAccountDetailPage() {
               </h3>
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log`}
+                  href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log${lastPayDate ? `?date=${encodeURIComponent(lastPayDate)}` : ""}`}
                   className="flex items-center gap-2 text-gray-600 mr-4 bg-emerald-100 px-3 py-1 rounded-lg hover:bg-emerald-200 transition"
                 >
                   <img

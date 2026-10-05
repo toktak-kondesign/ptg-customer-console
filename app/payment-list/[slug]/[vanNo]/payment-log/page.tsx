@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { DatePicker, Popover } from "antd";
@@ -73,7 +73,7 @@ function formatTaxId(value: string): string {
 }
 
 function formatLogDate(value: string | null | undefined): string {
-  const match = String(value || "").match(/(\d{4})-(\d{2})-(\d{2})/);
+  const match = String(value || "").match(/(\d{4})[-/](\d{2})[-/](\d{2})/);
   if (!match) return "-";
   const year = Number(match[1]);
   const buddhistYear = year >= 2400 ? year : year + 543;
@@ -84,8 +84,20 @@ function formatMonthTitle(value: Dayjs): string {
   return `${value.format("MMMM")} ${value.year() + 543}`;
 }
 
+function parseMonthParam(value: string | null): Dayjs {
+  const match = String(value || "").match(/(\d{4})[-/](\d{2})[-/](\d{2})/);
+  if (!match) return dayjs().startOf("month");
+
+  const year = Number(match[1]);
+  const gregorianYear = year >= 2400 ? year - 543 : year;
+  const parsed = dayjs(`${gregorianYear}-${match[2]}-${match[3]}`);
+  return parsed.isValid() ? parsed.startOf("month") : dayjs().startOf("month");
+}
+
 export default function PaymentLogPage() {
   const params = useParams<{ slug: string; vanNo: string }>();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get("date");
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
   const vanNoRaw = decodeURIComponent(params.vanNo || "");
@@ -93,7 +105,7 @@ export default function PaymentLogPage() {
   const vanNoDisplay = vanNoDigits ? formatVanNumber(vanNoDigits) : vanNoRaw;
 
   const [currentMonth, setCurrentMonth] = useState<Dayjs>(() =>
-    dayjs().startOf("month"),
+    parseMonthParam(dateParam),
   );
   const [pickerYear, setPickerYear] = useState<number>(currentMonth.year());
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
@@ -113,6 +125,13 @@ export default function PaymentLogPage() {
     return () =>
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
+
+  useEffect(() => {
+    if (!dateParam) return;
+    const month = parseMonthParam(dateParam);
+    setCurrentMonth((prev) => (prev.isSame(month, "month") ? prev : month));
+    setPickerYear(month.year());
+  }, [dateParam]);
 
   const resaleID = getCustomerField(sessionInfo, [
     "ResaleID",
