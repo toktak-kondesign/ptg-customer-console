@@ -11,10 +11,7 @@ import "dayjs/locale/th";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../../data";
-import {
-  getCustomerInfo,
-  CUSTOMER_SESSION_CHANGED_EVENT,
-} from "@/lib/auth";
+import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { img } from "@/lib/env";
 import { getPaymentLogService } from "@/services/customer/payment-log";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
@@ -344,9 +341,7 @@ export default function PaymentLogPage() {
                     className="object-contain"
                   />
                 </div>
-                <p className="text-xl text-blue-600">
-                  เลขบัญชี {vanNoDisplay}
-                </p>
+                <p className="text-xl text-blue-600">เลขบัญชี {vanNoDisplay}</p>
               </div>
             </div>
 
@@ -364,9 +359,7 @@ export default function PaymentLogPage() {
                   />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">
-                    รายละเอียดการชำระเงิน
-                  </p>
+                  <p className="text-sm text-gray-500">รายละเอียดการชำระเงิน</p>
                   <DatePicker
                     picker="month"
                     value={currentMonth}
@@ -429,11 +422,6 @@ export default function PaymentLogPage() {
               </div>
             </div>
 
-            {isLoading && (
-              <p className="px-5 sm:px-8 pb-4 text-sm text-gray-500">
-                กำลังโหลดรายละเอียดการชำระเงิน...
-              </p>
-            )}
             {error && (
               <div className="px-5 sm:px-8 pb-4">
                 <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -481,6 +469,19 @@ export default function PaymentLogPage() {
                         </td>
                       </tr>
                     ))}
+                    {isLoading && (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="px-6 py-8 text-center text-gray-500 border border-gray-300"
+                        >
+                          <div className="flex items-center justify-center gap-3">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />
+                            กำลังโหลดรายละเอียดการชำระเงิน...
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     {!isLoading && rows.length === 0 && (
                       <tr>
                         <td
