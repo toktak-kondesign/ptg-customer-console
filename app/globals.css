@@ -80,6 +80,12 @@ body {
   height: auto;
 }
 
+.gradient-gray-top {
+  background-color: #e5e5e5;
+  background-image: linear-gradient(#fff 47%, #eee 75%);
+  margin: 0.5px;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

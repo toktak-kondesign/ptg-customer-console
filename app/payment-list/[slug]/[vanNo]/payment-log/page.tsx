@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound, useParams, useSearchParams } from "next/navigation";
+import {
+  notFound,
+  useParams,
+  useSearchParams,
+  useRouter,
+} from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { DatePicker, Popover } from "antd";
@@ -97,6 +102,7 @@ function parseMonthParam(value: string | null): Dayjs {
 export default function PaymentLogPage() {
   const params = useParams<{ slug: string; vanNo: string }>();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const dateParam = searchParams.get("date");
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
@@ -246,6 +252,14 @@ export default function PaymentLogPage() {
   const handleSelectMonth = (monthIndex: number) => {
     setCurrentMonth(dayjs().year(pickerYear).month(monthIndex).date(1));
     setIsMonthPickerOpen(false);
+  };
+
+  const handleRowClick = (row: PaymentLogRow) => {
+    const receipt = row.Key1 ? encodeURIComponent(row.Key1) : "";
+    if (!receipt) return;
+    router.push(
+      `/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log/${receipt}`,
+    );
   };
 
   const monthPickerContent = (
@@ -472,7 +486,8 @@ export default function PaymentLogPage() {
                     {rows.map((row, index) => (
                       <tr
                         key={`${row.Key1 || row.CustID || "row"}-${index}`}
-                        className="odd:bg-white even:bg-gray-50"
+                        onClick={() => handleRowClick(row)}
+                        className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors"
                       >
                         <td className="text-center px-5 py-2.5 border border-gray-300 text-gray-700">
                           {formatLogDate(row.Date01)}
