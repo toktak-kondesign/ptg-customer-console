@@ -440,7 +440,10 @@ export default function PaymentLogPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 text-blue-500">
+              <Link
+                href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/cheque-list?date=${requestDate}`}
+                className="flex items-center gap-3 text-blue-500 hover:text-blue-600"
+              >
                 <Image
                   src={img("/images/payment-method.png")}
                   alt="ยืนยันการรับชำระเงิน"
@@ -452,7 +455,7 @@ export default function PaymentLogPage() {
                   <p className="font-medium">ยืนยันการรับชำระเงิน</p>
                   <p className="text-xs text-gray-400">Confirm Payment</p>
                 </div>
-              </div>
+              </Link>
             </div>
 
             {error && (
