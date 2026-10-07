@@ -189,7 +189,7 @@ export default function ChequeDetailModal({
             <span>ผู้ยืนยันการรับเช็ค :</span>
             <span className="text-right">
               <span className="block text-xl font-semibold text-blue-700">
-                {row.ReceiptPerson02?.trim() || "-"}
+                {row.ReceiptPerson?.trim() || "-"}
               </span>
               <span className="text-blue-600">
                 ({formatSlashDate(row.DateChequeReceipt02)})
