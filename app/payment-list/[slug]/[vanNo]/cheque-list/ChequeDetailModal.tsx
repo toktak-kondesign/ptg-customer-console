@@ -101,7 +101,7 @@ export default function ChequeDetailModal({
             })}
           </div>
           {isCancelled && (
-            <p className="text-center font-medium text-4xl text-red-500">
+            <p className="text-center font-medium text-4xl text-red-500 bg-red-50 border-red-100">
               ยกเลิก
             </p>
           )}
