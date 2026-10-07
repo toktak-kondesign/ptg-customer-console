@@ -34,6 +34,12 @@ export const getRewardsBaseUrl = (): string => {
 
 export const REWARDS_BASE_URL = getRewardsBaseUrl();
 
+// Place bill PDF archive (e-tax) base URL
+export const PLACE_BILL_PDF_BASE_URL = (
+  process.env.NEXT_PUBLIC_PLACE_BILL_PDF_BASE_URL ||
+  'https://rdpdf.ptg.co.th/e-taxpdf/PlaceBill'
+).replace(/\/+$/, '');
+
 // PTG login page (dev/prod aware) — used when session expires or user logs out
 export const getLoginUrl = (): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';

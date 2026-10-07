@@ -23,6 +23,27 @@ function formatThaiDateTime(iso: string): string {
   return `${dd}-${mm}-${yyyy} ${hh}:${min} น.`;
 }
 
+const DELIVERY_NOTE_BASE_URL = "https://wn2013.ptg.co.th/Upload/Delivery";
+
+const DELIVERY_NOTE_FOLDERS: Record<string, string> = {
+  "TW5410-0001": "BillPTG",
+  "TW5410-0002": "BillMix",
+  "TW5410-0014": "BillMONO",
+};
+
+function getDeliveryNoteUrl(order: CustomerOrder): string | null {
+  const folder =
+    DELIVERY_NOTE_FOLDERS[order.TypeProductID?.trim()] ??
+    (order.Typename?.includes("ผาทอง24")
+      ? "Bill24"
+      : order.Typename?.includes("ขนส่ง")
+        ? "BillAKE"
+        : null);
+  const billId = order.BillID?.trim();
+  if (!folder || !billId) return null;
+  return `${DELIVERY_NOTE_BASE_URL}/${folder}/${encodeURIComponent(billId)}.jpg`;
+}
+
 type ViewMode = "cards" | "table";
 
 export default function StatusDelivery() {
@@ -160,13 +181,19 @@ export default function StatusDelivery() {
                   </div>
                   {order.custsign === 1 && (
                     <Tooltip title="ดูใบส่งสินค้า">
-                      <Image
-                        src={img("/images/deliveryNote.svg")}
-                        alt="devivery note"
-                        width={32}
-                        height={32}
-                        className="ml-auto"
-                      />
+                      <a
+                        href={getDeliveryNoteUrl(order) ?? undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex ml-auto hover:opacity-70 transition"
+                      >
+                        <Image
+                          src={img("/images/deliveryNote.svg")}
+                          alt="devivery note"
+                          width={32}
+                          height={32}
+                        />
+                      </a>
                     </Tooltip>
                   )}
                 </div>
@@ -241,9 +268,11 @@ export default function StatusDelivery() {
                       <td className="px-4 py-3 text-center">
                         {order.custsign === 1 && (
                           <Tooltip title="ดูใบส่งสินค้า">
-                            <button
-                              type="button"
-                              className="inline-flex items-center justify-center cursor-pointer hover:opacity-70 transition"
+                            <a
+                              href={getDeliveryNoteUrl(order) ?? undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center hover:opacity-70 transition"
                             >
                               <Image
                                 src={img("/images/deliveryNote.svg")}
@@ -251,7 +280,7 @@ export default function StatusDelivery() {
                                 width={28}
                                 height={28}
                               />
-                            </button>
+                            </a>
                           </Tooltip>
                         )}
                       </td>

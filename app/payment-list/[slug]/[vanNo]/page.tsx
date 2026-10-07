@@ -390,7 +390,7 @@ export default function VanAccountDetailPage() {
                   className="flex items-center gap-2 text-gray-600 mr-4 bg-emerald-100 px-3 py-1 rounded-lg hover:bg-emerald-200 transition"
                 >
                   <img
-                    src="/images/payment-method.png"
+                    src={img("/images/payment-method.png")}
                     alt="payment method"
                     className="w-5 h-5"
                   />
