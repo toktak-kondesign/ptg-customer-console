@@ -174,7 +174,7 @@ export default function ChequeDetailModal({
               <p className="text-xl font-semibold text-blue-700">
                 {company?.name || row.company || "-"}
               </p>
-              <p>เลขที่บัญชี : {company?.payee?.ktbAccountNo || "-"}</p>
+              <p>เลขที่บัญชี : {row?.VANNO || "-"}</p>
             </div>
           </div>
 
