@@ -493,6 +493,7 @@ export default function PaymentListPage() {
                         "cusName",
                         "CustomerName",
                         "customerName",
+                        "Name",
                       ]) && (
                         <>
                           {" : "}
@@ -501,6 +502,7 @@ export default function PaymentListPage() {
                             "cusName",
                             "CustomerName",
                             "customerName",
+                            "Name",
                           ])}
                         </>
                       )}

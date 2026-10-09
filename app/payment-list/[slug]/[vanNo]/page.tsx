@@ -107,6 +107,8 @@ export default function VanAccountDetailPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCount, setSelectedCount] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   // เลือกวิธีชำระเงินได้ครั้งละหนึ่งวิธีเท่านั้น
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey | null>(
     null,
@@ -207,6 +209,11 @@ export default function VanAccountDetailPage() {
     };
   }, [companyCode, resaleID, vanNoRaw]);
 
+  // รีเซ็ตกลับไปหน้าแรกเมื่อข้อมูลหรือจำนวนรายการต่อหน้าเปลี่ยน
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rows, pageSize]);
+
   if (!company) return notFound();
 
   const totalAmount = rows.reduce(
@@ -218,6 +225,16 @@ export default function VanAccountDetailPage() {
   const selectedTotal = selectedRows.reduce(
     (sum, row) => sum + (Number(row.DocInvoiceAmt) || 0),
     0,
+  );
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const page = Math.min(currentPage, totalPages);
+  const pageStart = (page - 1) * pageSize;
+  const pagedRows = rows.slice(pageStart, pageStart + pageSize);
+  const firstPageInWindow = Math.max(1, Math.min(page - 2, totalPages - 4));
+  const pageNumbers = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, i) => firstPageInWindow + i,
   );
 
   // การเลือกจ่ายต้องเรียงจากลำดับที่ 1 ถึงลำดับที่คลิกเสมอ
@@ -380,10 +397,26 @@ export default function VanAccountDetailPage() {
           )}
 
           <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+            <h3 className="font-bold text-gray-900 py-2 px-5 bg-[#19368f] text-white">
+              รายละเอียดบัญชีเลขที่ {vanNoDisplay}
+            </h3>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-gray-200">
-              <h3 className="font-semibold text-gray-900">
-                รายละเอียดบัญชีเลขที่ {vanNoDisplay}
-              </h3>
+              <label className="flex items-center gap-2">
+                แสดง
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="border border-gray-300 rounded-lg px-2 py-1 bg-white"
+                >
+                  {[10, 20, 50, 100].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                รายการต่อหน้า
+              </label>
+
               <div className="flex items-center gap-2">
                 <Link
                   href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log${lastPayDate ? `?date=${encodeURIComponent(lastPayDate)}` : ""}`}
@@ -448,7 +481,8 @@ export default function VanAccountDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {rows.map((row, index) => {
+                  {pagedRows.map((row, localIndex) => {
+                    const index = pageStart + localIndex;
                     const color = amountClass(row.Color1);
                     const checked = index < selectedCount;
                     return (
@@ -505,6 +539,61 @@ export default function VanAccountDetailPage() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-3 border-t border-gray-200 text-sm text-gray-600">
+              <label className="flex items-center gap-2">
+                แสดง
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="border border-gray-300 rounded-lg px-2 py-1 bg-white"
+                >
+                  {[10, 20, 50, 100].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                รายการต่อหน้า
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <span>
+                  {rows.length === 0 ? 0 : pageStart + 1}-
+                  {Math.min(pageStart + pageSize, rows.length)} จาก{" "}
+                  {rows.length} รายการ
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(page - 1)}
+                  disabled={page <= 1}
+                  className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  ก่อนหน้า
+                </button>
+                {pageNumbers.map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => setCurrentPage(num)}
+                    className={`w-8 h-8 rounded-lg border ${
+                      num === page
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="px-3 py-1 rounded-lg border border-gray-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  ถัดไป
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 px-5 sm:px-6 py-4 border-t border-gray-200 bg-white">

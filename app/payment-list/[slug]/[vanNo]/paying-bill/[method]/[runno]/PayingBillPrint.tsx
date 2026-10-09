@@ -83,7 +83,28 @@ function AmountWords({ amount }: { amount: number | null }) {
   );
 }
 
-/** ใบนำจ่าย VAN — Barcode/QR = เลขบัญชี VAN */
+/** QR Code + Barcode จากเลขที่ใบนำจ่าย (runno) ใช้ร่วมกันทุกแบบ */
+function RunnoCodes({ runno }: { runno: string | null }) {
+  const value = runno || "-";
+  return (
+    <>
+      <div className="mt-8 flex items-end justify-center gap-16">
+        <div className="text-center">
+          <QRCode value={value} size={110} />
+          <p className="mt-2 text-xs text-gray-600">{value}</p>
+        </div>
+        <div className="text-center">
+          <Barcode value={value} height={80} fontSize={14} />
+        </div>
+      </div>
+      <p className="mt-2 text-center text-xs text-gray-500">
+        สำหรับเจ้าหน้าที่ทำการเงิน สแกนเพื่อตรวจสอบ
+      </p>
+    </>
+  );
+}
+
+/** ใบนำจ่าย VAN — Barcode/QR = Runno */
 function VanSlip({
   bill,
   company,
@@ -112,15 +133,7 @@ function VanSlip({
         </div>
       </div>
 
-      <div className="mt-8 flex items-end justify-center gap-16">
-        <div className="text-center">
-          <QRCode value={vanNo} size={110} />
-          <p className="mt-2 text-xs text-gray-600">{formatVanNumber(vanNo)}</p>
-        </div>
-        <div className="text-center">
-          <Barcode value={vanNo || "-"} height={80} fontSize={14} />
-        </div>
-      </div>
+      <RunnoCodes runno={bill.runno} />
 
       <div className="mt-12 grid grid-cols-2 gap-16 text-center text-sm">
         <div>
@@ -142,8 +155,6 @@ function BankSlip({
   company,
   customer,
 }: Omit<PayingBillPrintProps, "method">) {
-  const runno = bill.runno ?? "";
-
   return (
     <div>
       <CustomerHeader company={company} bill={bill} customer={customer} />
@@ -206,18 +217,7 @@ function BankSlip({
         {bill.tranferTime || "-"} น.
       </p>
 
-      <div className="mt-8 flex items-end justify-center gap-16">
-        <div className="text-center">
-          <QRCode value={runno} size={110} />
-          <p className="mt-2 text-xs text-gray-600">{runno}</p>
-        </div>
-        <div className="text-center">
-          <Barcode value={runno || "-"} height={80} fontSize={14} />
-        </div>
-      </div>
-      <p className="mt-2 text-center text-xs text-gray-500">
-        สำหรับเจ้าหน้าที่ทำการเงิน สแกนเพื่อตรวจสอบ
-      </p>
+      <RunnoCodes runno={bill.runno} />
 
       <div className="mt-10 grid grid-cols-2 gap-16 text-center text-sm">
         <div>
@@ -233,7 +233,7 @@ function BankSlip({
   );
 }
 
-/** ใบรับฝากเงิน กรุงไทย (เช็ค) — ไม่มี Barcode/QR */
+/** ใบรับฝากเงิน กรุงไทย (เช็ค) — Barcode/QR = Runno */
 function ChequeKtbSlip({
   bill,
   company,
@@ -335,6 +335,8 @@ function ChequeKtbSlip({
         </div>
       </div>
 
+      <RunnoCodes runno={bill.runno} />
+
       <p className="mt-4 text-center text-sm text-gray-600">
         จ่ายโดยเช็คผ่านธนาคาร — เลขที่บัญชี {formatVanNumber(bill.vanNo ?? "")}
       </p>
@@ -342,7 +344,7 @@ function ChequeKtbSlip({
   );
 }
 
-/** Cheque Collection Pay-in-Slip UOB — ไม่มี Barcode/QR */
+/** Cheque Collection Pay-in-Slip UOB — Barcode/QR = Runno */
 function ChequeUobSlip({
   bill,
   company,
@@ -501,6 +503,8 @@ function ChequeUobSlip({
           </div>
         </div>
       </div>
+
+      <RunnoCodes runno={bill.runno} />
 
       <p className="mt-4 text-center text-sm text-gray-600">
         จ่ายโดยเช็คผ่านธนาคาร — เลขที่บัญชี {formatVanNumber(bill.vanNo ?? "")}

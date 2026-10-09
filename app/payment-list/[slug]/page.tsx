@@ -41,6 +41,14 @@ function formatVanNumber(value: string): string {
     : value;
 }
 
+// สีตัวอักษรตามกลุ่มสถานะการชำระ (iColor1) — ชุดเดียวกับ paymentStatuses ใน ../data
+const ACCOUNT_COLOR_CLASS: Record<number, string> = {
+  0: "text-gray-500",
+  1: "text-[#5A8A2A]",
+  2: "text-[#B8860B]",
+  3: "text-[#ED1C24]",
+};
+
 function formatDate(value: string | null | undefined): string {
   if (!value) return "-";
   return new Intl.DateTimeFormat("th-TH", {
@@ -319,7 +327,8 @@ export default function PaymentAccountDetailPage() {
                   {visibleAccounts.map((account, index) => {
                     const hasVanNumber = Boolean(account.VANNO);
                     const dataClass = hasVanNumber
-                      ? "text-red-600"
+                      ? (ACCOUNT_COLOR_CLASS[Number(account.iColor1)] ??
+                        "text-gray-500")
                       : "text-gray-400";
                     return (
                       <tr

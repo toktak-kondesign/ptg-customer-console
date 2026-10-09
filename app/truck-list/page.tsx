@@ -58,7 +58,7 @@ function ActionCard({
       href={href}
       className="group flex items-center gap-3 rounded-xl border border-white/30 bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 px-4 py-3 shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:shadow-xl"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/70 text-gray-700">
+      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-700">
         {icon}
       </span>
       <span className="flex-1 text-sm font-semibold text-gray-800">
@@ -110,42 +110,34 @@ export default function TruckListPage() {
             </div>
 
             <div className="absolute right-4 top-1/2 hidden w-80 -translate-y-1/2 space-y-3 sm:right-6 md:block">
-              <div className="w-1/4 min-w-[96px] rounded-lg bg-white/90 px-3 py-2 text-center shadow">
+              {/* <div className="w-1/4 min-w-[96px] rounded-lg bg-white/90 px-3 py-2 text-center shadow">
                 <p className="text-lg font-bold leading-tight text-gray-900">
                   {mockTrucks.length}{" "}
                   <span className="text-xs font-medium">คัน</span>
                 </p>
-              </div>
+              </div> */}
               <ActionCard
                 title="ขอบัตรรถรับสินค้าชั่วคราว"
                 href="#"
                 icon={
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
-                    <rect x="3" y="5" width="18" height="14" rx="2" />
-                    <path d="M12 9v6M9 12h6" strokeLinecap="round" />
-                  </svg>
+                  <Image
+                    src="images/profile_card.png"
+                    alt="temporary card"
+                    width={32}
+                    height={32}
+                  />
                 }
               />
               <ActionCard
                 title="ประวัติการขอบัตรรถ"
                 href="#"
                 icon={
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v5l3 2" strokeLinecap="round" />
-                  </svg>
+                  <Image
+                    src="images/history_icon.png"
+                    alt="history"
+                    width={32}
+                    height={32}
+                  />
                 }
               />
             </div>
@@ -154,7 +146,7 @@ export default function TruckListPage() {
 
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-3xl font-semibold text-gray-900">
               รถทั้งหมด <span className="text-blue-600">{trucks.length}</span>{" "}
               คัน
             </h2>
@@ -200,12 +192,12 @@ export default function TruckListPage() {
                   </span>
                   <TruckAvatar />
                   <div className="border-l border-gray-300 pl-3 leading-tight">
-                    <p className="text-xs text-gray-500">ทะเบียนรถ</p>
+                    <p className="text-gray-500">ทะเบียนรถ</p>
                     <p className="text-base font-semibold text-blue-700">
                       {t.CarRegister}
                     </p>
                   </div>
-                  <p className="hidden flex-1 truncate text-xs text-gray-500 sm:block">
+                  <p className="hidden flex-1 truncate text-gray-500 sm:block">
                     {t.Remark}
                   </p>
                   <div className="ml-auto sm:ml-0 sm:w-40 sm:flex sm:justify-center">
@@ -218,7 +210,7 @@ export default function TruckListPage() {
             <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
               <table className="w-full min-w-[860px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                  <tr className="border-b border-gray-200 text-semibold uppercase tracking-wide bg-[#19368f] text-white">
                     <th className="px-4 py-3 font-medium">#</th>
                     <th className="px-4 py-3 font-medium">RunID</th>
                     <th className="px-4 py-3 font-medium">เลขบัตร</th>
