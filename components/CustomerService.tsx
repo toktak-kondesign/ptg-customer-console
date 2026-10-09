@@ -70,7 +70,7 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/ptg_truck.png"),
     title: "ข้อมูลรายการ\nรถบรรทุก",
     desc: "ข้อมูลรายการรถบรรทุก",
-    approveLinkRef1: "Trucklist",
+    href: "/truck-list",
   },
   {
     image: img("/images/banner/tracking_logistic.png"),
