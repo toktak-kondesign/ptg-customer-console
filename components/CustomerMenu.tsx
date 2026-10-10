@@ -10,7 +10,7 @@ import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
 const CUSTOMER_INFO_URL =
   "https://depwn2021.ptg.co.th/ptgcustomer/CustomerInfo";
-const CUSTOMER_SERVICE_URL = "/";
+const CUSTOMER_SERVICE_URL = "/" + (process.env.NEXT_PUBLIC_BASE_PATH || "");
 
 const menuLinkClass =
   "flex items-center gap-2.5 px-3 py-2 rounded-md bg-transparent text-[0.8rem] whitespace-nowrap transition no-underline text-[#cccccc] hover:text-white";
@@ -27,6 +27,7 @@ export default function CustomerMenu({
   onLogout,
 }: CustomerMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [resolvingRef1, setResolvingRef1] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const {
@@ -104,6 +105,10 @@ export default function CustomerMenu({
     ? `/customer/${encodeURIComponent(sessionCustId)}`
     : CUSTOMER_INFO_URL;
 
+  const personImageUrl = customer.personCode
+    ? `https://wn2013.ptg.co.th/Upload/Employee/${customer.personCode}.jpg`
+    : null;
+
   return (
     <div
       className="relative pl-2 sm:pl-3 border-l border-slate-200"
@@ -116,8 +121,18 @@ export default function CustomerMenu({
         aria-expanded={showMenu}
         className="flex items-center gap-1.5 sm:gap-2 p-1 rounded hover:bg-slate-50 transition text-left"
       >
-        <span className="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-lg shrink-0">
-          👤
+        <span className="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-lg shrink-0 overflow-hidden">
+          {personImageUrl && !imageError ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={personImageUrl}
+              alt={displayName}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            "👤"
+          )}
         </span>
         <span className="leading-tight hidden sm:inline">
           <div className="text-[0.8em] text-slate-900 max-w-[180px] truncate">
