@@ -1,0 +1,49 @@
+services:
+  webcustomer:
+    container_name: ptgweb_app
+    build:
+      context: .
+      args:
+        # NEXT_PUBLIC_* ต้องส่งตอน build เพราะ Next.js inline เข้า client bundle
+        NEXT_PUBLIC_API_BASE: https://www.ptg.co.th/
+        NEXT_PUBLIC_REWARDS_BASE_URL: https://rewards.ptg.co.th
+        NEXT_PUBLIC_BASE_PATH: /Customer-console
+        NEXT_PUBLIC_PDF_API_URL: http://host.docker.internal:3400
+    ports:
+      - "3302:3302"
+    environment:
+      - TZ=Asia/Bangkok
+      - NODE_ENV=production
+      - APP_ENV=production
+      # Auth API - Production
+      - AUTH_API_BASE_URL=https://www.ptg.co.th
+      - AUTH_API_KEY=yeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaUyeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaU
+      # Database - DBWEBPTG (Gold/Silver points) - Production credentials
+      - DATABASE_URL=sqlserver://192.168.100.41:1433;database=DBWEBPTG;user=ptgwebapp;password=w3b@pp[PTG!2026]#;encrypt=DANGER_PLAINTEXT;trustServerCertificate=true;
+      # Database - PTGDATACENTER (stored procedure for waitpay points) - Production credentials
+      - DATACENTER_DATABASE_URL=sqlserver://192.168.100.14:1433;database=PTGDATACENTER;user=ptgwebapp;password=w3b@pp[PTG!2026]#;encrypt=DANGER_PLAINTEXT;trustServerCertificate=true;
+      # JWT configuration
+      - secertJWT=PTG@MinimumLength32CharactersSecretKey2024#liel4lse43-3ls34345slfiewsle
+      - JWT_ISSUER=https://www.ptg.co.th
+      - JWT_AUDIENCE=ApproveV2
+      # PDF API service (ptgpdfapi รันบน docker host เดียวกัน port 3400)
+      # ถ้า PDF API อยู่คนละเครื่อง ให้เปลี่ยนเป็น IP/URL ของเครื่องนั้น
+      - PDF_API_URL=http://host.docker.internal:3400
+      # Rewards API - Production
+      # - REWARDS_API_URL=https://rewards.ptg.co.th
+      #- REWARDS_API_URL=ptg_rewards_app:3301
+      - REWARDS_API_URL=http://host.docker.internal:3301
+      - NEXT_PUBLIC_REWARDS_BASE_URL=http://host.docker.internal:3301
+      # PTG Document API
+      - PTG_DOCUMENT_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkb2N1bWVudCIsImp0aSI6IjE3ZDcxYjIyLTM0N2ItNDkwMS1iMDczLTk1ODVkY2U0YzhiYiIsIlN5c3RlbU5hbWUiOiJQVEctRG9jdW1lbnQiLCJUb2tlbkdyb3VwIjoiUFRHIiwiZXhwIjoyMTAzMTk3MjA2LCJpc3MiOiJodHRwczovL3d3dy5wdGcuY28udGgiLCJhdWQiOiJHYXJkZW5Db25uZWN0In0.HFXmEwjA4yU_-BWWMlhRQH5bdKhgd509b8W1_ocUAbk
+      - PTG_DOCUMENT_API_URL=https://ptgdocapi.ptg.co.th/customers/documents
+    extra_hosts:
+      # ให้ container เข้าถึง service ที่รันบน host ได้ (PDF API port 3400)
+      - "host.docker.internal:host-gateway"
+    restart: always
+networks:
+  default:
+    external: true
+    name: ptg-network
+
+# หมายเหตุ: ไม่มี db service เพราะใช้ SQL Server ภายนอก (192.168.100.41, 192.168.100.14)
