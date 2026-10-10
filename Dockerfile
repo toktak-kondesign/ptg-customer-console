@@ -49,6 +49,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# NEXT_PUBLIC_* ต้องมีที่ runtime ด้วย — server.cjs โหลด next.config.ts ใหม่ตอน start
+# (basePath) และ server components อ่านค่า runtime ไม่ใช่ค่าที่ inline ตอน build
+ARG NEXT_PUBLIC_API_BASE
+ARG NEXT_PUBLIC_REWARDS_BASE_URL
+ARG NEXT_PUBLIC_BASE_PATH
+ARG NEXT_PUBLIC_PDF_API_URL
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE \
+    NEXT_PUBLIC_REWARDS_BASE_URL=$NEXT_PUBLIC_REWARDS_BASE_URL \
+    NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH \
+    NEXT_PUBLIC_PDF_API_URL=$NEXT_PUBLIC_PDF_API_URL
+
 RUN apk add --no-cache openssl libc6-compat
 
 # security: ไม่รันเป็น root

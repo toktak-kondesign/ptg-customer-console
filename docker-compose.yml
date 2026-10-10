@@ -29,11 +29,19 @@ services:
       # PDF API service (ptgpdfapi รันบน docker host เดียวกัน port 3400)
       # ถ้า PDF API อยู่คนละเครื่อง ให้เปลี่ยนเป็น IP/URL ของเครื่องนั้น
       - PDF_API_URL=http://host.docker.internal:3400
-      # Rewards API - Production
+      # Rewards API - Production (server-side proxy เท่านั้น)
       # - REWARDS_API_URL=https://rewards.ptg.co.th
       #- REWARDS_API_URL=ptg_rewards_app:3301
       - REWARDS_API_URL=http://host.docker.internal:3301
-      - NEXT_PUBLIC_REWARDS_BASE_URL=http://host.docker.internal:3301
+      # NEXT_PUBLIC_* ต้องตั้งที่ runtime ด้วย — server.cjs อ่าน next.config.ts ตอน start
+      # (ถ้าไม่ตั้ง NEXT_PUBLIC_BASE_PATH จะได้ basePath='' → 404 ทุกไฟล์ _next/static)
+      # และ server components ใช้ค่า runtime ไม่ใช่ค่าที่ inline ตอน build
+      - NEXT_PUBLIC_BASE_PATH=/Customer-console
+      - NEXT_PUBLIC_API_BASE=https://www.ptg.co.th/
+      - NEXT_PUBLIC_PDF_API_URL=http://host.docker.internal:3400
+      # ตัวแปร NEXT_PUBLIC_ ถูกใช้ในฝั่ง browser — ต้องเป็น URL ที่ browser ของ user เข้าถึงได้
+      # (host.docker.internal ใช้ได้เฉพาะภายใน container เท่านั้น)
+      - NEXT_PUBLIC_REWARDS_BASE_URL=https://rewards.ptg.co.th
       # PTG Document API
       - PTG_DOCUMENT_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkb2N1bWVudCIsImp0aSI6IjE3ZDcxYjIyLTM0N2ItNDkwMS1iMDczLTk1ODVkY2U0YzhiYiIsIlN5c3RlbU5hbWUiOiJQVEctRG9jdW1lbnQiLCJUb2tlbkdyb3VwIjoiUFRHIiwiZXhwIjoyMTAzMTk3MjA2LCJpc3MiOiJodHRwczovL3d3dy5wdGcuY28udGgiLCJhdWQiOiJHYXJkZW5Db25uZWN0In0.HFXmEwjA4yU_-BWWMlhRQH5bdKhgd509b8W1_ocUAbk
       - PTG_DOCUMENT_API_URL=https://ptgdocapi.ptg.co.th/customers/documents
