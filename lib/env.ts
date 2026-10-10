@@ -15,8 +15,7 @@ export const getApiBaseUrl = (): string => {
   if (isDevelopment) {
     return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
   } else {
-    // return process.env.NEXT_PUBLIC_API_BASE || 'https://www.ptg.co.th/';
-    return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
+    return process.env.NEXT_PUBLIC_API_BASE || 'https://www.ptg.co.th/';
   }
 };
 
@@ -42,11 +41,7 @@ export const PLACE_BILL_PDF_BASE_URL = (
 
 // PTG login page (dev/prod aware) — used when session expires or user logs out
 export const getLoginUrl = (): string => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  return isDevelopment
-    ? 'https://depwn2021.ptg.co.th/Site/Authentication/login'
-    : 'https://depwn2021.ptg.co.th/Site/Authentication/login';
-    // : 'https://www.ptg.co.th/Site/Authentication/login';
+  return `${API_BASE_URL}Site/Authentication/login`;
 };
 
 export const LOGIN_URL = getLoginUrl();

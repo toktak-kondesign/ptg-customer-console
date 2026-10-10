@@ -7,10 +7,10 @@ import { formatPoint } from "@/lib/pointPrecision";
 import type { AuthenUserInfo } from "@/lib/auth";
 import { getSessionCustomerId } from "@/lib/auth";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
+import { API_BASE_URL, LOGIN_URL } from "@/lib/env";
 
-const CUSTOMER_INFO_URL =
-  "https://depwn2021.ptg.co.th/ptgcustomer/CustomerInfo";
-const CUSTOMER_SERVICE_URL = "/" + (process.env.NEXT_PUBLIC_BASE_PATH || "");
+const CUSTOMER_INFO_URL = `${API_BASE_URL}ptgcustomer/CustomerInfo`;
+const CUSTOMER_SERVICE_URL = `${API_BASE_URL}PTGWeb/customer`;
 
 const menuLinkClass =
   "flex items-center gap-2.5 px-3 py-2 rounded-md bg-transparent text-[0.8rem] whitespace-nowrap transition no-underline text-[#cccccc] hover:text-white";
@@ -89,7 +89,7 @@ export default function CustomerMenu({
     return (
       <div className="pl-2 sm:pl-3 border-l border-slate-200">
         <a
-          href="https://depwn2021.ptg.co.th/Site/Authentication/login"
+          href={LOGIN_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-[0.8rem] font-semibold rounded-md transition"

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -14,8 +15,9 @@ export interface AuthenUserInfo {
   custName: string;
 }
 
-const AUTH_API_BASE_URL =
-  process.env.AUTH_API_BASE_URL || "https://depwn2021.ptg.co.th";
+const AUTH_API_BASE_URL = (
+  process.env.AUTH_API_BASE_URL || API_BASE_URL
+).replace(/\/+$/, "");
 const AUTH_API_KEY =
   process.env.AUTH_API_KEY ||
   "yeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaUyeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaU";
