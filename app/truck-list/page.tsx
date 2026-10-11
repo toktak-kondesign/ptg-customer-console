@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { Button, Modal } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { img } from "@/lib/env";
@@ -10,53 +11,94 @@ import { mockTrucks, type TruckCard } from "./data";
 
 type ViewMode = "table" | "card";
 
-const TruckAvatar = ({ size = "h-16 w-16" }: { size?: string }) => (
-  <div
-    className={`relative ${size} shrink-0 rounded-full bg-gray-100 border border-gray-200 overflow-hidden`}
+const CancelIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
   >
-    <Image
-      src={img("/images/Trucks-2.png")}
-      alt=""
-      fill
-      sizes="64px"
-      className="object-contain p-2 opacity-70"
-    />
-  </div>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9 9l6 6M15 9l-6 6" strokeLinecap="round" />
+  </svg>
 );
 
-const CancelButton = ({ plate }: { plate: string }) => (
-  <button
-    type="button"
-    aria-label={`ยกเลิกบัตร ${plate}`}
-    className="flex flex-col items-center gap-0.5 text-xs text-red-600 hover:text-red-700 transition"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      className="h-6 w-6"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M9 9l6 6M15 9l-6 6" strokeLinecap="round" />
-    </svg>
-    ยกเลิกบัตร
-  </button>
-);
+const CancelButton = ({ plate, cardId }: { plate: string; cardId: string }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={`ยกเลิกบัตร ${plate}`}
+        onClick={() => setOpen(true)}
+        className="flex flex-col items-center gap-0.5 text-xs text-red-600 hover:text-red-700 transition"
+      >
+        <CancelIcon />
+        ยกเลิกบัตร
+      </button>
+      <Modal
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        centered
+        width={640}
+      >
+        <div className="px-4 py-2 text-center">
+          <div className="flex items-center justify-center gap-2 text-red-600">
+            <CancelIcon className="h-14 w-14" />
+            <h3 className="text-xl font-semibold">
+              ยืนยันการยกเลิกบัตรรับสินค้า
+            </h3>
+          </div>
+          <p className="mt-5 text-gray-800">
+            คุณต้องการยกเลิกบัตรรับสินค้า หมายเลข{" "}
+            <span className="font-semibold">{cardId}</span>
+          </p>
+          <p className="mt-1">
+            <span className="bg-blue-50 px-2 py-0.5 font-semibold text-blue-700">
+              ทะเบียนรถ {plate}
+            </span>
+          </p>
+          <p className="mt-6 text-left text-red-600">หมายเหตุ</p>
+          <p className="mt-1 border border-gray-300 px-4 py-3 text-left text-sm leading-relaxed text-red-600">
+            เมื่อคุณทำการยกเลิกบัตรไปแล้ว
+            ไม่สามารถที่จะนำบัตรใบนี้กลับมาใช้งานได้อีก
+            ไม่ว่ากรณีใดก็ตามธุรกรรมอื่นใดที่เกี่ยวข้องกับบัตรใบนี้
+            ที่เกิดขึ้นก่อนการยกเลิก ถือว่าอยู่ในความรับผิดชอบของลูกค้าทุกประการ
+            และเพื่อความปลอดภัยในข้อมูล ของลูกค้าเอง ให้ดำเนินการส่งบัตรนั้นคืน
+            ทางบริษัทฯ ทันทีเพื่อทำลาย
+          </p>
+          <Button
+            type="primary"
+            size="large"
+            className="mt-6 px-10"
+            onClick={() => setOpen(false)}
+          >
+            ยืนยันการยกเลิกบัตร
+          </Button>
+        </div>
+      </Modal>
+    </>
+  );
+};
 
 function ActionCard({
   title,
   icon,
   href,
+  classOptional,
 }: {
   title: string;
   icon: React.ReactNode;
   href: string;
+  classOptional?: string;
 }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-white/30 bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 px-4 py-3 shadow-lg backdrop-blur transition hover:-translate-y-0.5 hover:shadow-xl"
+      className={`group flex items-center gap-3 rounded-xl border border-white/30  px-4 py-3 shadow-lg  transition hover:-translate-y-0.5 hover:shadow-xl ${classOptional || "bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 backdrop-blur"}`}
     >
       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-700">
         {icon}
@@ -70,6 +112,113 @@ function ActionCard({
     </Link>
   );
 }
+
+function TruckCardFlip({ truck }: { truck: TruckCard }) {
+  const [flipped, setFlipped] = useState(false);
+
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={() => setFlipped((f) => !f)}
+        aria-label={`บัตรรถทะเบียน ${truck.CarRegister} กดเพื่อสลับด้าน`}
+        className="block w-full [perspective:1400px]"
+      >
+        <div
+          className={`relative aspect-[1004/638] w-full transition-transform duration-500 [container-type:inline-size] [transform-style:preserve-3d] ${
+            flipped ? "[transform:rotateY(180deg)]" : ""
+          }`}
+        >
+          <div className="absolute inset-0 overflow-hidden rounded-xl shadow-md [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+            <Image
+              src={img("/images/card-front.png")}
+              alt={`บัตรรถ ${truck.CarRegister}`}
+              fill
+              sizes="(max-width: 640px) 100vw, 620px"
+              className="object-cover"
+            />
+            <div className="absolute left-[4%] top-[26%] flex h-[13%] w-[29%] items-center justify-center">
+              <span className="truncate text-[3.8cqw] font-bold tracking-wider text-white">
+                {truck.CardID}
+              </span>
+            </div>
+            <div className="absolute left-[37%] top-[26%] flex h-[13%] w-[58%] items-center">
+              <span className="truncate px-[2cqw] text-[3.4cqw] font-bold text-[#2b2b4e]">
+                {truck.Remark}
+              </span>
+            </div>
+            <div className="absolute left-[42%] top-[49%] w-[54%] text-center">
+              <span className="text-[10.5cqw] font-extrabold leading-none text-red-600">
+                {truck.CarRegister}
+              </span>
+            </div>
+            <span className="absolute bottom-[10.5%] left-[7%] text-[2.4cqw] font-medium text-white/90">
+              • {truck.CustID} | {truck.Remark}
+            </span>
+          </div>
+          <div className="absolute inset-0 overflow-hidden rounded-xl shadow-md [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)]">
+            <Image
+              src={img("/images/card-back.png")}
+              alt="เงื่อนไขและคำแนะนำ ด้านหลังบัตร"
+              fill
+              sizes="(max-width: 640px) 100vw, 620px"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </button>
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          {flipped ? "ด้านหลังบัตร" : "ด้านหน้าบัตร"} — กดที่บัตรเพื่อสลับ
+        </p>
+        {/* <CancelButton plate={truck.CarRegister} cardId={truck.CardID} /> */}
+      </div>
+    </div>
+  );
+}
+
+const CardIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+  >
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 10h18" strokeLinecap="round" />
+  </svg>
+);
+
+const CardZoomButton = ({ truck }: { truck: TruckCard }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={`ดูบัตร ${truck.CarRegister}`}
+        onClick={() => setOpen(true)}
+        className="flex flex-col items-center gap-0.5 text-xs text-blue-600 hover:text-blue-700 transition"
+      >
+        <CardIcon />
+        ดูบัตร
+      </button>
+      <Modal
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        centered
+        width={720}
+        title={`บัตรรถ ${truck.CarRegister}`}
+      >
+        <div className="pt-2">
+          <TruckCardFlip truck={truck} />
+        </div>
+      </Modal>
+    </>
+  );
+};
 
 export default function TruckListPage() {
   const [view, setView] = useState<ViewMode>("table");
@@ -119,6 +268,7 @@ export default function TruckListPage() {
               <ActionCard
                 title="ขอบัตรรถรับสินค้าชั่วคราว"
                 href="#"
+                classOptional="a_gradient_blue"
                 icon={
                   <Image
                     src="images/profile_card.png"
@@ -131,6 +281,7 @@ export default function TruckListPage() {
               <ActionCard
                 title="ประวัติการขอบัตรรถ"
                 href="#"
+                classOptional=""
                 icon={
                   <Image
                     src="images/history_icon.png"
@@ -181,31 +332,11 @@ export default function TruckListPage() {
               ไม่พบข้อมูลรถบรรทุก
             </div>
           ) : view === "card" ? (
-            <ul className="space-y-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {trucks.map((t) => (
-                <li
-                  key={t.RunID}
-                  className="flex items-center gap-4 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm transition hover:shadow-md sm:gap-6"
-                >
-                  <span className="w-8 text-center text-sm text-gray-500">
-                    {t.Row1}
-                  </span>
-                  <TruckAvatar />
-                  <div className="border-l border-gray-300 pl-3 leading-tight">
-                    <p className="text-gray-500">ทะเบียนรถ</p>
-                    <p className="text-base font-semibold text-blue-700">
-                      {t.CarRegister}
-                    </p>
-                  </div>
-                  <p className="hidden flex-1 truncate text-gray-500 sm:block">
-                    {t.Remark}
-                  </p>
-                  <div className="ml-auto sm:ml-0 sm:w-40 sm:flex sm:justify-center">
-                    <CancelButton plate={t.CarRegister} />
-                  </div>
-                </li>
+                <TruckCardFlip key={t.RunID} truck={t} />
               ))}
-            </ul>
+            </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
               <table className="w-full min-w-[860px] text-left text-sm">
@@ -247,8 +378,12 @@ export default function TruckListPage() {
                         {t.LastUseCard ? t.LastUseCard.slice(0, 16) : "-"}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex justify-center">
-                          <CancelButton plate={t.CarRegister} />
+                        <div className="flex items-center justify-center gap-4">
+                          <CardZoomButton truck={t} />
+                          <CancelButton
+                            plate={t.CarRegister}
+                            cardId={t.CardID}
+                          />
                         </div>
                       </td>
                     </tr>
