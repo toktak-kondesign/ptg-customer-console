@@ -1,13 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button, Modal } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import OtpConfirmModal from "@/components/OtpConfirmModal";
+import {
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  getAuthUser,
+  getSessionCustomerId,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
-import { mockTrucks, type TruckCard } from "./data";
+import {
+  cancelCardService,
+  getCardTempListService,
+} from "@/services/customer/card-temp";
+import type { CardTempRow as TruckCard } from "@/interfaces/card-temp";
+import type { VerifyOtpPayload } from "@/interfaces/otp";
 
 type ViewMode = "table" | "card";
 
@@ -24,8 +35,45 @@ const CancelIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
   </svg>
 );
 
-const CancelButton = ({ plate, cardId }: { plate: string; cardId: string }) => {
+const CancelButton = ({
+  plate,
+  cardId,
+  runId,
+  onCancelled,
+}: {
+  plate: string;
+  cardId: string;
+  runId: number;
+  onCancelled: () => void;
+}) => {
   const [open, setOpen] = useState(false);
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpCustId, setOtpCustId] = useState("");
+  const [doneOpen, setDoneOpen] = useState(false);
+
+  const handleConfirmCancel = () => {
+    setOtpCustId(getSessionCustomerId());
+    setOpen(false);
+    setOtpOpen(true);
+  };
+
+  const handleVerifyAndCancel = (payload: VerifyOtpPayload) =>
+    cancelCardService({
+      ...payload,
+      custID: otpCustId,
+      runID: runId,
+      userName: getAuthUser()?.username || otpCustId,
+    });
+
+  const handleOtpVerified = () => {
+    setOtpOpen(false);
+    setDoneOpen(true);
+  };
+
+  const handleDoneClose = () => {
+    setDoneOpen(false);
+    onCancelled();
+  };
 
   return (
     <>
@@ -74,9 +122,51 @@ const CancelButton = ({ plate, cardId }: { plate: string; cardId: string }) => {
             type="primary"
             size="large"
             className="mt-6 px-10"
-            onClick={() => setOpen(false)}
+            onClick={handleConfirmCancel}
           >
             ยืนยันการยกเลิกบัตร
+          </Button>
+        </div>
+      </Modal>
+      <OtpConfirmModal
+        open={otpOpen}
+        custId={otpCustId}
+        title="ยืนยัน OTP เพื่อยกเลิกบัตร"
+        description={
+          <p className="text-gray-800">
+            ยกเลิกบัตรรับสินค้า หมายเลข{" "}
+            <span className="font-semibold">{cardId}</span>
+            <br />
+            <span className="bg-blue-50 px-2 py-0.5 font-semibold text-blue-700">
+              ทะเบียนรถ {plate}
+            </span>
+          </p>
+        }
+        onCancel={() => setOtpOpen(false)}
+        onVerify={handleVerifyAndCancel}
+        onVerified={handleOtpVerified}
+      />
+      <Modal
+        open={doneOpen}
+        onCancel={handleDoneClose}
+        footer={null}
+        centered
+        width={420}
+      >
+        <div className="px-4 py-2 text-center">
+          <h3 className="text-xl font-semibold text-green-600">
+            ยกเลิกบัตรเรียบร้อย
+          </h3>
+          <p className="mt-3 text-gray-700">
+            บัตรรับสินค้า หมายเลข{" "}
+            <span className="font-semibold">{cardId}</span> ถูกยกเลิกแล้ว
+          </p>
+          <Button
+            type="primary"
+            className="mt-5 px-10"
+            onClick={handleDoneClose}
+          >
+            ปิด
           </Button>
         </div>
       </Modal>
@@ -223,13 +313,53 @@ const CardZoomButton = ({ truck }: { truck: TruckCard }) => {
 export default function TruckListPage() {
   const [view, setView] = useState<ViewMode>("table");
   const [query, setQuery] = useState("");
+  const [custID, setCustID] = useState("");
+  const [allTrucks, setAllTrucks] = useState<TruckCard[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    setCustID(getSessionCustomerId());
+    const handleChanged = () => setCustID(getSessionCustomerId());
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () =>
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+  }, []);
+
+  useEffect(() => {
+    if (!custID) {
+      setAllTrucks([]);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      const result = await getCardTempListService(custID);
+      if (cancelled) return;
+      if (result.status === "success") {
+        setAllTrucks(result.results || []);
+      } else {
+        setAllTrucks([]);
+        setError(result.error || "ไม่สามารถโหลดข้อมูลรถบรรทุกได้");
+      }
+      setIsLoading(false);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [custID, reloadKey]);
 
   const trucks = useMemo<TruckCard[]>(
     () =>
-      mockTrucks.filter((t) =>
+      allTrucks.filter((t) =>
         t.CarRegister.toLowerCase().includes(query.trim().toLowerCase()),
       ),
-    [query],
+    [allTrucks, query],
   );
 
   return (
@@ -271,7 +401,7 @@ export default function TruckListPage() {
                 classOptional="a_gradient_blue"
                 icon={
                   <Image
-                    src="images/profile_card.png"
+                    src={img("/images/profile_card.png")}
                     alt="temporary card"
                     width={32}
                     height={32}
@@ -280,11 +410,11 @@ export default function TruckListPage() {
               />
               <ActionCard
                 title="ประวัติการขอบัตรรถ"
-                href="#"
+                href="/truck-list/history"
                 classOptional=""
                 icon={
                   <Image
-                    src="images/history_icon.png"
+                    src={img("/images/history_icon.png")}
                     alt="history"
                     width={32}
                     height={32}
@@ -327,7 +457,17 @@ export default function TruckListPage() {
             </div>
           </div>
 
-          {trucks.length === 0 ? (
+          {error && (
+            <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-3 rounded-xl border border-dashed border-gray-300 bg-white py-16 text-gray-500">
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />
+              กำลังโหลดข้อมูลรถบรรทุก...
+            </div>
+          ) : trucks.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center text-gray-400">
               ไม่พบข้อมูลรถบรรทุก
             </div>
@@ -383,6 +523,8 @@ export default function TruckListPage() {
                           <CancelButton
                             plate={t.CarRegister}
                             cardId={t.CardID}
+                            runId={t.RunID}
+                            onCancelled={() => setReloadKey((k) => k + 1)}
                           />
                         </div>
                       </td>
