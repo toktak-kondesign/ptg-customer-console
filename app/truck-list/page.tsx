@@ -19,6 +19,7 @@ import {
 } from "@/services/customer/card-temp";
 import type { CardTempRow as TruckCard } from "@/interfaces/card-temp";
 import type { VerifyOtpPayload } from "@/interfaces/otp";
+import RequestCardModal from "./RequestCardModal";
 
 type ViewMode = "table" | "card";
 
@@ -179,26 +180,42 @@ function ActionCard({
   icon,
   href,
   classOptional,
+  onClick,
 }: {
   title: string;
   icon: React.ReactNode;
-  href: string;
+  href?: string;
   classOptional?: string;
+  onClick?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      className={`group flex items-center gap-3 rounded-xl border border-white/30  px-4 py-3 shadow-lg  transition hover:-translate-y-0.5 hover:shadow-xl ${classOptional || "bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 backdrop-blur"}`}
-    >
+  const className = `group flex items-center gap-3 rounded-xl border border-white/30  px-4 py-3 shadow-lg  transition hover:-translate-y-0.5 hover:shadow-xl ${classOptional || "bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 backdrop-blur"}`;
+  const content = (
+    <>
       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-700">
         {icon}
       </span>
-      <span className="flex-1 text-sm font-semibold text-gray-800">
+      <span className="flex-1 text-base font-semibold text-gray-800">
         {title}
       </span>
       <span className="text-gray-600 transition group-hover:translate-x-1">
         ›
       </span>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${className} w-full text-left`}
+      >
+        {content}
+      </button>
+    );
+  }
+  return (
+    <Link href={href ?? "#"} className={className}>
+      {content}
     </Link>
   );
 }
@@ -318,6 +335,7 @@ export default function TruckListPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [requestOpen, setRequestOpen] = useState(false);
 
   useEffect(() => {
     setCustID(getSessionCustomerId());
@@ -397,7 +415,7 @@ export default function TruckListPage() {
               </div> */}
               <ActionCard
                 title="ขอบัตรรถรับสินค้าชั่วคราว"
-                href="#"
+                onClick={() => setRequestOpen(true)}
                 classOptional="a_gradient_blue"
                 icon={
                   <Image
@@ -536,6 +554,11 @@ export default function TruckListPage() {
           )}
         </div>
       </main>
+      <RequestCardModal
+        open={requestOpen}
+        custId={custID}
+        onClose={() => setRequestOpen(false)}
+      />
       <Footer />
     </div>
   );

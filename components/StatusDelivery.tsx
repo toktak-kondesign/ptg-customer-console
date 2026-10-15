@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
-import { Tooltip } from "antd";
+import { Tooltip, Modal } from "antd";
 import { getAuthUser } from "@/lib/auth";
 import { img } from "@/lib/env";
 import { useVisibleOnce } from "@/hooks/useVisibleOnce";
@@ -51,6 +51,7 @@ export default function StatusDelivery() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noteOrder, setNoteOrder] = useState<CustomerOrder | null>(null);
   const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
 
   // Fetch only when the section scrolls into view — it is below the fold,
@@ -91,6 +92,8 @@ export default function StatusDelivery() {
       controller.abort();
     };
   }, [visible]);
+
+  const noteUrl = noteOrder ? getDeliveryNoteUrl(noteOrder) : null;
 
   return (
     <section ref={sectionRef} className="py-12 bg-white">
@@ -181,11 +184,10 @@ export default function StatusDelivery() {
                   </div>
                   {order.custsign === 1 && (
                     <Tooltip title="ดูใบส่งสินค้า">
-                      <a
-                        href={getDeliveryNoteUrl(order) ?? undefined}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex ml-auto hover:opacity-70 transition"
+                      <button
+                        type="button"
+                        onClick={() => setNoteOrder(order)}
+                        className="inline-flex ml-auto hover:opacity-70 transition cursor-pointer"
                       >
                         <Image
                           src={img("/images/deliveryNote.svg")}
@@ -193,7 +195,7 @@ export default function StatusDelivery() {
                           width={32}
                           height={32}
                         />
-                      </a>
+                      </button>
                     </Tooltip>
                   )}
                 </div>
@@ -268,11 +270,10 @@ export default function StatusDelivery() {
                       <td className="px-4 py-3 text-center">
                         {order.custsign === 1 && (
                           <Tooltip title="ดูใบส่งสินค้า">
-                            <a
-                              href={getDeliveryNoteUrl(order) ?? undefined}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center hover:opacity-70 transition"
+                            <button
+                              type="button"
+                              onClick={() => setNoteOrder(order)}
+                              className="inline-flex items-center justify-center hover:opacity-70 transition cursor-pointer"
                             >
                               <Image
                                 src={img("/images/deliveryNote.svg")}
@@ -280,7 +281,7 @@ export default function StatusDelivery() {
                                 width={28}
                                 height={28}
                               />
-                            </a>
+                            </button>
                           </Tooltip>
                         )}
                       </td>
@@ -291,6 +292,23 @@ export default function StatusDelivery() {
             </table>
           </div>
         )}
+
+        <Modal
+          title={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
+          open={!!noteUrl}
+          onCancel={() => setNoteOrder(null)}
+          footer={null}
+          centered
+          width="80%"
+        >
+          {noteUrl && (
+            <img
+              src={noteUrl}
+              alt={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
+              className="w-full h-auto"
+            />
+          )}
+        </Modal>
       </AnimatedSection>
     </section>
   );
