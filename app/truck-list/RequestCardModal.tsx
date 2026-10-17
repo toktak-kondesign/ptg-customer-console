@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button, Modal, Spin } from "antd";
+import QRCode from "react-qr-code";
+import { Button, Modal, Spin, Steps, Table } from "antd";
 import {
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
   CheckOutlined,
   HistoryOutlined,
   MinusOutlined,
@@ -16,9 +19,15 @@ import {
 } from "@ant-design/icons";
 import { img } from "@/lib/env";
 import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
+import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
 import { getCustomerProfileService } from "@/services/customer/profile";
+import {
+  checkCarService,
+  createCardOtuService,
+} from "@/services/customer/card-otu-request";
 import type { CustomerAccountRow } from "@/interfaces/customer";
+import type { PendingBillRow } from "@/interfaces/card-temp";
 import { resolveCustomerProfile } from "@/app/customer/[customerId]/data";
 import { mockRequestProducts, type RequestProductItem } from "./data";
 
@@ -53,6 +62,49 @@ const ModalTitle = () => (
 const inputUnderlineClass =
   "mt-1 w-full border-0 border-b border-gray-300 bg-transparent px-0 py-2 text-sm outline-none transition placeholder:italic placeholder:text-gray-400 focus:border-blue-500";
 
+const STEP_ITEMS = [
+  { title: "ข้อมูล" },
+  { title: "เลือกสินค้า" },
+  { title: "ตรวจสอบ" },
+  { title: "บัตรชั่วคราว" },
+];
+
+const OTU_BASE_URL = "https://www.ptg.co.th/OTU.html?id=";
+
+const formatThaiDate = (value: string) =>
+  value
+    ? new Date(value).toLocaleString("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "-";
+
+const formatBillDate = (value: string | null | undefined) =>
+  value ? String(value).slice(0, 10) : "-";
+
+const TermsList = () => (
+  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
+    <li>
+      บัตรนี้เป็นบัตรที่ใช้ได้ครั้งเดียว (One Time Use) ไม่สามารถนำใช้ซ้ำได้
+    </li>
+    <li>จะต้องใช้บัตรนี้ภายใน 72 ชม.</li>
+    <li>สงวนสิทธิ์ เฉพาะรถที่มีทะเบียนตรงกับบัตรนี้เท่านั้น</li>
+  </ul>
+);
+
+const SummaryRow = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="flex gap-3 py-2 text-sm">
+    <span className="w-44 shrink-0 text-gray-500">{label}</span>
+    <span className="min-w-0 flex-1 font-medium text-gray-800">{children}</span>
+  </div>
+);
+
 export default function RequestCardModal({
   open,
   custId,
@@ -62,6 +114,7 @@ export default function RequestCardModal({
   custId: string;
   onClose: () => void;
 }) {
+  const [step, setStep] = useState(0);
   const [cust, setCust] = useState({ id: "", name: "" });
   const [logo, setLogo] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -71,17 +124,23 @@ export default function RequestCardModal({
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [accountsError, setAccountsError] = useState<string | null>(null);
 
-  const [productOpen, setProductOpen] = useState(false);
   const [productQuery, setProductQuery] = useState("");
   const [draftQty, setDraftQty] = useState<Record<string, string>>({});
-  const [selectedItems, setSelectedItems] = useState<
-    { item: RequestProductItem; qty: number }[]
-  >([]);
 
   const [qrDirect, setQrDirect] = useState(false);
   const [phone, setPhone] = useState("");
   const [plate, setPlate] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [pendingBills, setPendingBills] = useState<PendingBillRow[] | null>(
+    null,
+  );
+  const [pendingCard, setPendingCard] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    idCode: string;
+    createDate: string;
+  } | null>(null);
 
   const loadProfile = async (id: string) => {
     setProfileLoading(true);
@@ -99,15 +158,25 @@ export default function RequestCardModal({
     setProfileLoading(false);
   };
 
+  const resetProducts = () => {
+    setProductQuery("");
+    setDraftQty(
+      Object.fromEntries(mockRequestProducts.map((item) => [item.docNo, "0"])),
+    );
+  };
+
   useEffect(() => {
     if (!open) return;
 
+    setStep(0);
     setQrDirect(false);
     setPhone("");
     setPlate("");
     setFormError(null);
-    setSelectedItems([]);
-    setDraftQty({});
+    setPendingBills(null);
+    setPendingCard(null);
+    setResult(null);
+    resetProducts();
 
     const seeded = resolveCustomerProfile(custId, getCustomerInfo(), {
       goldPoints: 0,
@@ -148,22 +217,8 @@ export default function RequestCardModal({
     if (account.CustID === cust.id) return;
     setCust({ id: account.CustID, name: account.Name });
     setLogo(null);
+    resetProducts();
     void loadProfile(account.CustID);
-  };
-
-  const openProductModal = () => {
-    setProductQuery("");
-    setDraftQty(
-      Object.fromEntries(
-        mockRequestProducts.map((item) => [
-          item.docNo,
-          String(
-            selectedItems.find((s) => s.item.docNo === item.docNo)?.qty ?? 0,
-          ),
-        ]),
-      ),
-    );
-    setProductOpen(true);
   };
 
   const setDraftValue = (item: RequestProductItem, raw: string) => {
@@ -208,39 +263,100 @@ export default function RequestCardModal({
     (item) => isStoneProduct(item) && parseQty(draftQty[item.docNo]) > 0,
   );
 
-  const commitProducts = () => {
-    setSelectedItems(
-      mockRequestProducts
-        .filter((item) => parseQty(draftQty[item.docNo]) > 0)
-        .map((item) => ({
-          item,
-          qty: Math.min(item.available, round2(parseQty(draftQty[item.docNo]))),
-        })),
-    );
-    setProductOpen(false);
-  };
+  const selectedItems = mockRequestProducts
+    .filter((item) => parseQty(draftQty[item.docNo]) > 0)
+    .map((item) => ({
+      item,
+      qty: Math.min(item.available, round2(parseQty(draftQty[item.docNo]))),
+    }));
 
-  const handleSave = () => {
-    if (!qrDirect && !phone.trim()) {
-      setFormError("กรุณากรอกหมายเลขเบอร์โทรศัพท์");
+  const plateNormalized = normalizePlate(plate);
+  const phoneValue = qrDirect ? "" : phone.trim();
+
+  const handleStep1Next = async () => {
+    if (!cust.id) {
+      setFormError("ไม่พบข้อมูลลูกค้า");
       return;
     }
-    if (!plate.trim()) {
+    if (!qrDirect && !/^0\d{9}$/.test(phoneValue)) {
+      setFormError("กรุณากรอกหมายเลขเบอร์โทรศัพท์ 10 หลักให้ถูกต้อง");
+      return;
+    }
+    if (!plateNormalized) {
       setFormError("กรุณากรอกหมายเลขทะเบียนรถบรรทุก");
       return;
     }
-    // mockup: ยังไม่ผูก API — รวบรวม payload แล้วปิด dialog
-    console.log("request-temp-card", {
-      custId: cust.id,
-      phone: qrDirect ? "" : phone.trim(),
-      plate: plate.trim(),
-      qrDirect,
-      items: selectedItems.map((s) => ({
-        docNo: s.item.docNo,
-        qty: s.qty,
+    if (!isValidThaiPlate(plateNormalized)) {
+      setFormError(
+        "รูปแบบทะเบียนรถไม่ถูกต้อง (ตัวอย่าง 80-1234, 1กก1234, กข123)",
+      );
+      return;
+    }
+
+    setFormError(null);
+    setSubmitting(true);
+    const res = await checkCarService(plateNormalized, cust.id, phoneValue);
+    setSubmitting(false);
+
+    if (res.status !== "success") {
+      setFormError(res.error ?? "ไม่สามารถตรวจสอบข้อมูลรถได้");
+      return;
+    }
+    if (res.pendingBills.length > 0) {
+      setPendingBills(res.pendingBills);
+      return;
+    }
+    if (res.pendingCard) {
+      setPendingCard(res.pendingCard);
+      return;
+    }
+    setStep(1);
+  };
+
+  const handleStep2Next = () => {
+    if (selectedItems.length === 0) {
+      setFormError("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
+      return;
+    }
+    setFormError(null);
+    setStep(2);
+  };
+
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    setFormError(null);
+    const res = await createCardOtuService({
+      custID: cust.id,
+      custName: cust.name,
+      car: plateNormalized,
+      phone: phoneValue,
+      createBy: (getAuthUser()?.username || cust.id).slice(0, 20),
+      items: selectedItems.map(({ item, qty }) => ({
+        itemCode: item.docNo,
+        orderNum: item.docNo,
+        orderLine: item.docNo,
+        numSend: qty,
+        unit: item.unit,
+        numSend2: qty,
+        unit2: item.unit,
       })),
     });
-    onClose();
+    setSubmitting(false);
+
+    if (res.status !== "success" || !res.idCode) {
+      setFormError(res.error ?? "ไม่สามารถบันทึกข้อมูลได้");
+      return;
+    }
+    setResult({
+      idCode: res.idCode,
+      createDate: res.createDate ?? new Date().toISOString(),
+    });
+    setStep(3);
+  };
+
+  const backToStep = (target: number) => {
+    setFormError(null);
+    setStep(target);
   };
 
   return (
@@ -251,6 +367,7 @@ export default function RequestCardModal({
         footer={null}
         centered
         width={720}
+        mask={{ closable: step !== 3 }}
         title={
           <div className="flex items-center justify-between gap-3 pr-6">
             <ModalTitle />
@@ -266,237 +383,428 @@ export default function RequestCardModal({
         }
       >
         <div className="pt-2">
-          <p className="text-sm font-semibold text-gray-800">
-            ข้อมูลลูกค้าที่ต้องการรับสินค้า{" "}
-            <span className="text-red-500">*</span>
-          </p>
-          <div className="mt-2 flex items-center gap-4 rounded-lg border border-gray-200 p-3">
-            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-gray-100">
-              <Image
-                src={logo ?? img("/images/avatar-customer.svg")}
-                alt="รูปลูกค้า"
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-blue-700">
-                รหัสลูกค้า{cust.id || "-"}
-              </p>
-              <p className="text-gray-700">
-                {profileLoading ? "กำลังโหลด..." : cust.name || "-"}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={openSwitcher}
-              className="flex w-24 shrink-0 flex-col items-center gap-1.5 rounded-lg border border-gray-200 px-2 py-3 text-center transition hover:border-blue-300 hover:bg-blue-50"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-lg text-blue-600">
-                <SwapOutlined />
-              </span>
-              <span className="text-xs leading-tight text-gray-600">
-                เปลี่ยนรหัสลูกค้า
-              </span>
-            </button>
-          </div>
+          <Steps current={step} size="small" items={STEP_ITEMS} />
 
-          <button
-            type="button"
-            onClick={openProductModal}
-            className="mt-4 w-full rounded-lg bg-[#5B6470] py-3 text-sm font-medium text-white transition hover:bg-[#4B545F]"
-          >
-            + เลือกรายการสินค้าที่ต้องการ
-          </button>
-
-          {selectedItems.length > 0 && (
-            <ul className="mt-2 space-y-1">
-              {selectedItems.map(({ item, qty }) => (
-                <li
-                  key={item.docNo}
-                  className="flex items-center justify-between gap-3 rounded-md bg-gray-50 px-3 py-1.5 text-sm"
+          {step === 0 && (
+            <div className="mt-5">
+              <p className="text-sm font-semibold text-gray-800">
+                ข้อมูลลูกค้าที่ต้องการรับสินค้า{" "}
+                <span className="text-red-500">*</span>
+              </p>
+              <div className="mt-2 flex items-center gap-4 rounded-lg border border-gray-200 p-3">
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-gray-100">
+                  <Image
+                    src={logo ?? img("/images/avatar-customer.svg")}
+                    alt="รูปลูกค้า"
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-blue-700">
+                    รหัสลูกค้า{cust.id || "-"}
+                  </p>
+                  <p className="text-gray-700">
+                    {profileLoading ? "กำลังโหลด..." : cust.name || "-"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={openSwitcher}
+                  className="flex w-24 shrink-0 flex-col items-center gap-1.5 rounded-lg border border-gray-200 px-2 py-3 text-center transition hover:border-blue-300 hover:bg-blue-50"
                 >
-                  <span className="truncate text-gray-700">
-                    เลขที่ {item.docNo} : {item.name}
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 text-lg text-blue-600">
+                    <SwapOutlined />
                   </span>
-                  <span className="shrink-0 font-medium text-blue-700">
-                    {formatQty(qty)} {item.unit}
+                  <span className="text-xs leading-tight text-gray-600">
+                    เปลี่ยนรหัสลูกค้า
                   </span>
-                </li>
-              ))}
-            </ul>
+                </button>
+              </div>
+
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={qrDirect}
+                  onClick={() => {
+                    setQrDirect((v) => !v);
+                    setFormError(null);
+                  }}
+                  className="flex items-center gap-2 text-sm text-gray-700"
+                >
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition ${
+                      qrDirect ? "border-blue-600" : "border-gray-400"
+                    }`}
+                  >
+                    {qrDirect && (
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+                    )}
+                  </span>
+                  รับ QR โดยตรง
+                </button>
+              </div>
+
+              {!qrDirect && (
+                <div className="mt-4">
+                  <label className="text-sm font-medium text-gray-800">
+                    หมายเลขเบอร์โทรศัพท์ (คนขับรถบรรทุก){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    value={phone}
+                    onChange={(e) =>
+                      setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                    }
+                    placeholder="กรอกหมายเลขเบอร์โทรศัพท์"
+                    inputMode="tel"
+                    className={inputUnderlineClass}
+                  />
+                </div>
+              )}
+
+              <div className="mt-4">
+                <label className="text-sm font-medium text-gray-800">
+                  หมายเลขทะเบียนรถบรรทุก<span className="text-red-500">*</span>
+                </label>
+                <input
+                  value={plate}
+                  onChange={(e) => setPlate(e.target.value)}
+                  placeholder="กรอกหมายเลขทะเบียนรถ เช่น 80-1234"
+                  className={inputUnderlineClass}
+                />
+              </div>
+
+              {formError && (
+                <p className="mt-3 text-center text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
+
+              <div className="mt-6 flex justify-center">
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<ArrowRightOutlined />}
+                  iconPlacement="end"
+                  loading={submitting}
+                  onClick={handleStep1Next}
+                  className="min-w-[260px]"
+                >
+                  ถัดไป
+                </Button>
+              </div>
+            </div>
           )}
 
-          <div className="mt-3 flex justify-end">
-            <button
-              type="button"
-              role="checkbox"
-              aria-checked={qrDirect}
-              onClick={() => {
-                setQrDirect((v) => !v);
-                setFormError(null);
-              }}
-              className="flex items-center gap-2 text-sm text-gray-700"
-            >
-              <span
-                className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition ${
-                  qrDirect ? "border-blue-600" : "border-gray-400"
-                }`}
-              >
-                {qrDirect && (
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                )}
-              </span>
-              รับ QR โดยตรง
-            </button>
-          </div>
-
-          {!qrDirect && (
-            <div className="mt-4">
-              <label className="text-sm font-medium text-gray-800">
-                หมายเลขเบอร์โทรศัพท์ (คนขับรถบรรทุก){" "}
-                <span className="text-red-500">*</span>
-              </label>
+          {step === 1 && (
+            <div className="mt-5">
+              <h3 className="text-base font-semibold text-gray-800">
+                สินค้าที่ท่านสามารถรับได้
+              </h3>
+              <p className="mt-1 text-sm text-red-600">
+                *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
+                สินค้าเท่านั้น
+              </p>
               <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="กรอกหมายเลขเบอร์โทรศัพท์"
-                inputMode="tel"
+                value={productQuery}
+                onChange={(e) => setProductQuery(e.target.value)}
+                placeholder="ค้นหาสินค้า"
                 className={inputUnderlineClass}
               />
+              <p className="mt-3 text-center text-sm font-semibold text-red-600">
+                ทศนิยม 2 หลัก รับได้ไม่เกินปริมาณที่มี
+              </p>
+
+              <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto pr-1">
+                {filteredProducts.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-gray-400">
+                    ไม่พบสินค้าที่ค้นหา
+                  </p>
+                ) : (
+                  filteredProducts.map((item) => {
+                    const disabled =
+                      isStoneProduct(item) &&
+                      stoneSelected !== undefined &&
+                      stoneSelected.docNo !== item.docNo;
+                    const qty = parseQty(draftQty[item.docNo]);
+                    return (
+                      <div
+                        key={item.docNo}
+                        className={`flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 transition ${
+                          disabled ? "opacity-50" : ""
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium text-blue-700">
+                            เลขที่ {item.docNo} : {item.name}
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            จำนวน {formatQty(item.available)} {item.unit}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center overflow-hidden rounded-md border border-gray-200">
+                          <button
+                            type="button"
+                            aria-label="ลดจำนวน"
+                            disabled={disabled || qty <= 0}
+                            onClick={() => stepDraft(item, -1)}
+                            className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <MinusOutlined className="text-xs" />
+                          </button>
+                          <input
+                            value={draftQty[item.docNo] ?? "0"}
+                            onChange={(e) =>
+                              setDraftValue(item, e.target.value)
+                            }
+                            onFocus={(e) => e.target.select()}
+                            onBlur={() => normalizeDraft(item)}
+                            disabled={disabled}
+                            inputMode="decimal"
+                            aria-label={`จำนวน ${item.name}`}
+                            className="h-9 w-16 border-x border-gray-200 text-center text-sm outline-none disabled:bg-gray-50"
+                          />
+                          <button
+                            type="button"
+                            aria-label="เพิ่มจำนวน"
+                            disabled={disabled || qty >= item.available}
+                            onClick={() => stepDraft(item, 1)}
+                            className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <PlusOutlined className="text-xs" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {formError && (
+                <p className="mt-3 text-center text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
+
+              <div className="mt-5 flex justify-center gap-3">
+                <Button
+                  size="large"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => backToStep(0)}
+                  className="min-w-[140px]"
+                >
+                  ย้อนกลับ
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<ArrowRightOutlined />}
+                  iconPlacement="end"
+                  onClick={handleStep2Next}
+                  className="min-w-[140px]"
+                >
+                  ถัดไป
+                </Button>
+              </div>
             </div>
           )}
 
-          <div className="mt-4">
-            <label className="text-sm font-medium text-gray-800">
-              หมายเลขทะเบียนรถบรรทุก<span className="text-red-500">*</span>
-            </label>
-            <input
-              value={plate}
-              onChange={(e) => setPlate(e.target.value)}
-              placeholder="กรอกหมายเลขทะเบียนรถ"
-              className={inputUnderlineClass}
-            />
-          </div>
+          {step === 2 && (
+            <div className="mt-5">
+              <h3 className="text-base font-semibold text-gray-800">
+                ตรวจสอบข้อมูลก่อนยืนยัน
+              </h3>
+              <div className="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200 px-4">
+                <SummaryRow label="รหัสลูกค้า">{cust.id}</SummaryRow>
+                <SummaryRow label="ชื่อลูกค้า">{cust.name || "-"}</SummaryRow>
+                <SummaryRow label="เบอร์โทรศัพท์คนขับ">
+                  {qrDirect ? "รับ QR โดยตรง" : phoneValue}
+                </SummaryRow>
+                <SummaryRow label="ทะเบียนรถบรรทุก">
+                  {plateNormalized}
+                </SummaryRow>
+                <SummaryRow label="รายการสินค้า">
+                  <ul className="space-y-1">
+                    {selectedItems.map(({ item, qty }) => (
+                      <li
+                        key={item.docNo}
+                        className="flex justify-between gap-3"
+                      >
+                        <span className="truncate">
+                          เลขที่ {item.docNo} : {item.name}
+                        </span>
+                        <span className="shrink-0 text-blue-700">
+                          {formatQty(qty)} {item.unit}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </SummaryRow>
+              </div>
 
-          {formError && (
-            <p className="mt-3 text-center text-sm text-red-600">{formError}</p>
+              {formError && (
+                <p className="mt-3 text-center text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
+
+              <div className="mt-5 flex justify-center gap-3">
+                <Button
+                  size="large"
+                  icon={<ArrowLeftOutlined />}
+                  disabled={submitting}
+                  onClick={() => backToStep(1)}
+                  className="min-w-[140px]"
+                >
+                  ย้อนกลับ
+                </Button>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<SaveOutlined />}
+                  loading={submitting}
+                  onClick={handleConfirm}
+                  className="min-w-[200px]"
+                >
+                  ยืนยันบันทึกข้อมูล
+                </Button>
+              </div>
+            </div>
           )}
 
-          <div className="mt-6 flex justify-center">
-            <Button
-              type="primary"
-              size="large"
-              icon={<SaveOutlined />}
-              onClick={handleSave}
-              className="min-w-[260px]"
-            >
-              บันทึกข้อมูล
-            </Button>
-          </div>
+          {step === 3 && result && (
+            <div className="mt-5">
+              <div className="mx-auto max-w-md rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <Image
+                  src={img("/images/logo_company/logo_PTG.png")}
+                  alt="PTG"
+                  width={120}
+                  height={40}
+                  className="h-auto w-28"
+                />
+                <div className="mt-4 flex justify-center">
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
+                    <QRCode
+                      value={`${OTU_BASE_URL}${result.idCode}`}
+                      size={176}
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 text-center text-xs tracking-wider text-gray-500">
+                  {result.idCode}
+                </p>
+                <div className="mt-4 text-center">
+                  <p className="font-semibold text-gray-800">
+                    {cust.name || "-"} ({cust.id})
+                  </p>
+                  <p className="mt-1 font-semibold text-gray-800">
+                    ทะเบียน {plateNormalized}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    ออกบัตรเมื่อ {formatThaiDate(result.createDate)}
+                  </p>
+                </div>
+                <div className="mt-4 border-t border-gray-100 pt-3">
+                  <p className="text-sm font-semibold text-gray-800">
+                    เงื่อนไขบัตรรถบรรทุกชั่วคราว (Card One Time Use)
+                  </p>
+                  <TermsList />
+                  <p className="mt-3 text-center text-sm text-gray-700">
+                    ท่านสามารถดูวิธีใช้บัตรได้ที่{" "}
+                    <a
+                      href="https://vimeo.com/642570187"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      https://vimeo.com/642570187
+                    </a>
+                  </p>
+                  <p className="mt-2 text-right text-sm text-gray-700">
+                    สอบถามข้อมูลเพิ่มเติม โทร : 1634
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-center">
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={onClose}
+                  className="min-w-[200px]"
+                >
+                  ปิด
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 
       <Modal
-        open={productOpen}
-        onCancel={() => setProductOpen(false)}
-        footer={null}
+        open={pendingBills !== null}
+        onCancel={() => setPendingBills(null)}
+        footer={
+          <Button type="primary" onClick={() => setPendingBills(null)}>
+            ตกลง
+          </Button>
+        }
         centered
-        width={720}
-        title={<ModalTitle />}
+        width={640}
+        title="พบใบงานค้างอยู่ในระบบ"
       >
-        <div className="pt-2">
-          <h3 className="text-base font-semibold text-gray-800">
-            สินค้าที่ท่านสามารถรับได้
-          </h3>
-          <p className="mt-1 text-sm text-red-600">
-            *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
-            สินค้าเท่านั้น
-          </p>
-          <input
-            value={productQuery}
-            onChange={(e) => setProductQuery(e.target.value)}
-            placeholder="ค้นหาสินค้า"
-            className={inputUnderlineClass}
-          />
-          <p className="mt-3 text-center text-sm font-semibold text-red-600">
-            ทศนิยม 2 หลัก รับได้ไม่เกินปริมาณที่มี
-          </p>
+        <p className="text-sm text-red-600">
+          รถทะเบียน {plateNormalized} มีใบงานค้างอยู่ในระบบ
+          กรุณาติดต่อเจ้าหน้าที่หรือพนักงานตลาดทำการเช็คข้อมูล
+        </p>
+        <Table<PendingBillRow & { _key: number }>
+          className="mt-3"
+          size="small"
+          pagination={false}
+          rowKey="_key"
+          dataSource={(pendingBills ?? []).map((bill, index) => ({
+            ...bill,
+            _key: index,
+          }))}
+          columns={[
+            {
+              title: "ลำดับที่",
+              width: 80,
+              render: (_v, _r, i) => i + 1,
+            },
+            { title: "เลขที่ใบรับสินค้า", dataIndex: "OrderCode" },
+            {
+              title: "วันที่รับสินค้า",
+              dataIndex: "DateSend",
+              render: formatBillDate,
+            },
+            { title: "สถานะ", dataIndex: "TxtStatus" },
+          ]}
+        />
+      </Modal>
 
-          <div className="mt-3 max-h-[50vh] space-y-3 overflow-y-auto pr-1">
-            {filteredProducts.length === 0 ? (
-              <p className="py-6 text-center text-sm text-gray-400">
-                ไม่พบสินค้าที่ค้นหา
-              </p>
-            ) : (
-              filteredProducts.map((item) => {
-                const disabled =
-                  isStoneProduct(item) &&
-                  stoneSelected !== undefined &&
-                  stoneSelected.docNo !== item.docNo;
-                const qty = parseQty(draftQty[item.docNo]);
-                return (
-                  <div
-                    key={item.docNo}
-                    className={`flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 transition ${
-                      disabled ? "opacity-50" : ""
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium text-blue-700">
-                        เลขที่ {item.docNo} : {item.name}
-                      </p>
-                      <p className="mt-1 text-sm text-gray-600">
-                        จำนวน {formatQty(item.available)} {item.unit}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 items-center overflow-hidden rounded-md border border-gray-200">
-                      <button
-                        type="button"
-                        aria-label="ลดจำนวน"
-                        disabled={disabled || qty <= 0}
-                        onClick={() => stepDraft(item, -1)}
-                        className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <MinusOutlined className="text-xs" />
-                      </button>
-                      <input
-                        value={draftQty[item.docNo] ?? "0"}
-                        onChange={(e) => setDraftValue(item, e.target.value)}
-                        onFocus={(e) => e.target.select()}
-                        onBlur={() => normalizeDraft(item)}
-                        disabled={disabled}
-                        inputMode="decimal"
-                        aria-label={`จำนวน ${item.name}`}
-                        className="h-9 w-16 border-x border-gray-200 text-center text-sm outline-none disabled:bg-gray-50"
-                      />
-                      <button
-                        type="button"
-                        aria-label="เพิ่มจำนวน"
-                        disabled={disabled || qty >= item.available}
-                        onClick={() => stepDraft(item, 1)}
-                        className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <PlusOutlined className="text-xs" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          <div className="mt-5 flex justify-center">
-            <Button
-              type="primary"
-              onClick={commitProducts}
-              className="min-w-[180px]"
-            >
-              บันทึก
-            </Button>
-          </div>
-        </div>
+      <Modal
+        open={pendingCard !== null}
+        onCancel={() => setPendingCard(null)}
+        footer={
+          <Button type="primary" onClick={() => setPendingCard(null)}>
+            ตกลง
+          </Button>
+        }
+        centered
+        width={480}
+        title="มีบัตรชั่วคราวค้างอยู่"
+      >
+        <p className="text-sm text-gray-700">
+          คุณได้ขอบัตรรถบรรทุกชั่วคราวให้กับรถบรรทุกทะเบียน {plateNormalized}{" "}
+          ไว้แล้ว บัตรชั่วคราวมีอายุ 72 ชั่วโมง
+          กรุณามารับสินค้าภายในระยะเวลาที่กำหนด
+        </p>
+        {pendingCard && (
+          <p className="mt-2 text-xs text-gray-500">เลขที่บัตร {pendingCard}</p>
+        )}
       </Modal>
 
       <Modal
