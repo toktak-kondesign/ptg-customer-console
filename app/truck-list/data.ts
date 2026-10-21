@@ -28,22 +28,13 @@ export const mockTrucks: TruckCard[] = plates.map((CarRegister, i) => ({
   IsInActive: 0,
 }));
 
-// สินค้าที่เลือกรับได้ใน dialog "ขอบัตรรถรับสินค้าชั่วคราว" — mock รอ API จริง
+// สินค้าที่เลือกรับได้ใน dialog "ขอบัตรรถรับสินค้าชั่วคราว"
 export interface RequestProductItem {
+  key: string;
   docNo: string;
+  orderLine: string;
+  itemCode: string;
   name: string;
   available: number;
   unit: string;
 }
-
-export const mockRequestProducts: RequestProductItem[] = [
-  {
-    docNo: "685199",
-    name: "ศิลาเหลี่ยม 30*30*6.00 ซม. สีเทา",
-    available: 2184,
-    unit: "ก้อน",
-  },
-  { docNo: "289739", name: 'หิน 3/4"', available: 52.27, unit: "คิว" },
-  { docNo: "290423", name: 'หิน 1"', available: 79.16, unit: "คิว" },
-  { docNo: "290991", name: 'หิน 3/4"', available: 227.6, unit: "คิว" },
-];

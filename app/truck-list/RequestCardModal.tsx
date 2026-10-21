@@ -14,6 +14,7 @@ import {
   PlusOutlined,
   RightOutlined,
   SaveOutlined,
+  SearchOutlined,
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -25,11 +26,12 @@ import { getCustomerProfileService } from "@/services/customer/profile";
 import {
   checkCarService,
   createCardOtuService,
+  getRequestProductsService,
 } from "@/services/customer/card-otu-request";
 import type { CustomerAccountRow } from "@/interfaces/customer";
 import type { PendingBillRow } from "@/interfaces/card-temp";
 import { resolveCustomerProfile } from "@/app/customer/[customerId]/data";
-import { mockRequestProducts, type RequestProductItem } from "./data";
+import type { RequestProductItem } from "./data";
 
 const isStoneProduct = (item: RequestProductItem) => item.name.includes("หิน");
 
@@ -125,6 +127,9 @@ export default function RequestCardModal({
   const [accountsError, setAccountsError] = useState<string | null>(null);
 
   const [productQuery, setProductQuery] = useState("");
+  const [products, setProducts] = useState<RequestProductItem[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState<string | null>(null);
   const [draftQty, setDraftQty] = useState<Record<string, string>>({});
 
   const [qrDirect, setQrDirect] = useState(false);
@@ -158,11 +163,30 @@ export default function RequestCardModal({
     setProfileLoading(false);
   };
 
-  const resetProducts = () => {
+  const resetProducts = async (id: string) => {
     setProductQuery("");
-    setDraftQty(
-      Object.fromEntries(mockRequestProducts.map((item) => [item.docNo, "0"])),
-    );
+    setDraftQty({});
+    setProducts([]);
+    setProductsError(null);
+    if (!id) return;
+    setProductsLoading(true);
+    const res = await getRequestProductsService(id);
+    if (res.status === "success") {
+      const items = res.results.map((row) => ({
+        key: `${row.OrderNum}-${row.OrderLine}`,
+        docNo: row.OrderNum,
+        orderLine: String(row.OrderLine),
+        itemCode: row.ItemCode,
+        name: row.ItemName,
+        available: row.NumToUse,
+        unit: row.Unit,
+      }));
+      setProducts(items);
+      setDraftQty(Object.fromEntries(items.map((item) => [item.key, "0"])));
+    } else {
+      setProductsError(res.error ?? "ไม่สามารถโหลดรายการสินค้าได้");
+    }
+    setProductsLoading(false);
   };
 
   useEffect(() => {
@@ -176,7 +200,7 @@ export default function RequestCardModal({
     setPendingBills(null);
     setPendingCard(null);
     setResult(null);
-    resetProducts();
+    void resetProducts(custId);
 
     const seeded = resolveCustomerProfile(custId, getCustomerInfo(), {
       goldPoints: 0,
@@ -217,7 +241,7 @@ export default function RequestCardModal({
     if (account.CustID === cust.id) return;
     setCust({ id: account.CustID, name: account.Name });
     setLogo(null);
-    resetProducts();
+    void resetProducts(account.CustID);
     void loadProfile(account.CustID);
   };
 
@@ -228,46 +252,46 @@ export default function RequestCardModal({
       Number.isFinite(value) && value > item.available
         ? String(item.available)
         : raw;
-    setDraftQty((current) => ({ ...current, [item.docNo]: next }));
+    setDraftQty((current) => ({ ...current, [item.key]: next }));
   };
 
   const stepDraft = (item: RequestProductItem, delta: number) => {
     const next = round2(
       Math.min(
         item.available,
-        Math.max(0, parseQty(draftQty[item.docNo]) + delta),
+        Math.max(0, parseQty(draftQty[item.key]) + delta),
       ),
     );
-    setDraftQty((current) => ({ ...current, [item.docNo]: String(next) }));
+    setDraftQty((current) => ({ ...current, [item.key]: String(next) }));
   };
 
   const normalizeDraft = (item: RequestProductItem) => {
-    const raw = draftQty[item.docNo];
+    const raw = draftQty[item.key];
     setDraftQty((current) => ({
       ...current,
-      [item.docNo]: raw ? String(parseQty(raw)) : "0",
+      [item.key]: raw ? String(parseQty(raw)) : "0",
     }));
   };
 
   const filteredProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
-    if (!q) return mockRequestProducts;
-    return mockRequestProducts.filter(
+    if (!q) return products;
+    return products.filter(
       (item) =>
         item.docNo.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q),
     );
-  }, [productQuery]);
+  }, [products, productQuery]);
 
-  const stoneSelected = mockRequestProducts.find(
-    (item) => isStoneProduct(item) && parseQty(draftQty[item.docNo]) > 0,
+  const stoneSelected = products.find(
+    (item) => isStoneProduct(item) && parseQty(draftQty[item.key]) > 0,
   );
 
-  const selectedItems = mockRequestProducts
-    .filter((item) => parseQty(draftQty[item.docNo]) > 0)
+  const selectedItems = products
+    .filter((item) => parseQty(draftQty[item.key]) > 0)
     .map((item) => ({
       item,
-      qty: Math.min(item.available, round2(parseQty(draftQty[item.docNo]))),
+      qty: Math.min(item.available, round2(parseQty(draftQty[item.key]))),
     }));
 
   const plateNormalized = normalizePlate(plate);
@@ -288,7 +312,7 @@ export default function RequestCardModal({
     }
     if (!isValidThaiPlate(plateNormalized)) {
       setFormError(
-        "รูปแบบทะเบียนรถไม่ถูกต้อง (ตัวอย่าง 80-1234, 1กก1234, กข123)",
+        "รูปแบบทะเบียนรถไม่ถูกต้อง (ตัวอย่าง 80-1234, 810684, 83-1193 นศ, 1ขค1228)",
       );
       return;
     }
@@ -332,9 +356,9 @@ export default function RequestCardModal({
       phone: phoneValue,
       createBy: (getAuthUser()?.username || cust.id).slice(0, 20),
       items: selectedItems.map(({ item, qty }) => ({
-        itemCode: item.docNo,
+        itemCode: item.itemCode,
         orderNum: item.docNo,
-        orderLine: item.docNo,
+        orderLine: item.orderLine,
         numSend: qty,
         unit: item.unit,
         numSend2: qty,
@@ -432,11 +456,11 @@ export default function RequestCardModal({
                     setQrDirect((v) => !v);
                     setFormError(null);
                   }}
-                  className="flex items-center gap-2 text-sm text-gray-700"
+                  className="flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-gray-700 transition hover:bg-red-100"
                 >
                   <span
                     className={`flex h-5 w-5 items-center justify-center rounded-full border-2 transition ${
-                      qrDirect ? "border-blue-600" : "border-gray-400"
+                      qrDirect ? "border-blue-600" : "border-red-300"
                     }`}
                   >
                     {qrDirect && (
@@ -502,37 +526,43 @@ export default function RequestCardModal({
           {step === 1 && (
             <div className="mt-5">
               <h3 className="text-base font-semibold text-gray-800">
-                สินค้าที่ท่านสามารถรับได้
+                สินค้าที่ท่านสามารถรับได้{" "}
+                <span className="mt-3 text-center text-sm font-semibold text-red-600">
+                  รับได้ไม่เกินปริมาณที่มี
+                </span>
               </h3>
               <p className="mt-1 text-sm text-red-600">
                 *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
                 สินค้าเท่านั้น
               </p>
-              <input
-                value={productQuery}
-                onChange={(e) => setProductQuery(e.target.value)}
-                placeholder="ค้นหาสินค้า"
-                className={inputUnderlineClass}
-              />
-              <p className="mt-3 text-center text-sm font-semibold text-red-600">
-                ทศนิยม 2 หลัก รับได้ไม่เกินปริมาณที่มี
-              </p>
-
+              <div className="mt-3 flex items-center gap-2">
+                <SearchOutlined />
+                <input
+                  value={productQuery}
+                  onChange={(e) => setProductQuery(e.target.value)}
+                  placeholder="ค้นหาสินค้า"
+                  className={inputUnderlineClass}
+                />
+              </div>
               <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto pr-1">
-                {filteredProducts.length === 0 ? (
+                {productsLoading ? (
+                  <div className="py-6 text-center">
+                    <Spin />
+                  </div>
+                ) : filteredProducts.length === 0 ? (
                   <p className="py-6 text-center text-sm text-gray-400">
-                    ไม่พบสินค้าที่ค้นหา
+                    {productsError ?? "ไม่พบสินค้าที่ค้นหา"}
                   </p>
                 ) : (
                   filteredProducts.map((item) => {
                     const disabled =
                       isStoneProduct(item) &&
                       stoneSelected !== undefined &&
-                      stoneSelected.docNo !== item.docNo;
-                    const qty = parseQty(draftQty[item.docNo]);
+                      stoneSelected.key !== item.key;
+                    const qty = parseQty(draftQty[item.key]);
                     return (
                       <div
-                        key={item.docNo}
+                        key={item.key}
                         className={`flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 transition ${
                           disabled ? "opacity-50" : ""
                         }`}
@@ -556,7 +586,7 @@ export default function RequestCardModal({
                             <MinusOutlined className="text-xs" />
                           </button>
                           <input
-                            value={draftQty[item.docNo] ?? "0"}
+                            value={draftQty[item.key] ?? "0"}
                             onChange={(e) =>
                               setDraftValue(item, e.target.value)
                             }
@@ -630,7 +660,7 @@ export default function RequestCardModal({
                   <ul className="space-y-1">
                     {selectedItems.map(({ item, qty }) => (
                       <li
-                        key={item.docNo}
+                        key={item.key}
                         className="flex justify-between gap-3"
                       >
                         <span className="truncate">

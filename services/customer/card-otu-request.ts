@@ -2,6 +2,7 @@ import type {
   CarCheckResponse,
   CreateCardOtuPayload,
   CreateCardOtuResponse,
+  RequestProductsResponse,
 } from "@/interfaces/card-temp";
 import { BASE_PATH } from "@/lib/env";
 
@@ -59,6 +60,34 @@ export async function createCardOtuService(
     return {
       status: "error",
       error: `An error occurred while creating card: ${message}`,
+    };
+  }
+}
+
+export async function getRequestProductsService(
+  custID: string,
+): Promise<RequestProductsResponse> {
+  try {
+    const params = new URLSearchParams({ custID });
+    const response = await fetch(
+      `${BASE_PATH}/api/car-card/products?${params.toString()}`,
+      { cache: "no-store" },
+    );
+    const data: RequestProductsResponse = await response.json();
+    if (!response.ok) {
+      return {
+        status: "error",
+        results: [],
+        error: data.error ?? `Failed to fetch products: ${response.status}`,
+      };
+    }
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return {
+      status: "error",
+      results: [],
+      error: `An error occurred while fetching products: ${message}`,
     };
   }
 }

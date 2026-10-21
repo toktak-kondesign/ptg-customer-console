@@ -68,3 +68,18 @@ export interface CreateCardOtuResponse {
   createDate?: string;
   error?: string;
 }
+
+export interface RequestProductRow {
+  OrderNum: string;
+  OrderLine: number;
+  ItemCode: string;
+  ItemName: string;
+  Unit: string;
+  NumToUse: number;
+}
+
+export interface RequestProductsResponse {
+  status: string;
+  results: RequestProductRow[];
+  error?: string;
+}
