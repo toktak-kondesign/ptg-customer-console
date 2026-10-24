@@ -1,6 +1,6 @@
 services:
   webcustomer:
-    container_name: ptgweb_app
+    container_name: ptgcustomer_app
     build:
       context: .
       args:
