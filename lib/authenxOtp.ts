@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/lib/env";
+import { SITE_BASE_URL } from "@/lib/env";
 import type {
   AuthenXVerifyOtpPayload,
   AuthenXVerifyOtpResponse,
@@ -7,7 +7,7 @@ import type {
 } from "@/interfaces/otp";
 
 const AUTHENX_BASE_URL = (
-  process.env.AUTH_API_BASE_URL || API_BASE_URL
+  process.env.AUTH_SITE_BASE_URL || SITE_BASE_URL
 ).replace(/\/+$/, "");
 
 const DEFAULT_VERIFY_OTP_URL = `${AUTHENX_BASE_URL}/siteService/api/AuthenX/VerifyOTP`;

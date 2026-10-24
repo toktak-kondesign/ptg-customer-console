@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_BASE_URL, SITE_BASE_URL } from "@/lib/env";
+import { SITE_BASE_URL } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;

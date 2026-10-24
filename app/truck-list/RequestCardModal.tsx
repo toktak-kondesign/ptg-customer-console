@@ -18,7 +18,7 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { img } from "@/lib/env";
+import { img, getApiBaseUrl } from "@/lib/env";
 import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
@@ -71,7 +71,7 @@ const STEP_ITEMS = [
   { title: "บัตรชั่วคราว" },
 ];
 
-const OTU_BASE_URL = "https://customer.ptg.co.th/OTU.html?id=";
+const OTU_BASE_URL = `${getApiBaseUrl()}OTU.html?id=`;
 
 const formatThaiDate = (value: string) =>
   value

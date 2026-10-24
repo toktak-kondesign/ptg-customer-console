@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "@/lib/env";
+import { getSiteBaseUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -47,7 +47,7 @@ export async function POST(
       );
     }
 
-    const baseUrl = getApiBaseUrl();
+    const baseUrl = getSiteBaseUrl();
     const approveLinkUrl = `${baseUrl}approvalapiex/v1/master/createApproveLink`;
 
     const approveLinkRes = await fetch(approveLinkUrl, {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_BASE_URL } from "@/lib/env";
+import { SITE_BASE_URL } from "@/lib/env";
 import type {
   AuthenXSendOtpPayload,
   AuthenXSendOtpResponse,
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const AUTHENX_BASE_URL = (
-  process.env.AUTH_API_BASE_URL || API_BASE_URL
+  process.env.AUTH_SITE_BASE_URL || SITE_BASE_URL
 ).replace(/\/+$/, "");
 
 const DEFAULT_SEND_OTP_URL = `${AUTHENX_BASE_URL}/siteService/api/AuthenX/SendOTPToCustomer`;

@@ -61,7 +61,7 @@ export const LOGIN_URL = getLoginUrl();
 
 // API endpoints
 export const API_ENDPOINTS = {
-  LOGIN: (uuid: string) => `${API_BASE_URL}approvalapiex/v1/auth/customer/userlogin/${uuid}`,
+  LOGIN: (uuid: string) => `${SITE_BASE_URL}approvalapiex/v1/auth/customer/userlogin/${uuid}`,
   // Add other endpoints as needed
 } as const;
 

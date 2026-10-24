@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "@/lib/env";
+import { getSiteBaseUrl } from "@/lib/env";
 import { generateCustomerAccessToken } from "@/lib/jwt";
 import type { Customer } from "@/interfaces/customer";
 
@@ -106,7 +106,7 @@ export async function POST(
     const token = generateCustomerAccessToken(customer);
 
     // Step 3: Call createApproveLink with ref1=ResaleID, ref2=custID, ref3=custID
-    const baseUrl = getApiBaseUrl();
+    const baseUrl = getSiteBaseUrl();
     const approveLinkUrl = `${baseUrl}approvalapiex/v1/master/createApproveLink`;
     const requestBody = {
       ref1: resaleID,

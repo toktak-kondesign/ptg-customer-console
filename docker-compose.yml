@@ -16,9 +16,11 @@ services:
       - TZ=Asia/Bangkok
       - NODE_ENV=production
       - APP_ENV=production
-      # Auth API - Production
-      - AUTH_API_BASE_URL=https://customer.ptg.co.th
+      # Auth API - Production (AuthenX อยู่บนเว็บหลัก www.ptg.co.th)
+      - AUTH_SITE_BASE_URL=https://www.ptg.co.th
       - AUTH_API_KEY=A4L6FLOl1OyeFxnJ0dOPxG4GXA4L6FLOA4L6FLOl1Ol1O4K2qUeL16Fen9wYzGXA4L6FLOl1O4K2qUeL16FaUyeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaU
+      # AuthenX OTP (SendOTPToCustomer / VerifyOTP) - same key as PTG_rewards
+      - AUTHENX_OTP_API_KEY=gdhhF123123Ol1O4K2qUeL16Fen9wYzaU
       # Database - DBWEBPTG (Gold/Silver points) - Production credentials
       - DATABASE_URL=sqlserver://192.168.100.41:1433;database=DBWEBPTG;user=ptgwebapp;password=w3b@pp[PTG!2026]#;encrypt=DANGER_PLAINTEXT;trustServerCertificate=true;
       # Database - PTGDATACENTER (stored procedure for waitpay points) - Production credentials

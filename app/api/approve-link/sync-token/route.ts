@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl } from "@/lib/env";
+import { getApiBaseUrl, getSiteBaseUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -65,12 +65,13 @@ export async function POST(
       );
     }
 
-    const baseUrl = getApiBaseUrl();
-    const targetUrl = `${baseUrl}CustomerBase/ApproveLinkToPTG?x=${resolveData.linkId}`;
+    const customerBaseUrl = getApiBaseUrl();
+    const siteBaseUrl = getSiteBaseUrl();
+    const targetUrl = `${customerBaseUrl}CustomerBase/ApproveLinkToPTG?x=${resolveData.linkId}`;
 
     // Step 2: exchange targetUrl for a sync token
     const tokenRes = await fetch(
-      `${baseUrl}siteService/api/AuthenX/CreateLinkToken`,
+      `${siteBaseUrl}siteService/api/AuthenX/CreateLinkToken`,
       {
         method: "POST",
         headers: {
@@ -100,7 +101,7 @@ export async function POST(
     }
 
     // Step 3: browser navigates here; the system activates the link itself
-    const url = `${baseUrl}Site/Authentication/SyncAuthenLink?t=${encodeURIComponent(tokenData.token)}`;
+    const url = `${siteBaseUrl}Site/Authentication/SyncAuthenLink?t=${encodeURIComponent(tokenData.token)}`;
     return NextResponse.json<SyncTokenResponse>({ success: true, url });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

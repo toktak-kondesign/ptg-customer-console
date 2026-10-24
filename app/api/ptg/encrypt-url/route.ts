@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_BASE_URL } from "@/lib/env";
+import { SITE_BASE_URL } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -51,7 +51,7 @@ export async function GET(
       );
     }
 
-    const url = `${API_BASE_URL}PTGWeb/EncryptUrl?X=${encodeURIComponent(x)}`;
+    const url = `${SITE_BASE_URL}PTGWeb/EncryptUrl?X=${encodeURIComponent(x)}`;
 
     const response = await fetch(url, {
       method: "GET",
