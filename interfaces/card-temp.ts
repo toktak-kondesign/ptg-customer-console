@@ -76,6 +76,7 @@ export interface RequestProductRow {
   ItemName: string;
   Unit: string;
   NumToUse: number;
+  ProdName: string;
 }
 
 export interface RequestProductsResponse {

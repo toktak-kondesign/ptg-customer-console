@@ -67,10 +67,13 @@ const inputUnderlineClass =
 
 const STEP_ITEMS = [
   { title: "ข้อมูล" },
+  { title: "กลุ่มสินค้า" },
   { title: "เลือกสินค้า" },
   { title: "ตรวจสอบ" },
   { title: "บัตรชั่วคราว" },
 ];
+
+const GROUP_COLORS = ["bg-red-100", "bg-blue-100", "bg-amber-100"];
 
 const OTU_BASE_URL = "https://www.ptg.co.th/OTU.html?id=";
 
@@ -131,6 +134,7 @@ export default function RequestCardModal({
   const [products, setProducts] = useState<RequestProductItem[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
+  const [group, setGroup] = useState("");
   const [draftQty, setDraftQty] = useState<Record<string, string>>({});
 
   const [qrDirect, setQrDirect] = useState(false);
@@ -166,6 +170,7 @@ export default function RequestCardModal({
 
   const resetProducts = async (id: string) => {
     setProductQuery("");
+    setGroup("");
     setDraftQty({});
     setProducts([]);
     setProductsError(null);
@@ -181,6 +186,7 @@ export default function RequestCardModal({
         name: row.ItemName,
         available: row.NumToUse,
         unit: row.Unit,
+        group: row.ProdName,
       }));
       setProducts(items);
       setDraftQty(Object.fromEntries(items.map((item) => [item.key, "0"])));
@@ -274,15 +280,24 @@ export default function RequestCardModal({
     }));
   };
 
+  const groups = useMemo(() => {
+    const counts = new Map<string, number>();
+    products.forEach((item) =>
+      counts.set(item.group, (counts.get(item.group) ?? 0) + 1),
+    );
+    return Array.from(counts, ([name, qty]) => ({ name, qty }));
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter(
+    const inGroup = products.filter((item) => item.group === group);
+    if (!q) return inGroup;
+    return inGroup.filter(
       (item) =>
         item.docNo.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q),
     );
-  }, [products, productQuery]);
+  }, [products, productQuery, group]);
 
   const stoneSelected = products.find(
     (item) => isStoneProduct(item) && parseQty(draftQty[item.key]) > 0,
@@ -338,13 +353,23 @@ export default function RequestCardModal({
     setStep(1);
   };
 
+  const handleSelectGroup = (name: string) => {
+    if (name !== group) {
+      setDraftQty(Object.fromEntries(products.map((item) => [item.key, "0"])));
+      setProductQuery("");
+    }
+    setGroup(name);
+    setFormError(null);
+    setStep(2);
+  };
+
   const handleStep2Next = () => {
     if (selectedItems.length === 0) {
       setFormError("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
       return;
     }
     setFormError(null);
-    setStep(2);
+    setStep(3);
   };
 
   const handleConfirm = async () => {
@@ -376,7 +401,7 @@ export default function RequestCardModal({
       idCode: res.idCode,
       createDate: res.createDate ?? new Date().toISOString(),
     });
-    setStep(3);
+    setStep(4);
   };
 
   const backToStep = (target: number) => {
@@ -391,8 +416,8 @@ export default function RequestCardModal({
         onCancel={onClose}
         footer={null}
         centered
-        width={720}
-        mask={{ closable: step !== 3 }}
+        width={760}
+        mask={{ closable: step !== 4 }}
         title={
           <div className="flex items-center justify-between gap-3 pr-6">
             <ModalTitle />
@@ -527,7 +552,67 @@ export default function RequestCardModal({
           {step === 1 && (
             <div className="mt-5">
               <h3 className="text-base font-semibold text-gray-800">
-                สินค้าที่ท่านสามารถรับได้{" "}
+                เลือกกลุ่มสินค้า
+              </h3>
+              {productsLoading ? (
+                <div className="py-10 text-center">
+                  <Spin />
+                </div>
+              ) : groups.length === 0 ? (
+                <p className="py-10 text-center text-sm text-gray-400">
+                  {productsError ?? "ไม่พบสินค้าที่สามารถรับได้"}
+                </p>
+              ) : (
+                <div
+                  className={`mt-3 grid gap-3 ${
+                    groups.length === 3
+                      ? "h-72 grid-cols-2 grid-rows-2"
+                      : "grid-cols-2"
+                  }`}
+                >
+                  {groups.map((g, index) => (
+                    <button
+                      key={g.name}
+                      type="button"
+                      onClick={() => handleSelectGroup(g.name)}
+                      className={`flex flex-col justify-between rounded-2xl p-5 text-left transition hover:shadow-md ${
+                        GROUP_COLORS[index % GROUP_COLORS.length]
+                      } ${
+                        groups.length === 3 && index === 0 ? "row-span-2" : ""
+                      } ${
+                        g.name === group
+                          ? "ring-2 ring-blue-500"
+                          : "ring-1 ring-transparent"
+                      }`}
+                    >
+                      <span className="text-lg font-semibold text-gray-800">
+                        {g.name}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {g.qty} รายการ
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-5 flex justify-center gap-3">
+                <Button
+                  size="large"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => backToStep(0)}
+                  className="min-w-[140px]"
+                >
+                  ย้อนกลับ
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="mt-5">
+              <h3 className="text-base font-semibold text-gray-800">
+                สินค้าที่ท่านสามารถรับได้ ({group}){" "}
                 <span className="mt-3 text-center text-sm font-semibold text-red-600">
                   รับได้ไม่เกินปริมาณที่มี
                 </span>
@@ -624,7 +709,7 @@ export default function RequestCardModal({
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
-                  onClick={() => backToStep(0)}
+                  onClick={() => backToStep(1)}
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
@@ -643,7 +728,7 @@ export default function RequestCardModal({
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="mt-5">
               <h3 className="text-base font-semibold text-gray-800">
                 ตรวจสอบข้อมูลก่อนยืนยัน
@@ -684,7 +769,7 @@ export default function RequestCardModal({
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   disabled={submitting}
-                  onClick={() => backToStep(1)}
+                  onClick={() => backToStep(2)}
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
@@ -703,7 +788,7 @@ export default function RequestCardModal({
             </div>
           )}
 
-          {step === 3 && result && (
+          {step === 4 && result && (
             <div className="mt-5">
               <div className="mx-auto max-w-md rounded-2xl border border-gray-200 p-6 shadow-sm">
                 <Image
