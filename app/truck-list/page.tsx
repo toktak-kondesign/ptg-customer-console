@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button, Modal } from "antd";
+import { Button, Modal, QRCode } from "antd";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import OtpConfirmModal from "@/components/OtpConfirmModal";
@@ -33,6 +33,23 @@ const CancelIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
   >
     <circle cx="12" cy="12" r="9" />
     <path d="M9 9l6 6M15 9l-6 6" strokeLinecap="round" />
+  </svg>
+);
+
+const WarningIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+  >
+    <path
+      d="M12 3.5 2.8 19.5a1 1 0 0 0 .86 1.5h16.68a1 1 0 0 0 .86-1.5L12 3.5z"
+      strokeLinejoin="round"
+    />
+    <path d="M12 9.5v4.5" strokeLinecap="round" />
+    <circle cx="12" cy="17" r="1.1" fill="currentColor" stroke="none" />
   </svg>
 );
 
@@ -95,32 +112,43 @@ const CancelButton = ({
         width={640}
       >
         <div className="px-4 py-2 text-center">
-          <div className="flex items-center justify-center gap-2 text-red-600">
-            <CancelIcon className="h-14 w-14" />
-            <h3 className="text-xl font-semibold">
-              ยืนยันการยกเลิกบัตรรับสินค้า
-            </h3>
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500 ring-4 ring-red-100">
+            <WarningIcon className="h-9 w-9" />
           </div>
-          <p className="mt-5 text-gray-800">
+          <h3 className="mt-3 text-xl font-semibold text-red-600">
+            ยืนยันการยกเลิกบัตรรับสินค้า
+          </h3>
+          <p className="mt-4 text-gray-800">
             คุณต้องการยกเลิกบัตรรับสินค้า หมายเลข{" "}
-            <span className="font-semibold">{cardId}</span>
+            <span className="font-semibold text-red-600">{cardId}</span>
           </p>
           <p className="mt-1">
             <span className="bg-blue-50 px-2 py-0.5 font-semibold text-blue-700">
               ทะเบียนรถ {plate}
             </span>
           </p>
-          <p className="mt-6 text-left text-red-600">หมายเหตุ</p>
-          <p className="mt-1 border border-gray-300 px-4 py-3 text-left text-sm leading-relaxed text-red-600">
-            เมื่อคุณทำการยกเลิกบัตรไปแล้ว
-            ไม่สามารถที่จะนำบัตรใบนี้กลับมาใช้งานได้อีก
-            ไม่ว่ากรณีใดก็ตามธุรกรรมอื่นใดที่เกี่ยวข้องกับบัตรใบนี้
-            ที่เกิดขึ้นก่อนการยกเลิก ถือว่าอยู่ในความรับผิดชอบของลูกค้าทุกประการ
-            และเพื่อความปลอดภัยในข้อมูล ของลูกค้าเอง ให้ดำเนินการส่งบัตรนั้นคืน
-            ทางบริษัทฯ ทันทีเพื่อทำลาย
-          </p>
+          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left">
+            <p className="flex items-center gap-1.5 font-semibold text-red-600">
+              <WarningIcon className="h-4 w-4" />
+              หมายเหตุ
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-red-600">
+              เมื่อคุณทำการยกเลิกบัตรไปแล้ว{" "}
+              <span className="rounded bg-red-100 px-1 font-semibold">
+                ไม่สามารถที่จะนำบัตรใบนี้กลับมาใช้งานได้อีก
+              </span>{" "}
+              ไม่ว่ากรณีใดก็ตาม ธุรกรรมอื่นใดที่เกี่ยวข้องกับบัตรใบนี้
+              ที่เกิดขึ้นก่อนการยกเลิก{" "}
+              <span className="font-semibold underline decoration-red-400 underline-offset-2">
+                ถือว่าอยู่ในความรับผิดชอบของลูกค้าทุกประการ
+              </span>{" "}
+              และเพื่อความปลอดภัยในข้อมูลของลูกค้าเอง
+              ให้ดำเนินการส่งบัตรนั้นคืนทางบริษัทฯ ทันทีเพื่อทำลาย
+            </p>
+          </div>
           <Button
             type="primary"
+            danger
             size="large"
             className="mt-6 px-10"
             onClick={handleConfirmCancel}
@@ -271,6 +299,17 @@ function TruckCardFlip({ truck }: { truck: TruckCard }) {
               sizes="(max-width: 640px) 100vw, 620px"
               className="object-cover"
             />
+            {truck.CardID && (
+              <div className="absolute right-[6%] top-[40%] aspect-square w-[14%] rounded bg-white p-[0.6cqw]">
+                <QRCode
+                  value={truck.CardID}
+                  type="svg"
+                  size={256}
+                  bordered={false}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </div>
+            )}
           </div>
         </div>
       </button>
@@ -566,7 +605,7 @@ export default function TruckListPage() {
           ) : (
             <>
               {view === "card" ? (
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-5 sm:grid-cols-3 lg:grid-cols-4">
                   {pagedTrucks.map((t) => (
                     <TruckCardFlip key={t.RunID} truck={t} />
                   ))}

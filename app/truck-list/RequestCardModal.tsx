@@ -9,6 +9,7 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckOutlined,
+  ExclamationCircleFilled,
   HistoryOutlined,
   MinusOutlined,
   PlusOutlined,
@@ -447,7 +448,7 @@ export default function RequestCardModal({
                 </button>
               </div>
 
-              <div className="mt-3 flex justify-end">
+              {/* <div className="mt-3 flex justify-end">
                 <button
                   type="button"
                   role="checkbox"
@@ -469,7 +470,7 @@ export default function RequestCardModal({
                   </span>
                   รับ QR โดยตรง
                 </button>
-              </div>
+              </div> */}
 
               {!qrDirect && (
                 <div className="mt-4">
@@ -659,10 +660,7 @@ export default function RequestCardModal({
                 <SummaryRow label="รายการสินค้า">
                   <ul className="space-y-1">
                     {selectedItems.map(({ item, qty }) => (
-                      <li
-                        key={item.key}
-                        className="flex justify-between gap-3"
-                      >
+                      <li key={item.key} className="flex justify-between gap-3">
                         <span className="truncate">
                           เลขที่ {item.docNo} : {item.name}
                         </span>
@@ -824,17 +822,34 @@ export default function RequestCardModal({
           </Button>
         }
         centered
-        width={480}
-        title="มีบัตรชั่วคราวค้างอยู่"
+        width={500}
       >
-        <p className="text-sm text-gray-700">
-          คุณได้ขอบัตรรถบรรทุกชั่วคราวให้กับรถบรรทุกทะเบียน {plateNormalized}{" "}
-          ไว้แล้ว บัตรชั่วคราวมีอายุ 72 ชั่วโมง
-          กรุณามารับสินค้าภายในระยะเวลาที่กำหนด
-        </p>
-        {pendingCard && (
-          <p className="mt-2 text-xs text-gray-500">เลขที่บัตร {pendingCard}</p>
-        )}
+        <div className="px-2 py-2 text-center">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-amber-50 text-amber-500 ring-4 ring-amber-100">
+            <ExclamationCircleFilled className="text-[5.25rem]" />
+          </div>
+          <h3 className="mt-3 text-xl font-semibold text-amber-600">
+            มีบัตรชั่วคราวค้างอยู่
+          </h3>
+          <p className="mt-4 text-sm leading-relaxed text-gray-700">
+            คุณได้ขอบัตรรถบรรทุกชั่วคราวให้กับรถบรรทุกทะเบียน{" "}
+            <span className="font-semibold text-blue-700">
+              {plateNormalized}
+            </span>{" "}
+            ไว้แล้ว บัตรชั่วคราวมีอายุ{" "}
+            <span className="rounded bg-amber-100 px-1 font-semibold text-amber-700">
+              72 ชั่วโมง
+            </span>{" "}
+            กรุณามารับสินค้าภายในระยะเวลาที่กำหนด
+          </p>
+          {pendingCard && (
+            <p className="mt-3">
+              <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1  font-medium text-red-600">
+                เลขที่บัตร {pendingCard}
+              </span>
+            </p>
+          )}
+        </div>
       </Modal>
 
       <Modal
