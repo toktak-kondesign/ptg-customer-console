@@ -86,6 +86,35 @@ body {
   margin: 0.5px;
 }
 
+.a_gradient_blue {
+  background-color: #90aba2;
+  background-image: linear-gradient(bottom, #6cab9c 0%, #b6eee3 100%);
+  background-image: -ms-linear-gradient(bottom, #6cab9c 0%, #b6eee3 100%);
+  background-image: -webkit-gradient(linear, left bottom, left top, from(#6cab9c), to(#b6eee3));
+  border: 1px solid #d0eccd;
+  border-radius: 5px;
+  padding: 10px;
+  font-family: Open Sans, sans-serif;
+  font-size: 12px;
+  text-decoration: none;
+  position: relative;
+  /* box-shadow: inset 0 1px #6cab9c, 0 1px #fff; */
+  color: #fff !important;
+}
+
+.a_gradient_blue:active {
+  padding-bottom: 9px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 11px;
+  top: 1px;
+  background-image: linear-gradient(bottom, rgb(62, 184, 229) 0%, rgb(44, 160, 202) 100%);
+  background-image: -o-linear-gradient(bottom, rgb(62, 184, 229) 0%, rgb(44, 160, 202) 100%);
+  background-image: -moz-linear-gradient(bottom, rgb(62, 184, 229) 0%, rgb(44, 160, 202) 100%);
+  background-image: -webkit-linear-gradient(bottom, rgb(62, 184, 229) 0%, rgb(44, 160, 202) 100%);
+  background-image: -ms-linear-gradient(bottom, rgb(62, 184, 229) 0%, rgb(44, 160, 202) 100%);
+  background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, rgb(62, 184, 229)), color-stop(1, rgb(44, 160, 202)));
+}
 @keyframes spin {
   0% {
     transform: rotate(0deg);

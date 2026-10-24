@@ -6,16 +6,14 @@ import { Row, Col } from "antd";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
 import { getAuthUser, clearAuth, type AuthenUserInfo } from "@/lib/auth";
-import { BASE_PATH, img } from "@/lib/env";
+import { API_BASE_URL, BASE_PATH, img } from "@/lib/env";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
-const NAV_HOME_URL = "https://depwn2021.ptg.co.th/Site/main";
-const NAV_PRODUCTS_URL = "https://depwn2021.ptg.co.th/Site/product?l=UgOcGc9";
-const NAV_ABOUT_URL =
-  "https://depwn2021.ptg.co.th/Site/AboutUs?l=f0141405-7c4b-4144-8e37-4b11e1b2edc2";
-const NAV_CONTACT_URL =
-  "https://depwn2021.ptg.co.th/Site/contact?l=c07ba89e-d7bc-4a77-8f42-7083c361da6b";
-const NAV_CART_URL = "https://depwn2021.ptg.co.th/Site/mycart";
+const NAV_HOME_URL = `${API_BASE_URL}Site/main`;
+const NAV_PRODUCTS_URL = `${API_BASE_URL}Site/product?l=UgOcGc9`;
+const NAV_ABOUT_URL = `${API_BASE_URL}Site/AboutUs?l=f0141405-7c4b-4144-8e37-4b11e1b2edc2`;
+const NAV_CONTACT_URL = `${API_BASE_URL}Site/contact?l=c07ba89e-d7bc-4a77-8f42-7083c361da6b`;
+const NAV_CART_URL = `${API_BASE_URL}Site/mycart`;
 const CART_COUNT = 0;
 
 const navLinks = [

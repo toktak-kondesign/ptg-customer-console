@@ -27,3 +27,14 @@ export const mockTrucks: TruckCard[] = plates.map((CarRegister, i) => ({
   LastUseCard: "",
   IsInActive: 0,
 }));
+
+// สินค้าที่เลือกรับได้ใน dialog "ขอบัตรรถรับสินค้าชั่วคราว"
+export interface RequestProductItem {
+  key: string;
+  docNo: string;
+  orderLine: string;
+  itemCode: string;
+  name: string;
+  available: number;
+  unit: string;
+}
