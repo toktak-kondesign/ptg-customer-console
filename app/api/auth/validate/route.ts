@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { API_BASE_URL } from "@/lib/env";
+import { API_BASE_URL, SITE_BASE_URL } from "@/lib/env";
 
 export interface AuthenUserInfo {
   response_code: number;
@@ -16,7 +16,7 @@ export interface AuthenUserInfo {
 }
 
 const AUTH_API_BASE_URL = (
-  process.env.AUTH_API_BASE_URL || API_BASE_URL
+  process.env.AUTH_SITE_BASE_URL || SITE_BASE_URL
 ).replace(/\/+$/, "");
 const AUTH_API_KEY =
   process.env.AUTH_API_KEY ||
