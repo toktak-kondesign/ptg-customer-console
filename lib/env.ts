@@ -13,14 +13,26 @@ export const getApiBaseUrl = (): string => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   if (isDevelopment) {
-    return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
+    return process.env.NEXT_PUBLIC_API_BASE || 'https://depcustomer.ptg.co.th/';
   } else {
-    return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
-    // return process.env.NEXT_PUBLIC_API_BASE || 'https://www.ptg.co.th/';
+    //return process.env.NEXT_PUBLIC_API_BASE || 'https://depwn2021.ptg.co.th/';
+    return process.env.NEXT_PUBLIC_API_BASE || 'https://customer.ptg.co.th/';
   }
 };
 
 export const API_BASE_URL = getApiBaseUrl();
+
+// Main PTG website base URL (dev/prod aware) — Site/* nav links and login page
+export const getSiteBaseUrl = (): string => {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  if (isDevelopment) {
+    return process.env.NEXT_PUBLIC_SITE_BASE_URL || 'https://depwn2021.ptg.co.th/';
+  } else {
+    return process.env.NEXT_PUBLIC_SITE_BASE_URL || 'https://www.ptg.co.th/';
+  }
+};
+
+export const SITE_BASE_URL = getSiteBaseUrl();
 
 // Rewards portal base URL (dev/prod aware)
 export const getRewardsBaseUrl = (): string => {
@@ -42,7 +54,7 @@ export const PLACE_BILL_PDF_BASE_URL = (
 
 // PTG login page (dev/prod aware) — used when session expires or user logs out
 export const getLoginUrl = (): string => {
-  return `${API_BASE_URL}Site/Authentication/login`;
+  return `${SITE_BASE_URL}Site/Authentication/login`;
 };
 
 export const LOGIN_URL = getLoginUrl();

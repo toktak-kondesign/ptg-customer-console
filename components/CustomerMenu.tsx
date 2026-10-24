@@ -11,9 +11,6 @@ import { API_BASE_URL, LOGIN_URL } from "@/lib/env";
 
 const CUSTOMER_INFO_URL = `${API_BASE_URL}ptgcustomer/CustomerInfo`;
 const CUSTOMER_SERVICE_URL = `${API_BASE_URL}PTGWeb/customer`;
-const CUSTOMER_INFO_URL =
-  "https://depwn2021.ptg.co.th/ptgcustomer/CustomerInfo";
-const CUSTOMER_SERVICE_URL = "/" + (process.env.NEXT_PUBLIC_BASE_PATH || "");
 
 const menuLinkClass =
   "flex items-center gap-2.5 px-3 py-2 rounded-md bg-transparent text-[0.8rem] whitespace-nowrap transition no-underline text-[#cccccc] hover:text-white";

@@ -71,7 +71,7 @@ const STEP_ITEMS = [
   { title: "บัตรชั่วคราว" },
 ];
 
-const OTU_BASE_URL = "https://www.ptg.co.th/OTU.html?id=";
+const OTU_BASE_URL = "https://customer.ptg.co.th/OTU.html?id=";
 
 const formatThaiDate = (value: string) =>
   value

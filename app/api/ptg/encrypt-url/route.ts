@@ -12,7 +12,7 @@ interface EncryptUrlResponse {
 /**
  * Server-side proxy for the legacy .NET PTGWeb/EncryptUrl endpoint.
  *
- * The original client-side call is same-origin on www.ptg.co.th, but calling
+ * The original client-side call is same-origin on customer.ptg.co.th, but calling
  * it directly from this Next.js app would hit CORS. This route forwards the
  * request from the server, where CORS does not apply, and returns the
  * encrypted payload.

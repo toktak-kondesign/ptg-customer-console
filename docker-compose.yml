@@ -5,7 +5,8 @@ services:
       context: .
       args:
         # NEXT_PUBLIC_* ต้องส่งตอน build เพราะ Next.js inline เข้า client bundle
-        NEXT_PUBLIC_API_BASE: https://www.ptg.co.th/
+        NEXT_PUBLIC_API_BASE: https://customer.ptg.co.th/
+        NEXT_PUBLIC_SITE_BASE_URL: https://www.ptg.co.th/
         NEXT_PUBLIC_REWARDS_BASE_URL: https://rewards.ptg.co.th
         NEXT_PUBLIC_BASE_PATH: /Customer-console
         NEXT_PUBLIC_PDF_API_URL: http://host.docker.internal:3400
@@ -16,7 +17,7 @@ services:
       - NODE_ENV=production
       - APP_ENV=production
       # Auth API - Production
-      - AUTH_API_BASE_URL=https://www.ptg.co.th
+      - AUTH_API_BASE_URL=https://customer.ptg.co.th
       - AUTH_API_KEY=yeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaUyeFxnJ0dOPxG4GXA4L6FLOl1O4K2qUeL16Fen9wYzaU
       # Database - DBWEBPTG (Gold/Silver points) - Production credentials
       - DATABASE_URL=sqlserver://192.168.100.41:1433;database=DBWEBPTG;user=ptgwebapp;password=w3b@pp[PTG!2026]#;encrypt=DANGER_PLAINTEXT;trustServerCertificate=true;
@@ -37,7 +38,8 @@ services:
       # (ถ้าไม่ตั้ง NEXT_PUBLIC_BASE_PATH จะได้ basePath='' → 404 ทุกไฟล์ _next/static)
       # และ server components ใช้ค่า runtime ไม่ใช่ค่าที่ inline ตอน build
       - NEXT_PUBLIC_BASE_PATH=/Customer-console
-      - NEXT_PUBLIC_API_BASE=https://www.ptg.co.th/
+      - NEXT_PUBLIC_API_BASE=https://customer.ptg.co.th/
+      - NEXT_PUBLIC_SITE_BASE_URL=https://www.ptg.co.th/
       - NEXT_PUBLIC_PDF_API_URL=http://host.docker.internal:3400
       # ตัวแปร NEXT_PUBLIC_ ถูกใช้ในฝั่ง browser — ต้องเป็น URL ที่ browser ของ user เข้าถึงได้
       # (host.docker.internal ใช้ได้เฉพาะภายใน container เท่านั้น)
