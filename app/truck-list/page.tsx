@@ -336,6 +336,8 @@ export default function TruckListPage() {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setCustID(getSessionCustomerId());
@@ -378,6 +380,63 @@ export default function TruckListPage() {
         t.CarRegister.toLowerCase().includes(query.trim().toLowerCase()),
       ),
     [allTrucks, query],
+  );
+
+  // รีเซ็ตกลับไปหน้าแรกเมื่อข้อมูลหรือจำนวนรายการต่อหน้าเปลี่ยน
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [trucks, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(trucks.length / pageSize));
+  const page = Math.min(currentPage, totalPages);
+  const pageStart = (page - 1) * pageSize;
+  const pagedTrucks = trucks.slice(pageStart, pageStart + pageSize);
+  const firstPageInWindow = Math.max(1, Math.min(page - 2, totalPages - 4));
+  const pageNumbers = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, i) => firstPageInWindow + i,
+  );
+
+  const paginationBar = (
+    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-5 py-3 text-sm text-gray-600 shadow-sm sm:flex-row sm:items-center sm:justify-end">
+      <div className="flex flex-wrap items-center gap-2">
+        <span>
+          {trucks.length === 0 ? 0 : pageStart + 1}-
+          {Math.min(pageStart + pageSize, trucks.length)} จาก {trucks.length}{" "}
+          รายการ
+        </span>
+        <button
+          type="button"
+          onClick={() => setCurrentPage(page - 1)}
+          disabled={page <= 1}
+          className="rounded-lg border border-gray-300 px-3 py-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ก่อนหน้า
+        </button>
+        {pageNumbers.map((num) => (
+          <button
+            key={num}
+            type="button"
+            onClick={() => setCurrentPage(num)}
+            className={`h-8 w-8 rounded-lg border ${
+              num === page
+                ? "border-blue-600 bg-blue-600 text-white"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {num}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => setCurrentPage(page + 1)}
+          disabled={page >= totalPages}
+          className="rounded-lg border border-gray-300 px-3 py-1 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ถัดไป
+        </button>
+      </div>
+    </div>
   );
 
   return (
@@ -450,6 +509,21 @@ export default function TruckListPage() {
               คัน
             </h2>
             <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap">
+                แสดง
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="rounded-lg border border-gray-300 bg-white px-2 py-1"
+                >
+                  {[10, 20, 50, 100].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                รายการ
+              </label>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -489,68 +563,77 @@ export default function TruckListPage() {
             <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center text-gray-400">
               ไม่พบข้อมูลรถบรรทุก
             </div>
-          ) : view === "card" ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {trucks.map((t) => (
-                <TruckCardFlip key={t.RunID} truck={t} />
-              ))}
-            </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-              <table className="w-full min-w-[860px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 text-semibold uppercase tracking-wide bg-[#19368f] text-white">
-                    <th className="px-4 py-3 font-medium">#</th>
-                    <th className="px-4 py-3 font-medium">RunID</th>
-                    <th className="px-4 py-3 font-medium">เลขบัตร</th>
-                    <th className="px-4 py-3 font-medium">ทะเบียนรถ</th>
-                    <th className="px-4 py-3 font-medium">รหัสลูกค้า</th>
-                    <th className="px-4 py-3 font-medium">หมายเหตุ</th>
-                    <th className="px-4 py-3 font-medium">วันที่สร้าง</th>
-                    <th className="px-4 py-3 font-medium">ใช้บัตรล่าสุด</th>
-                    <th className="px-4 py-3 text-center font-medium">
-                      จัดการ
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {trucks.map((t) => (
-                    <tr
-                      key={t.RunID}
-                      className="transition hover:bg-blue-50/40"
-                    >
-                      <td className="px-4 py-3 text-gray-500">{t.Row1}</td>
-                      <td className="px-4 py-3 text-gray-500">{t.RunID}</td>
-                      <td className="px-4 py-3 font-mono text-gray-700">
-                        {t.CardID}
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-blue-700">
-                        {t.CarRegister}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">{t.CustID}</td>
-                      <td className="px-4 py-3 text-gray-500">{t.Remark}</td>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-500">
-                        {t.DateCreated.slice(0, 16)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-500">
-                        {t.LastUseCard ? t.LastUseCard.slice(0, 16) : "-"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-4">
-                          <CardZoomButton truck={t} />
-                          <CancelButton
-                            plate={t.CarRegister}
-                            cardId={t.CardID}
-                            runId={t.RunID}
-                            onCancelled={() => setReloadKey((k) => k + 1)}
-                          />
-                        </div>
-                      </td>
-                    </tr>
+            <>
+              {view === "card" ? (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {pagedTrucks.map((t) => (
+                    <TruckCardFlip key={t.RunID} truck={t} />
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+                  <table className="w-full min-w-[860px] text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 text-semibold uppercase tracking-wide bg-[#19368f] text-white">
+                        <th className="px-4 py-3 font-medium">#</th>
+                        <th className="px-4 py-3 font-medium">RunID</th>
+                        <th className="px-4 py-3 font-medium">เลขบัตร</th>
+                        <th className="px-4 py-3 font-medium">ทะเบียนรถ</th>
+                        <th className="px-4 py-3 font-medium">รหัสลูกค้า</th>
+                        <th className="px-4 py-3 font-medium">หมายเหตุ</th>
+                        <th className="px-4 py-3 font-medium">วันที่สร้าง</th>
+                        <th className="px-4 py-3 font-medium">ใช้บัตรล่าสุด</th>
+                        <th className="px-4 py-3 text-center font-medium">
+                          จัดการ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {pagedTrucks.map((t) => (
+                        <tr
+                          key={t.RunID}
+                          className="transition hover:bg-blue-50/40"
+                        >
+                          <td className="px-4 py-3 text-gray-500">{t.Row1}</td>
+                          <td className="px-4 py-3 text-gray-500">{t.RunID}</td>
+                          <td className="px-4 py-3 font-mono text-gray-700">
+                            {t.CardID}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-blue-700">
+                            {t.CarRegister}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {t.CustID}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {t.Remark}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                            {t.DateCreated.slice(0, 16)}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                            {t.LastUseCard ? t.LastUseCard.slice(0, 16) : "-"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center justify-center gap-4">
+                              <CardZoomButton truck={t} />
+                              <CancelButton
+                                plate={t.CarRegister}
+                                cardId={t.CardID}
+                                runId={t.RunID}
+                                onCancelled={() => setReloadKey((k) => k + 1)}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {paginationBar}
+            </>
           )}
         </div>
       </main>
