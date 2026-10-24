@@ -29,9 +29,9 @@ services:
       - secertJWT=PTG@MinimumLength32CharactersSecretKey2024#liel4lse43-3ls34345slfiewsle
       - JWT_ISSUER=https://www.ptg.co.th
       - JWT_AUDIENCE=ApproveV2
-      # PDF API service (ptgpdfapi รันบน docker host เดียวกัน port 3400)
-      # ถ้า PDF API อยู่คนละเครื่อง ให้เปลี่ยนเป็น IP/URL ของเครื่องนั้น
-      - PDF_API_URL=http://host.docker.internal:3400
+      # PDF API service (ptgpdfapi รันเป็น container บน ptg-network เดียวกัน — port ภายใน 3000)
+      # ถ้า PDF API อยู่คนละเครื่อง ให้เปลี่ยนเป็น IP/URL ของเครื่องนั้น เช่น http://<host-ip>:3400
+      - PDF_API_URL=http://ptgpdfapi:3000
       # Rewards API - Production (server-side proxy เท่านั้น)
       # - REWARDS_API_URL=https://rewards.ptg.co.th
       #- REWARDS_API_URL=ptg_rewards_app:3301
