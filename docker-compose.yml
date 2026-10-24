@@ -34,8 +34,8 @@ services:
       - PDF_API_URL=http://ptgpdfapi:3000
       # Rewards API - Production (server-side proxy เท่านั้น)
       # - REWARDS_API_URL=https://rewards.ptg.co.th
-      #- REWARDS_API_URL=ptg_rewards_app:3301
-      - REWARDS_API_URL=http://host.docker.internal:3301
+      # ptg_rewards_app รันเป็น container บน ptg-network เดียวกัน — เรียกผ่าน container name
+      - REWARDS_API_URL=http://ptg_rewards_app:3301
       # NEXT_PUBLIC_* ต้องตั้งที่ runtime ด้วย — server.cjs อ่าน next.config.ts ตอน start
       # (ถ้าไม่ตั้ง NEXT_PUBLIC_BASE_PATH จะได้ basePath='' → 404 ทุกไฟล์ _next/static)
       # และ server components ใช้ค่า runtime ไม่ใช่ค่าที่ inline ตอน build
