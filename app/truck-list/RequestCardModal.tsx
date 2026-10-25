@@ -36,6 +36,13 @@ import type { RequestProductItem } from "./data";
 
 const isStoneProduct = (item: RequestProductItem) => item.name.includes("หิน");
 
+const STONE_MAX_QTY = 40;
+
+const maxQty = (item: RequestProductItem) =>
+  isStoneProduct(item)
+    ? Math.min(item.available, STONE_MAX_QTY)
+    : item.available;
+
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
 const parseQty = (raw: string | undefined) => {
@@ -46,7 +53,7 @@ const parseQty = (raw: string | undefined) => {
 const formatQty = (value: number) =>
   value.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
-const ModalTitle = () => (
+const ModalTitle = ({ plate }: { plate?: string }) => (
   <span className="flex items-center gap-2.5">
     <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gray-200">
       <Image
@@ -58,6 +65,11 @@ const ModalTitle = () => (
     </span>
     <span className="text-lg font-semibold text-gray-800">
       ขอบัตรรถรับสินค้าชั่วคราว
+      {plate && (
+        <span className="ml-2 rounded-md bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+          {plate}
+        </span>
+      )}
     </span>
   </span>
 );
@@ -74,9 +86,16 @@ const STEP_ITEMS = [
 ];
 
 const GROUP_STYLES: Record<string, string> = {
-  กลุ่มหิน: "bg-slate-200",
+  กลุ่มหิน:
+    "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
   กลุ่มคอนกรีตบล็อก: "bg-blue-100",
   กลุ่มผลิตภัณคอนกรีตผสมเสร็จ: "bg-red-100",
+};
+
+const GROUP_IMAGES: Record<string, string> = {
+  กลุ่มหิน: "/images/stone_group.png",
+  กลุ่มคอนกรีตบล็อก: "/images/concrete_block_group.png",
+  กลุ่มผลิตภัณคอนกรีตผสมเสร็จ: "/images/concrete_mixed_group.png",
 };
 
 const GROUP_ORDER = Object.keys(GROUP_STYLES);
@@ -262,8 +281,8 @@ export default function RequestCardModal({
     if (raw !== "" && !/^\d*\.?\d{0,2}$/.test(raw)) return;
     const value = parseFloat(raw);
     const next =
-      Number.isFinite(value) && value > item.available
-        ? String(item.available)
+      Number.isFinite(value) && value > maxQty(item)
+        ? String(maxQty(item))
         : raw;
     setDraftQty((current) => ({ ...current, [item.key]: next }));
   };
@@ -271,7 +290,7 @@ export default function RequestCardModal({
   const stepDraft = (item: RequestProductItem, delta: number) => {
     const next = round2(
       Math.min(
-        item.available,
+        maxQty(item),
         Math.max(0, parseQty(draftQty[item.key]) + delta),
       ),
     );
@@ -316,7 +335,7 @@ export default function RequestCardModal({
     .filter((item) => parseQty(draftQty[item.key]) > 0)
     .map((item) => ({
       item,
-      qty: Math.min(item.available, round2(parseQty(draftQty[item.key]))),
+      qty: Math.min(maxQty(item), round2(parseQty(draftQty[item.key]))),
     }));
 
   const plateNormalized = normalizePlate(plate);
@@ -337,7 +356,7 @@ export default function RequestCardModal({
     }
     if (!isValidThaiPlate(plateNormalized)) {
       setFormError(
-        "รูปแบบทะเบียนรถไม่ถูกต้อง (ตัวอย่าง 80-1234, 810684, 83-1193 นศ, 1ขค1228)",
+        "รูปแบบทะเบียนรถไม่ถูกต้อง ต้องลงท้ายด้วยตัวย่อจังหวัด 2 ตัวอักษร (ตัวอย่าง 83-1193 นศ, 1ขค1228 กท)",
       );
       return;
     }
@@ -429,7 +448,7 @@ export default function RequestCardModal({
         mask={{ closable: step !== 4 }}
         title={
           <div className="flex items-center justify-between gap-3 pr-6">
-            <ModalTitle />
+            <ModalTitle plate={step > 0 ? plateNormalized : undefined} />
             <Link
               href="/truck-list/history"
               onClick={onClose}
@@ -596,6 +615,16 @@ export default function RequestCardModal({
                         <span className="text-lg font-semibold text-gray-800">
                           {g.name}
                         </span>
+                        <Image
+                          src={img(
+                            GROUP_IMAGES[g.name] ?? "/images/group-icon.png",
+                          )}
+                          alt={g.name}
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          className="h-auto w-4/5"
+                        />
                         <span className="text-sm text-gray-600">
                           {g.qty} รายการ
                         </span>
@@ -628,7 +657,7 @@ export default function RequestCardModal({
               </h3>
               <p className="mt-1 text-sm text-red-600">
                 *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
-                สินค้าเท่านั้น
+                สินค้าเท่านั้น และบรรทุกได้ไม่เกิน 40 คิวต่อบัตร
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <SearchOutlined />
@@ -695,7 +724,7 @@ export default function RequestCardModal({
                           <button
                             type="button"
                             aria-label="เพิ่มจำนวน"
-                            disabled={disabled || qty >= item.available}
+                            disabled={disabled || qty >= maxQty(item)}
                             onClick={() => stepDraft(item, 1)}
                             className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
                           >
