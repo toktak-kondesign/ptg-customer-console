@@ -19,7 +19,7 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { img } from "@/lib/env";
+import { BASE_PATH, img } from "@/lib/env";
 import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
@@ -99,8 +99,6 @@ const GROUP_IMAGES: Record<string, string> = {
 };
 
 const GROUP_ORDER = Object.keys(GROUP_STYLES);
-
-const OTU_BASE_URL = "https://www.ptg.co.th/OTU.html?id=";
 
 const formatThaiDate = (value: string) =>
   value
@@ -289,10 +287,7 @@ export default function RequestCardModal({
 
   const stepDraft = (item: RequestProductItem, delta: number) => {
     const next = round2(
-      Math.min(
-        maxQty(item),
-        Math.max(0, parseQty(draftQty[item.key]) + delta),
-      ),
+      Math.min(maxQty(item), Math.max(0, parseQty(draftQty[item.key]) + delta)),
     );
     setDraftQty((current) => ({ ...current, [item.key]: String(next) }));
   };
@@ -828,9 +823,9 @@ export default function RequestCardModal({
 
           {step === 4 && result && (
             <div className="mt-5">
-              <div className="mx-auto max-w-md rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-6 shadow-sm">
                 <Image
-                  src={img("/images/logo_company/logo_PTG.png")}
+                  src={img("/logo/logo.png")}
                   alt="PTG"
                   width={120}
                   height={40}
@@ -839,41 +834,57 @@ export default function RequestCardModal({
                 <div className="mt-4 flex justify-center">
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <QRCode
-                      value={`${OTU_BASE_URL}${result.idCode}`}
+                      value={`${window.location.origin}${BASE_PATH}/truck-card/${result.idCode}`}
                       size={176}
                     />
                   </div>
                 </div>
                 <p className="mt-2 text-center text-xs tracking-wider text-gray-500">
-                  {result.idCode}
+                  <span className="font-bold bg-gray-50 border border-gray-200 px-[3.2rem] py-1 text-blue-600 rounded-lg">
+                    {result.idCode}
+                  </span>
                 </p>
                 <div className="mt-4 text-center">
                   <p className="font-semibold text-gray-800">
                     {cust.name || "-"} ({cust.id})
                   </p>
-                  <p className="mt-1 font-semibold text-gray-800">
-                    ทะเบียน {plateNormalized}
+                  <p className="mt-2 mb-2 font-semibold text-gray-800">
+                    <span className="px-6 py-0.5 bg-green-500 rounded-full text-white">
+                      ทะเบียน {plateNormalized}
+                    </span>
                   </p>
                   <p className="mt-1 text-xs text-gray-500">
                     ออกบัตรเมื่อ {formatThaiDate(result.createDate)}
                   </p>
                 </div>
+                {selectedItems.length > 0 && (
+                  <div className="mt-4 text-left">
+                    <p className="font-semibold text-gray-800">
+                      คุณสามารถรับสินค้าได้ดังนี้
+                    </p>
+                    <div className="mt-3 space-y-1">
+                      {selectedItems.map(({ item, qty }) => (
+                        <div
+                          key={item.key}
+                          className="rounded-xl border border-gray-200 px-4 py-2 bg-slate-50"
+                        >
+                          <p className="font-medium text-sm text-gray-800">
+                            {item.name}
+                          </p>
+                          <p className="mt-0.25 font-medium text-red-600 text-sm">
+                            จำนวน {formatQty(qty)} {item.unit} ({" "}
+                            {formatQty(qty)} {item.unit} )
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="mt-4 border-t border-gray-100 pt-3">
                   <p className="text-sm font-semibold text-gray-800">
                     เงื่อนไขบัตรรถบรรทุกชั่วคราว (Card One Time Use)
                   </p>
                   <TermsList />
-                  <p className="mt-3 text-center text-sm text-gray-700">
-                    ท่านสามารถดูวิธีใช้บัตรได้ที่{" "}
-                    <a
-                      href="https://vimeo.com/642570187"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      https://vimeo.com/642570187
-                    </a>
-                  </p>
                   <p className="mt-2 text-right text-sm text-gray-700">
                     สอบถามข้อมูลเพิ่มเติม โทร : 1634
                   </p>

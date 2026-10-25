@@ -84,3 +84,27 @@ export interface RequestProductsResponse {
   results: RequestProductRow[];
   error?: string;
 }
+
+export interface CardOtuDetailHead {
+  IDCode: string;
+  CarRegister: string;
+  CustID: string;
+  CustName: string;
+  CreateDate: string;
+}
+
+export interface CardOtuDetailItem {
+  ItemCode: string;
+  ItemName: string;
+  OrderNum: string;
+  OrderLine: string;
+  NumSend: number;
+  Unit: string;
+}
+
+export interface CardOtuDetailResponse {
+  status: string;
+  result?: CardOtuDetailHead;
+  items?: CardOtuDetailItem[];
+  error?: string;
+}

@@ -1,4 +1,5 @@
 import type {
+  CardOtuDetailResponse,
   CarCheckResponse,
   CreateCardOtuPayload,
   CreateCardOtuResponse,
@@ -42,10 +43,32 @@ export async function createCardOtuService(
   payload: CreateCardOtuPayload,
 ): Promise<CreateCardOtuResponse> {
   try {
+    const location = await new Promise<{
+      latitude: number | null;
+      longitude: number | null;
+    }>((resolve) => {
+      const fallback = { latitude: null, longitude: null };
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        resolve(fallback);
+        return;
+      }
+      const timer = setTimeout(() => resolve(fallback), 10000);
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          clearTimeout(timer);
+          resolve({ latitude: coords.latitude, longitude: coords.longitude });
+        },
+        () => {
+          clearTimeout(timer);
+          resolve(fallback);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+    });
     const response = await fetch(`${BASE_PATH}/api/car-card/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, ...location }),
     });
     const data: CreateCardOtuResponse = await response.json();
     if (!response.ok || data.status !== "success") {
@@ -88,6 +111,32 @@ export async function getRequestProductsService(
       status: "error",
       results: [],
       error: `An error occurred while fetching products: ${message}`,
+    };
+  }
+}
+
+export async function getCardOtuDetailService(
+  idCode: string,
+): Promise<CardOtuDetailResponse> {
+  try {
+    const params = new URLSearchParams({ idCode });
+    const response = await fetch(
+      `${BASE_PATH}/api/car-card/detail?${params.toString()}`,
+      { cache: "no-store" },
+    );
+    const data: CardOtuDetailResponse = await response.json();
+    if (!response.ok) {
+      return {
+        status: "error",
+        error: data.error ?? `Failed to fetch card detail: ${response.status}`,
+      };
+    }
+    return data;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return {
+      status: "error",
+      error: `An error occurred while fetching card detail: ${message}`,
     };
   }
 }

@@ -359,7 +359,17 @@ export default function TruckCardHistoryPage() {
                             {index + 1}.
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
-                            {row.IDCode?.trim() || "-"}
+                            {row.IDCode?.trim() ? (
+                              <Link
+                                href={`/truck-card/${row.IDCode.trim()}`}
+                                target="_blank"
+                                className="text-blue-600 underline-offset-2 hover:underline"
+                              >
+                                {row.IDCode.trim()}
+                              </Link>
+                            ) : (
+                              "-"
+                            )}
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {row.CustID?.trim() || "-"}
