@@ -73,7 +73,13 @@ const STEP_ITEMS = [
   { title: "บัตรชั่วคราว" },
 ];
 
-const GROUP_COLORS = ["bg-red-100", "bg-blue-100", "bg-amber-100"];
+const GROUP_STYLES: Record<string, string> = {
+  กลุ่มหิน: "bg-slate-200",
+  กลุ่มคอนกรีตบล็อก: "bg-blue-100",
+  กลุ่มผลิตภัณคอนกรีตผสมเสร็จ: "bg-red-100",
+};
+
+const GROUP_ORDER = Object.keys(GROUP_STYLES);
 
 const OTU_BASE_URL = "https://www.ptg.co.th/OTU.html?id=";
 
@@ -285,7 +291,10 @@ export default function RequestCardModal({
     products.forEach((item) =>
       counts.set(item.group, (counts.get(item.group) ?? 0) + 1),
     );
-    return Array.from(counts, ([name, qty]) => ({ name, qty }));
+    return GROUP_ORDER.map((name) => ({
+      name,
+      qty: counts.get(name) ?? 0,
+    }));
   }, [products]);
 
   const filteredProducts = useMemo(() => {
@@ -558,41 +567,41 @@ export default function RequestCardModal({
                 <div className="py-10 text-center">
                   <Spin />
                 </div>
-              ) : groups.length === 0 ? (
+              ) : products.length === 0 && !productsError ? (
                 <p className="py-10 text-center text-sm text-gray-400">
-                  {productsError ?? "ไม่พบสินค้าที่สามารถรับได้"}
+                  ไม่พบสินค้าที่สามารถรับได้
                 </p>
               ) : (
-                <div
-                  className={`mt-3 grid gap-3 ${
-                    groups.length === 3
-                      ? "h-72 grid-cols-2 grid-rows-2"
-                      : "grid-cols-2"
-                  }`}
-                >
-                  {groups.map((g, index) => (
-                    <button
-                      key={g.name}
-                      type="button"
-                      onClick={() => handleSelectGroup(g.name)}
-                      className={`flex flex-col justify-between rounded-2xl p-5 text-left transition hover:shadow-md ${
-                        GROUP_COLORS[index % GROUP_COLORS.length]
-                      } ${
-                        groups.length === 3 && index === 0 ? "row-span-2" : ""
-                      } ${
-                        g.name === group
-                          ? "ring-2 ring-blue-500"
-                          : "ring-1 ring-transparent"
-                      }`}
-                    >
-                      <span className="text-lg font-semibold text-gray-800">
-                        {g.name}
-                      </span>
-                      <span className="text-sm text-gray-600">
-                        {g.qty} รายการ
-                      </span>
-                    </button>
-                  ))}
+                <div className="mt-3 grid h-72 grid-cols-2 grid-rows-2 gap-3">
+                  {groups.map((g, index) => {
+                    const empty = g.qty === 0;
+                    return (
+                      <button
+                        key={g.name}
+                        type="button"
+                        disabled={empty}
+                        onClick={() => handleSelectGroup(g.name)}
+                        className={`flex flex-col justify-between rounded-2xl p-5 text-left transition ${
+                          GROUP_STYLES[g.name]
+                        } ${index === 0 ? "row-span-2" : ""} ${
+                          g.name === group
+                            ? "ring-2 ring-blue-500"
+                            : "ring-1 ring-transparent"
+                        } ${
+                          empty
+                            ? "cursor-not-allowed opacity-40"
+                            : "hover:shadow-md"
+                        }`}
+                      >
+                        <span className="text-lg font-semibold text-gray-800">
+                          {g.name}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {g.qty} รายการ
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
