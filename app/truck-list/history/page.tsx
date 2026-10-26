@@ -387,12 +387,15 @@ export default function TruckCardHistoryPage() {
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {formatDate(row.CreateDate)}
                           </td>
-                          <td className="px-4 py-2.5">
+                          <td className="px-4 py-2.5 whitespace-nowrap">
                             <span
                               className={`flex items-center justify-center gap-1.5 ${status.className}`}
                             >
                               <StatusIcon
-                                cancelled={row.StatusCode === 2 || Number(row.IsInActive) === 1}
+                                cancelled={
+                                  row.StatusCode === 2 ||
+                                  Number(row.IsInActive) === 1
+                                }
                               />
                               <span className="text-gray-700">
                                 {status.label}
@@ -404,12 +407,18 @@ export default function TruckCardHistoryPage() {
                           </td>
                           <td className="text-center px-4 py-2.5">
                             {row.StatusCode === 0 && (
-                              <button
-                                type="button"
-                                className="rounded-md border border-red-200 px-3 py-1 text-red-600 transition hover:bg-red-50"
-                              >
-                                ยกเลิก
-                              </button>
+                              // <button
+                              //   type="button"
+                              //   className="rounded-md border border-red-200 px-3 py-1 text-red-600 transition hover:bg-red-50"
+                              // >
+                              //   ยกเลิก
+                              // </button>
+                              <Image
+                                src="/images/cancel-button.png"
+                                alt="cancel"
+                                width={80}
+                                height={30}
+                              />
                             )}
                           </td>
                         </tr>
