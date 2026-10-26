@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiBaseUrl, getSiteBaseUrl } from "@/lib/env";
+import { getApproveLinkBaseUrl, getSiteBaseUrl } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -65,7 +65,7 @@ export async function POST(
       );
     }
 
-    const customerBaseUrl = getApiBaseUrl();
+    const customerBaseUrl = getApproveLinkBaseUrl();
     const siteBaseUrl = getSiteBaseUrl();
     const targetUrl = `${customerBaseUrl}CustomerBase/ApproveLinkToPTG?x=${resolveData.linkId}`;
 

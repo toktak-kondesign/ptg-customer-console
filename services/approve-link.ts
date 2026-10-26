@@ -3,7 +3,7 @@ import {
   getCustomerAccessToken,
   setOutsourceSystemLink,
 } from "@/lib/auth";
-import { BASE_PATH, getApiBaseUrl } from "@/lib/env";
+import { BASE_PATH, getApproveLinkBaseUrl } from "@/lib/env";
 
 interface OutsourceApiResponse {
   success: boolean;
@@ -124,7 +124,7 @@ export async function resolveApproveLink(
 
 /** Build the external SSO redirect URL for a resolved LinkId. */
 export function buildApproveLinkUrl(linkId: string): string {
-  return `${getApiBaseUrl()}CustomerBase/ApproveLinkToPTG?x=${encodeURIComponent(linkId)}`;
+  return `${getApproveLinkBaseUrl()}CustomerBase/ApproveLinkToPTG?x=${encodeURIComponent(linkId)}`;
 }
 
 // ref1 systems that require the CreateLinkToken -> SyncAuthenLink step
