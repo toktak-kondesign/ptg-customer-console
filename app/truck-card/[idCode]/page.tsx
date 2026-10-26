@@ -65,10 +65,20 @@ export default function TruckCardPage() {
             />
             <div className="mt-4 flex justify-center">
               <div className="rounded-lg border border-gray-200 bg-white p-3">
-                <QRCode
-                  value={`${window.location.origin}${BASE_PATH}/truck-card/${head.IDCode}`}
-                  size={176}
-                />
+                {head.StatusCode === 2 ? (
+                  <Image
+                    src={img("/images/qr_cancel.png")}
+                    alt="บัตรถูกยกเลิก"
+                    width={176}
+                    height={176}
+                    className="h-44 w-44 object-contain"
+                  />
+                ) : (
+                  <QRCode
+                    value={`${window.location.origin}${BASE_PATH}/truck-card/${head.IDCode}`}
+                    size={176}
+                  />
+                )}
               </div>
             </div>
             <p className="mt-2 text-center text-xs tracking-wider text-gray-500">

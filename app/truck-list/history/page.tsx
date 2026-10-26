@@ -42,6 +42,7 @@ const TABLE_HEADERS = [
   "วันที่ขอบัตร",
   "สถานะ",
   "วันที่ใช้บัตร",
+  "ดำเนินการ",
 ];
 
 function getCustomerField(
@@ -75,7 +76,7 @@ function cleanName(value: string | null | undefined): string {
 }
 
 function getStatus(row: CardOTURow): { label: string; className: string } {
-  if (Number(row.IsInActive) === 1) {
+  if (row.StatusCode === 2 || Number(row.IsInActive) === 1) {
     return { label: "ยกเลิก", className: "text-red-600" };
   }
   if (row.UseDate) return { label: "ใช้บัตรแล้ว", className: "text-green-600" };
@@ -391,7 +392,7 @@ export default function TruckCardHistoryPage() {
                               className={`flex items-center justify-center gap-1.5 ${status.className}`}
                             >
                               <StatusIcon
-                                cancelled={Number(row.IsInActive) === 1}
+                                cancelled={row.StatusCode === 2 || Number(row.IsInActive) === 1}
                               />
                               <span className="text-gray-700">
                                 {status.label}
@@ -400,6 +401,16 @@ export default function TruckCardHistoryPage() {
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {formatDate(row.UseDate)}
+                          </td>
+                          <td className="text-center px-4 py-2.5">
+                            {row.StatusCode === 0 && (
+                              <button
+                                type="button"
+                                className="rounded-md border border-red-200 px-3 py-1 text-red-600 transition hover:bg-red-50"
+                              >
+                                ยกเลิก
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
