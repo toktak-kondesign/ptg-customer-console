@@ -88,14 +88,14 @@ const STEP_ITEMS = [
 const GROUP_STYLES: Record<string, string> = {
   กลุ่มหิน:
     "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
-  กลุ่มคอนกรีตบล็อก: "bg-blue-100",
-  กลุ่มผลิตภัณคอนกรีตผสมเสร็จ: "bg-red-100",
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "bg-blue-100",
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "bg-red-100",
 };
 
 const GROUP_IMAGES: Record<string, string> = {
   กลุ่มหิน: "/images/stone_group.png",
-  กลุ่มคอนกรีตบล็อก: "/images/concrete_block_group.png",
-  กลุ่มผลิตภัณคอนกรีตผสมเสร็จ: "/images/concrete_mixed_group.png",
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "/images/concrete_block_group.png",
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "/images/concrete_mixed_group.png",
 };
 
 const GROUP_ORDER = Object.keys(GROUP_STYLES);
