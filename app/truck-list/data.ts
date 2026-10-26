@@ -37,4 +37,5 @@ export interface RequestProductItem {
   name: string;
   available: number;
   unit: string;
+  group: string;
 }

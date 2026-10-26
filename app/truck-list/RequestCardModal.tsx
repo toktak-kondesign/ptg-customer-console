@@ -9,6 +9,7 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckOutlined,
+  ExclamationCircleFilled,
   HistoryOutlined,
   MinusOutlined,
   PlusOutlined,
@@ -18,7 +19,7 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { img, getApiBaseUrl } from "@/lib/env";
+import { BASE_PATH, img } from "@/lib/env";
 import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
@@ -35,6 +36,13 @@ import type { RequestProductItem } from "./data";
 
 const isStoneProduct = (item: RequestProductItem) => item.name.includes("หิน");
 
+const STONE_MAX_QTY = 40;
+
+const maxQty = (item: RequestProductItem) =>
+  isStoneProduct(item)
+    ? Math.min(item.available, STONE_MAX_QTY)
+    : item.available;
+
 const round2 = (value: number) => Math.round(value * 100) / 100;
 
 const parseQty = (raw: string | undefined) => {
@@ -45,7 +53,7 @@ const parseQty = (raw: string | undefined) => {
 const formatQty = (value: number) =>
   value.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
-const ModalTitle = () => (
+const ModalTitle = ({ plate }: { plate?: string }) => (
   <span className="flex items-center gap-2.5">
     <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gray-200">
       <Image
@@ -57,6 +65,11 @@ const ModalTitle = () => (
     </span>
     <span className="text-lg font-semibold text-gray-800">
       ขอบัตรรถรับสินค้าชั่วคราว
+      {plate && (
+        <span className="ml-2 rounded-md bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+          {plate}
+        </span>
+      )}
     </span>
   </span>
 );
@@ -66,12 +79,26 @@ const inputUnderlineClass =
 
 const STEP_ITEMS = [
   { title: "ข้อมูล" },
+  { title: "กลุ่มสินค้า" },
   { title: "เลือกสินค้า" },
   { title: "ตรวจสอบ" },
   { title: "บัตรชั่วคราว" },
 ];
 
-const OTU_BASE_URL = `${getApiBaseUrl()}OTU.html?id=`;
+const GROUP_STYLES: Record<string, string> = {
+  กลุ่มหิน:
+    "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "bg-blue-100",
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "bg-red-100",
+};
+
+const GROUP_IMAGES: Record<string, string> = {
+  กลุ่มหิน: "/images/stone_group.png",
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "/images/concrete_block_group.png",
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "/images/concrete_mixed_group.png",
+};
+
+const GROUP_ORDER = Object.keys(GROUP_STYLES);
 
 const formatThaiDate = (value: string) =>
   value
@@ -130,6 +157,7 @@ export default function RequestCardModal({
   const [products, setProducts] = useState<RequestProductItem[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
+  const [group, setGroup] = useState("");
   const [draftQty, setDraftQty] = useState<Record<string, string>>({});
 
   const [qrDirect, setQrDirect] = useState(false);
@@ -165,6 +193,7 @@ export default function RequestCardModal({
 
   const resetProducts = async (id: string) => {
     setProductQuery("");
+    setGroup("");
     setDraftQty({});
     setProducts([]);
     setProductsError(null);
@@ -180,6 +209,7 @@ export default function RequestCardModal({
         name: row.ItemName,
         available: row.NumToUse,
         unit: row.Unit,
+        group: row.ProdName,
       }));
       setProducts(items);
       setDraftQty(Object.fromEntries(items.map((item) => [item.key, "0"])));
@@ -249,18 +279,15 @@ export default function RequestCardModal({
     if (raw !== "" && !/^\d*\.?\d{0,2}$/.test(raw)) return;
     const value = parseFloat(raw);
     const next =
-      Number.isFinite(value) && value > item.available
-        ? String(item.available)
+      Number.isFinite(value) && value > maxQty(item)
+        ? String(maxQty(item))
         : raw;
     setDraftQty((current) => ({ ...current, [item.key]: next }));
   };
 
   const stepDraft = (item: RequestProductItem, delta: number) => {
     const next = round2(
-      Math.min(
-        item.available,
-        Math.max(0, parseQty(draftQty[item.key]) + delta),
-      ),
+      Math.min(maxQty(item), Math.max(0, parseQty(draftQty[item.key]) + delta)),
     );
     setDraftQty((current) => ({ ...current, [item.key]: String(next) }));
   };
@@ -273,15 +300,27 @@ export default function RequestCardModal({
     }));
   };
 
+  const groups = useMemo(() => {
+    const counts = new Map<string, number>();
+    products.forEach((item) =>
+      counts.set(item.group, (counts.get(item.group) ?? 0) + 1),
+    );
+    return GROUP_ORDER.map((name) => ({
+      name,
+      qty: counts.get(name) ?? 0,
+    }));
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter(
+    const inGroup = products.filter((item) => item.group === group);
+    if (!q) return inGroup;
+    return inGroup.filter(
       (item) =>
         item.docNo.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q),
     );
-  }, [products, productQuery]);
+  }, [products, productQuery, group]);
 
   const stoneSelected = products.find(
     (item) => isStoneProduct(item) && parseQty(draftQty[item.key]) > 0,
@@ -291,7 +330,7 @@ export default function RequestCardModal({
     .filter((item) => parseQty(draftQty[item.key]) > 0)
     .map((item) => ({
       item,
-      qty: Math.min(item.available, round2(parseQty(draftQty[item.key]))),
+      qty: Math.min(maxQty(item), round2(parseQty(draftQty[item.key]))),
     }));
 
   const plateNormalized = normalizePlate(plate);
@@ -312,7 +351,7 @@ export default function RequestCardModal({
     }
     if (!isValidThaiPlate(plateNormalized)) {
       setFormError(
-        "รูปแบบทะเบียนรถไม่ถูกต้อง (ตัวอย่าง 80-1234, 810684, 83-1193 นศ, 1ขค1228)",
+        "รูปแบบทะเบียนรถไม่ถูกต้อง ต้องลงท้ายด้วยตัวย่อจังหวัด 2 ตัวอักษร (ตัวอย่าง 83-1193 นศ, 1ขค1228 กท)",
       );
       return;
     }
@@ -337,13 +376,23 @@ export default function RequestCardModal({
     setStep(1);
   };
 
+  const handleSelectGroup = (name: string) => {
+    if (name !== group) {
+      setDraftQty(Object.fromEntries(products.map((item) => [item.key, "0"])));
+      setProductQuery("");
+    }
+    setGroup(name);
+    setFormError(null);
+    setStep(2);
+  };
+
   const handleStep2Next = () => {
     if (selectedItems.length === 0) {
       setFormError("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
       return;
     }
     setFormError(null);
-    setStep(2);
+    setStep(3);
   };
 
   const handleConfirm = async () => {
@@ -375,7 +424,7 @@ export default function RequestCardModal({
       idCode: res.idCode,
       createDate: res.createDate ?? new Date().toISOString(),
     });
-    setStep(3);
+    setStep(4);
   };
 
   const backToStep = (target: number) => {
@@ -390,11 +439,11 @@ export default function RequestCardModal({
         onCancel={onClose}
         footer={null}
         centered
-        width={720}
-        mask={{ closable: step !== 3 }}
+        width={760}
+        mask={{ closable: step !== 4 }}
         title={
           <div className="flex items-center justify-between gap-3 pr-6">
-            <ModalTitle />
+            <ModalTitle plate={step > 0 ? plateNormalized : undefined} />
             <Link
               href="/truck-list/history"
               onClick={onClose}
@@ -447,7 +496,7 @@ export default function RequestCardModal({
                 </button>
               </div>
 
-              <div className="mt-3 flex justify-end">
+              {/* <div className="mt-3 flex justify-end">
                 <button
                   type="button"
                   role="checkbox"
@@ -469,7 +518,7 @@ export default function RequestCardModal({
                   </span>
                   รับ QR โดยตรง
                 </button>
-              </div>
+              </div> */}
 
               {!qrDirect && (
                 <div className="mt-4">
@@ -526,14 +575,84 @@ export default function RequestCardModal({
           {step === 1 && (
             <div className="mt-5">
               <h3 className="text-base font-semibold text-gray-800">
-                สินค้าที่ท่านสามารถรับได้{" "}
+                เลือกกลุ่มสินค้า
+              </h3>
+              {productsLoading ? (
+                <div className="py-10 text-center">
+                  <Spin />
+                </div>
+              ) : products.length === 0 && !productsError ? (
+                <p className="py-10 text-center text-sm text-gray-400">
+                  ไม่พบสินค้าที่สามารถรับได้
+                </p>
+              ) : (
+                <div className="mt-3 grid h-72 grid-cols-2 grid-rows-2 gap-3">
+                  {groups.map((g, index) => {
+                    const empty = g.qty === 0;
+                    return (
+                      <button
+                        key={g.name}
+                        type="button"
+                        disabled={empty}
+                        onClick={() => handleSelectGroup(g.name)}
+                        className={`flex flex-col justify-between rounded-2xl p-5 text-left transition ${
+                          GROUP_STYLES[g.name]
+                        } ${index === 0 ? "row-span-2" : ""} ${
+                          g.name === group
+                            ? "ring-2 ring-blue-500"
+                            : "ring-1 ring-transparent"
+                        } ${
+                          empty
+                            ? "cursor-not-allowed opacity-40"
+                            : "hover:shadow-md"
+                        }`}
+                      >
+                        <span className="text-lg font-semibold text-gray-800">
+                          {g.name}
+                        </span>
+                        <Image
+                          src={img(
+                            GROUP_IMAGES[g.name] ?? "/images/group-icon.png",
+                          )}
+                          alt={g.name}
+                          width={0}
+                          height={0}
+                          sizes="100vw"
+                          className="h-auto w-4/5"
+                        />
+                        <span className="text-sm text-gray-600">
+                          {g.qty} รายการ
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="mt-5 flex justify-center gap-3">
+                <Button
+                  size="large"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => backToStep(0)}
+                  className="min-w-[140px]"
+                >
+                  ย้อนกลับ
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="mt-5">
+              <h3 className="text-base font-semibold text-gray-800">
+                สินค้าที่ท่านสามารถรับได้ ({group}){" "}
                 <span className="mt-3 text-center text-sm font-semibold text-red-600">
                   รับได้ไม่เกินปริมาณที่มี
                 </span>
               </h3>
               <p className="mt-1 text-sm text-red-600">
                 *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
-                สินค้าเท่านั้น
+                สินค้าเท่านั้น และบรรทุกได้ไม่เกิน 40 คิวต่อบัตร
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <SearchOutlined />
@@ -600,7 +719,7 @@ export default function RequestCardModal({
                           <button
                             type="button"
                             aria-label="เพิ่มจำนวน"
-                            disabled={disabled || qty >= item.available}
+                            disabled={disabled || qty >= maxQty(item)}
                             onClick={() => stepDraft(item, 1)}
                             className="flex h-9 w-9 items-center justify-center bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
                           >
@@ -623,7 +742,7 @@ export default function RequestCardModal({
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
-                  onClick={() => backToStep(0)}
+                  onClick={() => backToStep(1)}
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
@@ -642,7 +761,7 @@ export default function RequestCardModal({
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="mt-5">
               <h3 className="text-base font-semibold text-gray-800">
                 ตรวจสอบข้อมูลก่อนยืนยัน
@@ -659,10 +778,7 @@ export default function RequestCardModal({
                 <SummaryRow label="รายการสินค้า">
                   <ul className="space-y-1">
                     {selectedItems.map(({ item, qty }) => (
-                      <li
-                        key={item.key}
-                        className="flex justify-between gap-3"
-                      >
+                      <li key={item.key} className="flex justify-between gap-3">
                         <span className="truncate">
                           เลขที่ {item.docNo} : {item.name}
                         </span>
@@ -686,7 +802,7 @@ export default function RequestCardModal({
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   disabled={submitting}
-                  onClick={() => backToStep(1)}
+                  onClick={() => backToStep(2)}
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
@@ -705,11 +821,11 @@ export default function RequestCardModal({
             </div>
           )}
 
-          {step === 3 && result && (
+          {step === 4 && result && (
             <div className="mt-5">
-              <div className="mx-auto max-w-md rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-6 shadow-sm">
                 <Image
-                  src={img("/images/logo_company/logo_PTG.png")}
+                  src={img("/logo/logo.png")}
                   alt="PTG"
                   width={120}
                   height={40}
@@ -718,41 +834,57 @@ export default function RequestCardModal({
                 <div className="mt-4 flex justify-center">
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <QRCode
-                      value={`${OTU_BASE_URL}${result.idCode}`}
+                      value={`${window.location.origin}${BASE_PATH}/truck-card/${result.idCode}`}
                       size={176}
                     />
                   </div>
                 </div>
                 <p className="mt-2 text-center text-xs tracking-wider text-gray-500">
-                  {result.idCode}
+                  <span className="font-bold bg-gray-50 border border-gray-200 px-[3.2rem] py-1 text-blue-600 rounded-lg">
+                    {result.idCode}
+                  </span>
                 </p>
                 <div className="mt-4 text-center">
                   <p className="font-semibold text-gray-800">
                     {cust.name || "-"} ({cust.id})
                   </p>
-                  <p className="mt-1 font-semibold text-gray-800">
-                    ทะเบียน {plateNormalized}
+                  <p className="mt-2 mb-2 font-semibold text-gray-800">
+                    <span className="px-6 py-0.5 bg-green-500 rounded-full text-white">
+                      ทะเบียน {plateNormalized}
+                    </span>
                   </p>
                   <p className="mt-1 text-xs text-gray-500">
                     ออกบัตรเมื่อ {formatThaiDate(result.createDate)}
                   </p>
                 </div>
+                {selectedItems.length > 0 && (
+                  <div className="mt-4 text-left">
+                    <p className="font-semibold text-gray-800">
+                      คุณสามารถรับสินค้าได้ดังนี้
+                    </p>
+                    <div className="mt-3 space-y-1">
+                      {selectedItems.map(({ item, qty }) => (
+                        <div
+                          key={item.key}
+                          className="rounded-xl border border-gray-200 px-4 py-2 bg-slate-50"
+                        >
+                          <p className="font-medium text-sm text-gray-800">
+                            {item.name}
+                          </p>
+                          <p className="mt-0.25 font-medium text-red-600 text-sm">
+                            จำนวน {formatQty(qty)} {item.unit} ({" "}
+                            {formatQty(qty)} {item.unit} )
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="mt-4 border-t border-gray-100 pt-3">
                   <p className="text-sm font-semibold text-gray-800">
                     เงื่อนไขบัตรรถบรรทุกชั่วคราว (Card One Time Use)
                   </p>
                   <TermsList />
-                  <p className="mt-3 text-center text-sm text-gray-700">
-                    ท่านสามารถดูวิธีใช้บัตรได้ที่{" "}
-                    <a
-                      href="https://vimeo.com/642570187"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      https://vimeo.com/642570187
-                    </a>
-                  </p>
                   <p className="mt-2 text-right text-sm text-gray-700">
                     สอบถามข้อมูลเพิ่มเติม โทร : 1634
                   </p>
@@ -824,17 +956,34 @@ export default function RequestCardModal({
           </Button>
         }
         centered
-        width={480}
-        title="มีบัตรชั่วคราวค้างอยู่"
+        width={500}
       >
-        <p className="text-sm text-gray-700">
-          คุณได้ขอบัตรรถบรรทุกชั่วคราวให้กับรถบรรทุกทะเบียน {plateNormalized}{" "}
-          ไว้แล้ว บัตรชั่วคราวมีอายุ 72 ชั่วโมง
-          กรุณามารับสินค้าภายในระยะเวลาที่กำหนด
-        </p>
-        {pendingCard && (
-          <p className="mt-2 text-xs text-gray-500">เลขที่บัตร {pendingCard}</p>
-        )}
+        <div className="px-2 py-2 text-center">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-amber-50 text-amber-500 ring-4 ring-amber-100">
+            <ExclamationCircleFilled className="text-[5.25rem]" />
+          </div>
+          <h3 className="mt-3 text-xl font-semibold text-amber-600">
+            มีบัตรชั่วคราวค้างอยู่
+          </h3>
+          <p className="mt-4 text-sm leading-relaxed text-gray-700">
+            คุณได้ขอบัตรรถบรรทุกชั่วคราวให้กับรถบรรทุกทะเบียน{" "}
+            <span className="font-semibold text-blue-700">
+              {plateNormalized}
+            </span>{" "}
+            ไว้แล้ว บัตรชั่วคราวมีอายุ{" "}
+            <span className="rounded bg-amber-100 px-1 font-semibold text-amber-700">
+              72 ชั่วโมง
+            </span>{" "}
+            กรุณามารับสินค้าภายในระยะเวลาที่กำหนด
+          </p>
+          {pendingCard && (
+            <p className="mt-3">
+              <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1  font-medium text-red-600">
+                เลขที่บัตร {pendingCard}
+              </span>
+            </p>
+          )}
+        </div>
       </Modal>
 
       <Modal
