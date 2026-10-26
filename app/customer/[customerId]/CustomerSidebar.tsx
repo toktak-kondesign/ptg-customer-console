@@ -41,18 +41,18 @@ function AccountCard({ customer }: { customer: CustomerProfile }) {
 
       <div className="mt-4 grid grid-cols-2 divide-x divide-[#DCE8F5] rounded-xl border border-[#E4EEF9] bg-[linear-gradient(135deg,#F4F9FF_0%,#EAF3FD_100%)]">
         <div className="flex items-center gap-3 px-4 py-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F5B50E] text-white">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F5B50E] text-white">
             <RedEnvelopeFilled className="text-lg" />
           </span>
           <span>
             <span className="block text-xs text-[#6B87A8]">แต้มสะสม</span>
-            <span className="block text-[26px] font-bold leading-tight text-[#1B3A6E]">
+            <span className="block text-[21px] font-bold leading-tight text-[#1B3A6E]">
               {formatPointValue(customer.goldPoints)}
             </span>
           </span>
         </div>
         <div className="flex items-center gap-3 px-4 py-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#9AA9BC] text-white">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#9AA9BC] text-white">
             <StarFilled className="text-lg" />
           </span>
           <span>
