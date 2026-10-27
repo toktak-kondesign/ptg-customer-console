@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { prismaDataCenter } from "@/lib/prismaDataCenter";
+import { getClientIp, logCustomerAccess } from "@/lib/access-log";
 import {
   isPaymentMethodKey,
   type CreatePayingBillRequest,
@@ -136,9 +137,33 @@ export async function POST(request: Request): Promise<Response> {
       },
     });
 
+    logCustomerAccess({
+      custID: created.custId,
+      username: created.userCreate,
+      module: "payment-list",
+      action: "CREATE",
+      detail: `สร้างใบนำจ่าย ${created.runno} จำนวน ${created.amount} บาท`,
+      refNo: created.runno,
+      result: "SUCCESS",
+      ipAddress: getClientIp(request),
+      userAgent: request.headers.get("user-agent"),
+    });
+
     return jsonResponse({ success: true, data: serialize(created) });
   } catch (error) {
     console.error("Failed to create paying bill:", error);
+    logCustomerAccess({
+      custID: body.custId,
+      username: body.userCreate,
+      module: "payment-list",
+      action: "CREATE",
+      detail: `สร้างใบนำจ่ายไม่สำเร็จ method=${body.method}`,
+      result: "FAIL",
+      errorMessage:
+        error instanceof Error ? error.message : "บันทึกข้อมูลไม่สำเร็จ",
+      ipAddress: getClientIp(request),
+      userAgent: request.headers.get("user-agent"),
+    });
     return jsonResponse({ success: false, error: "บันทึกข้อมูลไม่สำเร็จ" }, 500);
   }
 }

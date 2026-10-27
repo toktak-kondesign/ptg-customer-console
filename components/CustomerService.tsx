@@ -273,11 +273,11 @@ export default function CustomerService() {
                     <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500" />
                   </div>
                 )}
-                {service.badge && (
+                {/* {service.badge && (
                   <div className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                     {service.badge}
                   </div>
-                )}
+                )} */}
                 <div
                   className={`service-card-icon bg-gradient-to-br rounded-xl flex items-center justify-center mx-auto mb-4 relative w-full h-20 sm:h-24`}
                 >

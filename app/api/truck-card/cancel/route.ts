@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isVerifyOtpPayload, verifyOtpWithAuthenX } from "@/lib/authenxOtp";
+import { getClientIp, logCustomerAccess } from "@/lib/access-log";
 import type { CancelCardPayload } from "@/interfaces/card-temp";
 import type { VerifyOtpResponse } from "@/interfaces/otp";
 
@@ -61,6 +62,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyOtp
 
     const custID = body.custID.trim();
 
+    const logAccess = (result: "SUCCESS" | "FAIL", errorMessage?: string) =>
+      logCustomerAccess({
+        custID,
+        username: body.userName,
+        module: "truck-list",
+        action: "CANCEL",
+        detail: `ยกเลิกบัตรรถชั่วคราว runID=${body.runID}`,
+        refNo: String(body.runID),
+        result,
+        errorMessage: errorMessage ?? null,
+        ipAddress: getClientIp(request),
+        userAgent: request.headers.get("user-agent"),
+      });
+
     const log = await postPdfApi("/api/card-temp/cancel-log", {
       custID,
       runID: body.runID,
@@ -68,6 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyOtp
       userCreated: body.userName,
     });
     if (!log.ok || log.data.logID === undefined) {
+      logAccess("FAIL", log.data.error ?? "ไม่สามารถบันทึกรายการยกเลิกบัตรได้");
       return NextResponse.json<VerifyOtpResponse>(
         { success: false, error: log.data.error ?? "ไม่สามารถบันทึกรายการยกเลิกบัตรได้" },
         { status: 502 },
@@ -80,6 +96,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyOtp
       otpCode: body.otpCode,
     });
     if (!verify.success || !verify.data?.result) {
+      logAccess("FAIL", verify.error ?? "OTP verification failed");
       return NextResponse.json<VerifyOtpResponse>(verify, {
         status: verify.success ? 200 : status,
       });
@@ -91,12 +108,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyOtp
       logID: log.data.logID,
     });
     if (!confirm.ok) {
+      logAccess("FAIL", confirm.data.error ?? "ไม่สามารถยกเลิกบัตรได้");
       return NextResponse.json<VerifyOtpResponse>(
         { success: false, error: confirm.data.error ?? "ไม่สามารถยกเลิกบัตรได้" },
         { status: 502 },
       );
     }
 
+    logAccess("SUCCESS");
     return NextResponse.json<VerifyOtpResponse>(verify);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error occurred";

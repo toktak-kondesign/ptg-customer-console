@@ -90,8 +90,8 @@ const STEP_ITEMS = [
 const GROUP_STYLES: Record<string, string> = {
   กลุ่มหิน:
     "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
-  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "bg-blue-100",
-  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "bg-red-100",
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "bg-red-100",
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "bg-blue-100",
 };
 
 const GROUP_IMAGES: Record<string, string> = {
@@ -565,7 +565,7 @@ export default function RequestCardModal({
                 <input
                   value={plate}
                   onChange={(e) => setPlate(e.target.value)}
-                  placeholder="กรอกหมายเลขทะเบียนรถ เช่น 80-1234"
+                  placeholder="กรอกหมายเลขทะเบียนรถ เช่น 80-1234 นศ"
                   className={inputUnderlineClass}
                 />
               </div>
@@ -640,7 +640,7 @@ export default function RequestCardModal({
                           sizes="100vw"
                           className="h-auto w-4/5"
                         />
-                        <span className="text-sm text-gray-600">
+                        <span className="mt-1 text-sm text-gray-600">
                           {g.qty} รายการ
                         </span>
                       </button>

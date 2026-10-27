@@ -15,3 +15,9 @@ export interface CardOTUResponse {
   results: CardOTURow[];
   error?: string;
 }
+
+export interface CancelCardOtuResponse {
+  status: string;
+  cancelledCount?: number;
+  error?: string;
+}

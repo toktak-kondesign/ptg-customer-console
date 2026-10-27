@@ -41,7 +41,7 @@ export default function HeroSlider() {
           {slides.map((slide, index) => (
             <div
               key={index}
-              className="relative w-full shrink-0 aspect-[1920/600]"
+              className="relative w-full shrink-0 aspect-[1920/600] max-h-[420px]"
             >
               <Image
                 src={slide.src}

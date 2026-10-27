@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { DatePicker, Popover } from "antd";
+import { Button, DatePicker, Modal, Popover } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import "dayjs/locale/th";
@@ -11,7 +11,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { img } from "@/lib/env";
-import { getCardOTUListService } from "@/services/customer/card-otu";
+import {
+  cancelCardOtuService,
+  getCardOTUListService,
+} from "@/services/customer/card-otu";
 import type { CardOTURow } from "@/interfaces/card-otu";
 
 dayjs.extend(buddhistEra);
@@ -83,6 +86,23 @@ function getStatus(row: CardOTURow): { label: string; className: string } {
   return { label: "รอใช้งาน", className: "text-blue-600" };
 }
 
+const WarningIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+  >
+    <path
+      d="M12 3.5 2.8 19.5a1 1 0 0 0 .86 1.5h16.68a1 1 0 0 0 .86-1.5L12 3.5z"
+      strokeLinejoin="round"
+    />
+    <path d="M12 9.5v4.5" strokeLinecap="round" />
+    <circle cx="12" cy="17" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 const StatusIcon = ({ cancelled }: { cancelled: boolean }) => (
   <svg
     viewBox="0 0 24 24"
@@ -113,6 +133,11 @@ export default function TruckCardHistoryPage() {
   const [rows, setRows] = useState<CardOTURow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [cancelTarget, setCancelTarget] = useState<CardOTURow | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelDone, setCancelDone] = useState<string | null>(null);
 
   useEffect(() => {
     setSessionInfo(getCustomerInfo());
@@ -157,7 +182,7 @@ export default function TruckCardHistoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [custID, requestDate]);
+  }, [custID, requestDate, refreshKey]);
 
   const handleChangeMonth = (offset: number) => {
     setCurrentMonth((prev) => prev.add(offset, "month").startOf("month"));
@@ -177,6 +202,24 @@ export default function TruckCardHistoryPage() {
   const handleMonthPickerOpenChange = (open: boolean) => {
     if (open) setPickerYear(currentMonth.year());
     setIsMonthPickerOpen(open);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!cancelTarget?.IDCode || !custID) return;
+    setIsCancelling(true);
+    setCancelError(null);
+    const result = await cancelCardOtuService(
+      cancelTarget.IDCode.trim(),
+      custID,
+    );
+    setIsCancelling(false);
+    if (result.status !== "success") {
+      setCancelError(result.error ?? "ไม่สามารถยกเลิกบัตรได้");
+      return;
+    }
+    setCancelDone(cancelTarget.IDCode.trim());
+    setCancelTarget(null);
+    setRefreshKey((key) => key + 1);
   };
 
   const handleSelectMonth = (monthIndex: number) => {
@@ -406,20 +449,25 @@ export default function TruckCardHistoryPage() {
                             {formatDate(row.UseDate)}
                           </td>
                           <td className="text-center px-4 py-2.5">
-                            {row.StatusCode === 0 && (
-                              // <button
-                              //   type="button"
-                              //   className="rounded-md border border-red-200 px-3 py-1 text-red-600 transition hover:bg-red-50"
-                              // >
-                              //   ยกเลิก
-                              // </button>
-                              <Image
-                                src="/images/cancel-button.png"
-                                alt="cancel"
-                                width={80}
-                                height={30}
-                              />
-                            )}
+                            {row.StatusCode === 0 &&
+                              Number(row.IsInActive) !== 1 && (
+                                <button
+                                  type="button"
+                                  aria-label={`ยกเลิกบัตร ${row.IDCode?.trim() || ""}`}
+                                  onClick={() => {
+                                    setCancelError(null);
+                                    setCancelTarget(row);
+                                  }}
+                                  className="cursor-pointer transition hover:opacity-80"
+                                >
+                                  <Image
+                                    src={img("/images/cancel-button.png")}
+                                    alt="ยกเลิก"
+                                    width={80}
+                                    height={30}
+                                  />
+                                </button>
+                              )}
                           </td>
                         </tr>
                       );
@@ -456,6 +504,88 @@ export default function TruckCardHistoryPage() {
         </div>
       </main>
       <Footer />
+
+      <Modal
+        open={cancelTarget !== null}
+        onCancel={() => {
+          if (!isCancelling) setCancelTarget(null);
+        }}
+        footer={null}
+        centered
+        width={480}
+        mask={{ closable: !isCancelling }}
+      >
+        <div className="px-4 py-2 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500 ring-4 ring-red-100">
+            <WarningIcon className="h-9 w-9" />
+          </div>
+          <h3 className="mt-3 text-xl font-semibold text-red-600">
+            ยืนยันการยกเลิกบัตรรถบรรทุกชั่วคราว
+          </h3>
+          <p className="mt-4 text-gray-800">
+            คุณต้องการยกเลิกบัตร หมายเลข{" "}
+            <span className="font-semibold text-red-600">
+              {cancelTarget?.IDCode?.trim()}
+            </span>
+          </p>
+          <p className="mt-1">
+            <span className="bg-blue-50 px-2 py-0.5 font-semibold text-blue-700">
+              ทะเบียนรถ {cancelTarget?.CarRegister?.trim() || "-"}
+            </span>
+          </p>
+          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-left">
+            <p className="flex items-center gap-1.5 font-semibold text-red-600">
+              <WarningIcon className="h-4 w-4" />
+              หมายเหตุ
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-red-600">
+              เมื่อคุณทำการยกเลิกบัตรไปแล้ว{" "}
+              <span className="rounded bg-red-100 px-1 font-semibold">
+                ไม่สามารถนำบัตรใบนี้กลับมาใช้งานได้อีก
+              </span>{" "}
+              ไม่ว่ากรณีใดก็ตาม
+            </p>
+          </div>
+          {cancelError && (
+            <p className="mt-3 text-sm text-red-600">{cancelError}</p>
+          )}
+          <Button
+            type="primary"
+            danger
+            size="large"
+            loading={isCancelling}
+            className="mt-6 px-10"
+            onClick={handleConfirmCancel}
+          >
+            ยืนยันการยกเลิกบัตร
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={cancelDone !== null}
+        onCancel={() => setCancelDone(null)}
+        footer={null}
+        centered
+        width={420}
+      >
+        <div className="px-4 py-2 text-center">
+          <h3 className="text-xl font-semibold text-green-600">
+            ยกเลิกบัตรเรียบร้อย
+          </h3>
+          <p className="mt-3 text-gray-700">
+            บัตร หมายเลข <span className="font-semibold">{cancelDone}</span>{" "}
+            ถูกยกเลิกแล้ว
+          </p>
+          <Button
+            type="primary"
+            className="mt-5 px-10"
+            onClick={() => setCancelDone(null)}
+          >
+            ปิด
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
