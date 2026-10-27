@@ -282,8 +282,8 @@ function TruckCardFlip({ truck }: { truck: TruckCard }) {
                 {truck.Remark}
               </span>
             </div>
-            <div className="absolute left-[42%] top-[49%] w-[54%] text-center">
-              <span className="text-[10.5cqw] font-extrabold leading-none text-red-600">
+            <div className="absolute left-[38%] top-[49%] w-[54%] text-center">
+              <span className="text-[9cqw] font-extrabold leading-none text-red-600">
                 {truck.CarRegister}
               </span>
             </div>

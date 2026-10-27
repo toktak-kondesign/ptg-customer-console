@@ -92,6 +92,7 @@ export interface CardOtuDetailHead {
   CustName: string;
   CreateDate: string;
   StatusCode: number | null;
+  IsInActive: number | null;
 }
 
 export interface CardOtuDetailItem {

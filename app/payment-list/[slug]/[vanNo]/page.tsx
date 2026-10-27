@@ -16,6 +16,7 @@ import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
 import { getLogPayCustService } from "@/services/customer/log-pay-cust";
 import { createPayingBillService } from "@/services/customer/paying-bill";
 import { BANKS } from "@/lib/banks";
+import { maskCustomerId } from "@/lib/format";
 import { img } from "@/lib/env";
 import PayingBillModal from "./PayingBillModal";
 import type { LogPayCustRow, VanAccountDtlRow } from "@/interfaces/van-account";
@@ -339,7 +340,7 @@ export default function VanAccountDetailPage() {
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">รหัสลูกค้า :</dt>
                     <dd className="border-b text-gray-800">
-                      {customerResaleID} : {customerName}
+                      {maskCustomerId(customerResaleID)} : {customerName}
                     </dd>
                   </div>
                   <div className="flex gap-2">

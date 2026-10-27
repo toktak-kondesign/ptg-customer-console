@@ -25,7 +25,7 @@ export const API_BASE_URL = getApiBaseUrl();
 // Approve-link redirect target — always the main domain (ptg.co.th), even in
 // dev. The browser is sent to {base}CustomerBase/ApproveLinkToPTG?x={linkId}.
 export const getApproveLinkBaseUrl = (): string =>
-  process.env.NEXT_PUBLIC_APPROVE_LINK_BASE_URL || 'https://ptg.co.th/';
+  process.env.NEXT_PUBLIC_APPROVE_LINK_BASE_URL || 'https://www.ptg.co.th/';
 
 // Main PTG website base URL (dev/prod aware) — Site/* nav links and login page
 export const getSiteBaseUrl = (): string => {

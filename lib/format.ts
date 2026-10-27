@@ -49,6 +49,17 @@ export function formatVanNumber(value: string): string {
 }
 
 /**
+ * ปิดบังรหัสลูกค้า โชว์ 3 ตัวแรกกับ 2 ตัวท้าย ที่เหลือเป็น X
+ * เช่น "0205560012389" -> "020XXXXXXXX89"
+ */
+export function maskCustomerId(value: string | null | undefined): string {
+  const s = (value ?? "").trim();
+  if (!s) return "-";
+  if (s.length <= 5) return s;
+  return `${s.slice(0, 3)}${"X".repeat(s.length - 5)}${s.slice(-2)}`;
+}
+
+/**
  * เลขประจำตัวผู้เสียภาษี 13 หลัก -> 0-8035-60001-91-1
  * masked = true จะปิดบัง 2 กลุ่มท้าย -> 0-8035-60001-xx-x
  */

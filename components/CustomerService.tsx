@@ -14,6 +14,7 @@ import {
   createOutsourceSystemLink,
   getApproveLinkRedirectUrl,
 } from "@/services/approve-link";
+import app from "next/app";
 
 interface ServiceEntry {
   image: string;
@@ -89,6 +90,7 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/PTG-Messages.png"),
     title: "PTG\nMessages",
     desc: "ข้อความจาก PTG",
+    approveLinkRef1: "ptgmessage",
     badge: 1,
   },
   {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import QRCode from "react-qr-code";
@@ -9,6 +9,7 @@ import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
   CheckOutlined,
+  DownloadOutlined,
   ExclamationCircleFilled,
   HistoryOutlined,
   MinusOutlined,
@@ -20,6 +21,7 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { BASE_PATH, img } from "@/lib/env";
+import { downloadNodeAsImage } from "@/lib/download-node-image";
 import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
@@ -175,6 +177,9 @@ export default function RequestCardModal({
     createDate: string;
   } | null>(null);
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
   const loadProfile = async (id: string) => {
     setProfileLoading(true);
     const res = await getCustomerProfileService(id);
@@ -230,6 +235,7 @@ export default function RequestCardModal({
     setPendingBills(null);
     setPendingCard(null);
     setResult(null);
+    setDownloading(false);
     void resetProducts(custId);
 
     const seeded = resolveCustomerProfile(custId, getCustomerInfo(), {
@@ -425,6 +431,20 @@ export default function RequestCardModal({
       createDate: res.createDate ?? new Date().toISOString(),
     });
     setStep(4);
+  };
+
+  const handleDownloadImage = async () => {
+    if (!cardRef.current || !result) return;
+    setDownloading(true);
+    try {
+      await downloadNodeAsImage(
+        cardRef.current,
+        `truck-card-${result.idCode}.png`,
+      );
+    } catch {
+      setFormError("ไม่สามารถบันทึกรูปภาพได้");
+    }
+    setDownloading(false);
   };
 
   const backToStep = (target: number) => {
@@ -823,7 +843,10 @@ export default function RequestCardModal({
 
           {step === 4 && result && (
             <div className="mt-5">
-              <div className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <div
+                ref={cardRef}
+                className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-6 shadow-sm"
+              >
                 <Image
                   src={img("/logo/logo.png")}
                   alt="PTG"
@@ -890,7 +913,21 @@ export default function RequestCardModal({
                   </p>
                 </div>
               </div>
-              <div className="mt-5 flex justify-center">
+              {formError && (
+                <p className="mt-3 text-center text-sm text-red-600">
+                  {formError}
+                </p>
+              )}
+              <div className="mt-5 flex justify-center gap-3">
+                <Button
+                  size="large"
+                  icon={<DownloadOutlined />}
+                  loading={downloading}
+                  onClick={handleDownloadImage}
+                  className="min-w-[200px]"
+                >
+                  ดาวน์โหลดรูปภาพ
+                </Button>
                 <Button
                   type="primary"
                   size="large"

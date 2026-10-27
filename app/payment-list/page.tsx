@@ -22,6 +22,7 @@ import {
 } from "./data";
 import { getColorDashboardService } from "@/services/customer/color-dashboard";
 import type { ColorDashboardRow } from "@/interfaces/color-dashboard";
+import { maskCustomerId } from "@/lib/format";
 import Link from "next/link";
 
 const COMPANY_CODE_TO_SLUG: Record<string, string> = {
@@ -481,13 +482,15 @@ export default function PaymentListPage() {
                   <div className="flex gap-2">
                     <dt className="text-gray-500 shrink-0">รหัสลูกค้า:</dt>
                     <dd className="border-b">
-                      {getCustomerField(customerInfo, [
-                        "ResaleID",
-                        "resaleID",
-                        "CUSTID",
-                        "CustID",
-                        "custId",
-                      ])}
+                      {maskCustomerId(
+                        getCustomerField(customerInfo, [
+                          "ResaleID",
+                          "resaleID",
+                          "CUSTID",
+                          "CustID",
+                          "custId",
+                        ]),
+                      )}
                       {getCustomerField(customerInfo, [
                         "CusName",
                         "cusName",

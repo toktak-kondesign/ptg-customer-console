@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import QRCode from "react-qr-code";
-import { Spin } from "antd";
+import { Button, Spin } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 import { BASE_PATH, img } from "@/lib/env";
+import { downloadNodeAsImage } from "@/lib/download-node-image";
 import { getCardOtuDetailService } from "@/services/customer/card-otu-request";
 import type {
   CardOtuDetailHead,
@@ -29,6 +31,9 @@ export default function TruckCardPage() {
   const [error, setError] = useState<string | null>(null);
   const [head, setHead] = useState<CardOtuDetailHead | null>(null);
   const [items, setItems] = useState<CardOtuDetailItem[]>([]);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!idCode) return;
@@ -43,6 +48,21 @@ export default function TruckCardPage() {
     });
   }, [idCode]);
 
+  const handleDownloadImage = async () => {
+    if (!cardRef.current || !head) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadNodeAsImage(
+        cardRef.current,
+        `truck-card-${head.IDCode}.png`,
+      );
+    } catch {
+      setDownloadError("ไม่สามารถบันทึกรูปภาพได้");
+    }
+    setDownloading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="mx-auto min-h-screen w-full max-w-lg bg-white shadow-lg sm:my-6 sm:min-h-0 sm:rounded-2xl sm:border sm:border-gray-200">
@@ -55,7 +75,8 @@ export default function TruckCardPage() {
             {error ?? "ไม่พบข้อมูลบัตร"}
           </p>
         ) : (
-          <div className="p-6">
+          <>
+            <div ref={cardRef} className="p-6">
             <Image
               src={img("/logo/logo.png")}
               alt="PTG"
@@ -65,7 +86,7 @@ export default function TruckCardPage() {
             />
             <div className="mt-4 flex justify-center">
               <div className="rounded-lg border border-gray-200 bg-white p-3">
-                {head.StatusCode === 2 ? (
+                {head.StatusCode === 2 || Number(head.IsInActive) === 1 ? (
                   <Image
                     src={img("/images/qr_cancel.png")}
                     alt="บัตรถูกยกเลิก"
@@ -140,7 +161,24 @@ export default function TruckCardPage() {
                 สอบถามข้อมูลเพิ่มเติม โทร : 1634
               </p>
             </div>
-          </div>
+            </div>
+            <div className="px-6 pb-6">
+              <Button
+                block
+                size="large"
+                icon={<DownloadOutlined />}
+                loading={downloading}
+                onClick={handleDownloadImage}
+              >
+                ดาวน์โหลดรูปภาพ
+              </Button>
+              {downloadError && (
+                <p className="mt-2 text-center text-sm text-red-600">
+                  {downloadError}
+                </p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>

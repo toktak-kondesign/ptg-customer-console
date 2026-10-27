@@ -10,6 +10,7 @@ import { getCompanyBySlug, formatAmount } from "../data";
 import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { img } from "@/lib/env";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
+import { maskCustomerId } from "@/lib/format";
 import type { VanAccount, VanAccountDetails } from "@/interfaces/van-account";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
@@ -203,7 +204,7 @@ export default function PaymentAccountDetailPage() {
                     <dt className="text-gray-500 shrink-0">รหัสลูกค้า :</dt>
                     <dd className="border-b text-gray-800">
                       {customer
-                        ? `${customer.ResaleIDX || customer.ResaleID} : ${customer.Name}`
+                        ? `${maskCustomerId(customer.ResaleIDX || customer.ResaleID)} : ${customer.Name}`
                         : "-"}
                     </dd>
                   </div>

@@ -20,6 +20,7 @@ import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
 import { img } from "@/lib/env";
 import { getPaymentLogService } from "@/services/customer/payment-log";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
+import { maskCustomerId } from "@/lib/format";
 import type { PaymentLogRow } from "@/interfaces/payment-log";
 import type { VanCustomer } from "@/interfaces/van-account";
 
@@ -67,13 +68,6 @@ function formatVanNumber(value: string): string {
   const digits = value.replace(/\D/g, "");
   return digits.length === 10
     ? `${digits.slice(0, 4)}-${digits.slice(4, 5)}-${digits.slice(5, 9)}-${digits.slice(9)}`
-    : value;
-}
-
-function formatTaxId(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  return digits.length === 13
-    ? `${digits.slice(0, 1)}-${digits.slice(1, 5)}-${digits.slice(5, 10)}-${digits.slice(10, 12)}-${digits.slice(12)}`
     : value;
 }
 
@@ -359,7 +353,7 @@ export default function PaymentLogPage() {
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 px-5 sm:px-8 pt-7">
               <div className="text-sm text-gray-800 space-y-2">
                 <p>
-                  รหัสลูกค้า : {formatTaxId(customerResaleID)} : {customerName}
+                  รหัสลูกค้า : {maskCustomerId(customerResaleID)} : {customerName}
                 </p>
                 <p>ที่อยู่ : {address}</p>
                 <p>โทรศัพท์ : {customerPhone}</p>
