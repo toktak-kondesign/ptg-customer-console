@@ -5,7 +5,14 @@ import Link from "next/link";
 import { Row, Col } from "antd";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
-import { getAuthUser, clearAuth, type AuthenUserInfo } from "@/lib/auth";
+import {
+  getAuthUser,
+  clearAuth,
+  getViewedCustomerId,
+  getCustomerInfoName,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  type AuthenUserInfo,
+} from "@/lib/auth";
 import { SITE_BASE_URL, BASE_PATH, img } from "@/lib/env";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
@@ -28,6 +35,11 @@ export default function Header() {
   const [customer, setCustomer] = useState<AuthenUserInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [resolvingCart, setResolvingCart] = useState(false);
+  // staff mode — รหัส/ชื่อลูกค้าที่เจ้าหน้าที่กำลังเข้าใช้งานในนาม
+  const [staffCustomer, setStaffCustomer] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     const loadCustomerData = () => {
@@ -43,15 +55,36 @@ export default function Header() {
 
     loadCustomerData();
 
+    // customer-info ถูกเขียนหลัง approve-link resolve — อัปเดตแถบ staff
+    // ผ่าน session-changed event (ชื่อลูกค้ามาช้ากว่า auth user)
+    const loadStaffCustomer = () => {
+      const cid = getViewedCustomerId();
+      setStaffCustomer(
+        cid ? { id: cid, name: getCustomerInfoName() } : null,
+      );
+    };
+    loadStaffCustomer();
+
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "ptg-auth-user") {
         loadCustomerData();
       }
+      if (e.key === "ptg_staff_cid" || e.key === "ptg-customer-info") {
+        loadStaffCustomer();
+      }
     };
 
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener(
+      CUSTOMER_SESSION_CHANGED_EVENT,
+      loadStaffCustomer,
+    );
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(
+        CUSTOMER_SESSION_CHANGED_EVENT,
+        loadStaffCustomer,
+      );
     };
   }, []);
 
@@ -224,6 +257,21 @@ export default function Header() {
           )}
         </div>
       </nav>
+
+      {/* Staff mode indicator — เจ้าหน้าที่กำลังใช้งานในนามลูกค้า */}
+      {staffCustomer && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-end">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-[12px] text-amber-800">
+              ลูกค้า
+              <span className="font-semibold">
+                {staffCustomer.id}
+                {staffCustomer.name ? ` | ${staffCustomer.name}` : ""}
+              </span>
+            </span>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

@@ -202,6 +202,18 @@ export function getCustomerInfoCustId(): string {
   ]);
 }
 
+// ชื่อลูกค้าจาก ptg-customer-info — field name แตกต่างกันระหว่าง
+// Customer table (Name) และ customer search API (cusName)
+export function getCustomerInfoName(): string {
+  return pickField(getCustomerInfo(), [
+    "Name",
+    "cusName",
+    "custName",
+    "name",
+    "xFullName_c",
+  ]);
+}
+
 export function setCustomerInfo(info: Record<string, unknown>): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEYS.CUSTOMER_INFO, JSON.stringify(info));

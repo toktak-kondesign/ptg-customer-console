@@ -101,6 +101,7 @@ export default function AuthHandler() {
 
         // โหมดเจ้าหน้าที่ (cid) — อนุญาตเฉพาะ token ที่เป็นเจ้าหน้าที่ (EMP)
         // ลูกค้า (CUS) ไม่สามารถใช้ cid เข้าสู่ระบบในนามลูกค้ารายอื่นได้
+
         if (staffCid && data.UserType !== "EMP") {
           localStorage.removeItem(AUTH_STORAGE_KEY);
           removeCookie(TOKEN_COOKIE);
