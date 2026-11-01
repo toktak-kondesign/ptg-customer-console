@@ -260,7 +260,7 @@ export default function Header() {
           style={{ position: "relative", marginBottom: "-24px", zIndex: 10 }}
         >
           <div className="flex justify-end">
-            <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl bg-amber-100 border border-amber-300 px-3 py-0.5 text-[12px] text-amber-800">
+            <span className="inline-flex items-center gap-1.5 rounded-bl-xl rounded-br-xl bg-amber-100 border border-amber-300 px-3 py-0.5 text-[12px] text-amber-800">
               ลูกค้า
               <span className="font-semibold">
                 {staffCustomer.id}
