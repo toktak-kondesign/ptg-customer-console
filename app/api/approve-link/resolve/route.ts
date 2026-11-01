@@ -9,6 +9,7 @@ interface ResolveRequest {
   ref1?: string;
   username?: string;
   custID?: string;
+  personCode?: string;
 }
 
 interface ResolveResponse {
@@ -30,10 +31,14 @@ export async function POST(
     const ref1 = body.ref1?.trim() ?? "";
     const username = body.username?.trim() ?? "";
     const custID = body.custID?.trim() ?? "";
+    const personCode = body.personCode?.trim() ?? "";
 
-    if (!ref1 || !username || !custID) {
+    if (!ref1 || !custID || (!username && !personCode)) {
       return NextResponse.json<ResolveResponse>(
-        { success: false, error: "Missing ref1, username or custID" },
+        {
+          success: false,
+          error: "Missing ref1, custID, or both username and personCode",
+        },
         { status: 400 },
       );
     }
@@ -41,7 +46,7 @@ export async function POST(
     const response = await fetch(`${PDF_API_URL}/api/approve-link/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ref1, username, custID }),
+      body: JSON.stringify({ ref1, username, custID, personCode }),
       cache: "no-store",
     });
 

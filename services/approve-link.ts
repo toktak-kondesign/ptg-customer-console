@@ -1,6 +1,7 @@
 import {
   getAuthUser,
   getCustomerAccessToken,
+  getViewedCustomerId,
   setOutsourceSystemLink,
 } from "@/lib/auth";
 import { BASE_PATH, getApproveLinkBaseUrl } from "@/lib/env";
@@ -81,6 +82,25 @@ export interface ResolveApproveLinkResult {
   error?: string;
 }
 
+// Identity sent to the resolve endpoints. In staff mode (an EMP user viewing
+// a customer via ?cid) the row is keyed by the employee's personCode plus the
+// viewed custID instead of the user's own username/custID.
+function getApproveLinkIdentity(): {
+  username: string;
+  custID: string;
+  personCode?: string;
+} | null {
+  const user = getAuthUser();
+  if (!user) return null;
+  const viewedCustId = getViewedCustomerId();
+  const isStaffMode = user.UserType === "EMP" && !!viewedCustId;
+  const custID = (isStaffMode ? viewedCustId : user.custID)?.trim() ?? "";
+  const username = user.username?.trim() ?? "";
+  const personCode = isStaffMode ? (user.personCode?.trim() ?? "") : "";
+  if (!custID || (!username && !personCode)) return null;
+  return { username, custID, ...(personCode ? { personCode } : {}) };
+}
+
 /**
  * Find-or-create a tbApproveLinkToPTG row for the given system (ref1) and the
  * currently logged-in customer (ref2=username, ref3=custID), and return its
@@ -90,8 +110,8 @@ export interface ResolveApproveLinkResult {
 export async function resolveApproveLink(
   ref1: string,
 ): Promise<ResolveApproveLinkResult> {
-  const user = getAuthUser();
-  if (!user?.username || !user?.custID) {
+  const identity = getApproveLinkIdentity();
+  if (!identity) {
     return { success: false, error: "Not logged in" };
   }
 
@@ -99,11 +119,7 @@ export async function resolveApproveLink(
     const response = await fetch(`${BASE_PATH}/api/approve-link/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ref1,
-        username: user.username,
-        custID: user.custID,
-      }),
+      body: JSON.stringify({ ref1, ...identity }),
     });
 
     const data: ResolveApproveLinkResult = await response.json();
@@ -146,8 +162,8 @@ export async function getApproveLinkRedirectUrl(
   ref1: string,
 ): Promise<ApproveLinkRedirectResult> {
   if (SYNC_AUTH_REF1S.has(ref1)) {
-    const user = getAuthUser();
-    if (!user?.username || !user?.custID) {
+    const identity = getApproveLinkIdentity();
+    if (!identity) {
       return { success: false, error: "Not logged in" };
     }
     try {
@@ -156,11 +172,7 @@ export async function getApproveLinkRedirectUrl(
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ref1,
-            username: user.username,
-            custID: user.custID,
-          }),
+          body: JSON.stringify({ ref1, ...identity }),
         },
       );
       const data = await response.json();
