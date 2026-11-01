@@ -59,9 +59,7 @@ export default function Header() {
     // ผ่าน session-changed event (ชื่อลูกค้ามาช้ากว่า auth user)
     const loadStaffCustomer = () => {
       const cid = getViewedCustomerId();
-      setStaffCustomer(
-        cid ? { id: cid, name: getCustomerInfoName() } : null,
-      );
+      setStaffCustomer(cid ? { id: cid, name: getCustomerInfoName() } : null);
     };
     loadStaffCustomer();
 
@@ -75,10 +73,7 @@ export default function Header() {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    window.addEventListener(
-      CUSTOMER_SESSION_CHANGED_EVENT,
-      loadStaffCustomer,
-    );
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, loadStaffCustomer);
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(
@@ -260,9 +255,12 @@ export default function Header() {
 
       {/* Staff mode indicator — เจ้าหน้าที่กำลังใช้งานในนามลูกค้า */}
       {staffCustomer && (
-        <div className="bg-amber-50 border-b border-amber-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex justify-end">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-[12px] text-amber-800">
+        <div
+          className=""
+          style={{ position: "relative", marginBottom: "-24px", zIndex: 10 }}
+        >
+          <div className="flex justify-end">
+            <span className="inline-flex items-center gap-1.5 rounded-tl-xl rounded-br-xl bg-amber-100 border border-amber-300 px-3 py-0.5 text-[12px] text-amber-800">
               ลูกค้า
               <span className="font-semibold">
                 {staffCustomer.id}
