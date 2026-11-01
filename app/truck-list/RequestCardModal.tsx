@@ -22,7 +22,7 @@ import {
 } from "@ant-design/icons";
 import { BASE_PATH, img } from "@/lib/env";
 import { downloadNodeAsImage } from "@/lib/download-node-image";
-import { getAuthUser, getCustomerInfo, getSessionCustomerId } from "@/lib/auth";
+import { getAuthUser, getCustomerInfo, getCustomerInfoCustId, getSessionCustomerId, getViewedCustomerId } from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
 import { getCustomerProfileService } from "@/services/customer/profile";
@@ -409,7 +409,13 @@ export default function RequestCardModal({
       custName: cust.name,
       car: plateNormalized,
       phone: phoneValue,
-      createBy: (getAuthUser()?.username || cust.id).slice(0, 20),
+      // เจ้าหน้าที่ทำแทนลูกค้า → CreateBy = PersonCode ของเจ้าหน้าที่
+      // ลูกค้าทำเอง → CreateBy = CustID จาก ptg-customer-info
+      createBy: (
+        getViewedCustomerId()
+          ? getAuthUser()?.personCode || getAuthUser()?.username || cust.id
+          : getCustomerInfoCustId() || cust.id
+      ).slice(0, 20),
       items: selectedItems.map(({ item, qty }) => ({
         itemCode: item.itemCode,
         orderNum: item.docNo,

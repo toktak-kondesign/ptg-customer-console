@@ -13,6 +13,7 @@ export interface AuthenUserInfo {
   username: string;
   custID: string;
   custName: string;
+  UserType?: "EMP" | "CUS";
 }
 
 const AUTH_API_BASE_URL = (

@@ -7,6 +7,7 @@ import {
   setCustomerAccessToken,
   setPtgSystemLink,
   setCustomerInfo,
+  setViewedCustomerId,
   notifyCustomerSessionChanged,
   getAuthUser,
 } from "@/lib/auth";
@@ -24,6 +25,7 @@ export interface AuthenUserInfo {
   username: string;
   custID: string;
   custName: string;
+  UserType?: "EMP" | "CUS";
 }
 
 const AUTH_STORAGE_KEY = "ptg-auth-user";
@@ -45,6 +47,8 @@ export default function AuthHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
+  // เจ้าหน้าที่ login ในนามลูกค้า: ?token=...&cid={custID}
+  const staffCid = searchParams.get("cid")?.trim() || null;
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -82,10 +86,59 @@ export default function AuthHandler() {
           removeCookie(USER_COOKIE);
           setStatus("error");
           setMessage(
-            data.response_desc || "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
+            data.isExpire
+              ? "ลิงก์เข้าใช้งานหมดอายุ กำลังไปยังหน้าเข้าสู่ระบบ..."
+              : data.response_desc ||
+                  "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
           );
+          if (data.isExpire) {
+            window.setTimeout(() => {
+              window.location.href = LOGIN_URL;
+            }, 2000);
+          }
           return;
         }
+
+        // โหมดเจ้าหน้าที่ (cid) — อนุญาตเฉพาะ token ที่เป็นเจ้าหน้าที่ (EMP)
+        // ลูกค้า (CUS) ไม่สามารถใช้ cid เข้าสู่ระบบในนามลูกค้ารายอื่นได้
+        if (staffCid && data.UserType !== "EMP") {
+          localStorage.removeItem(AUTH_STORAGE_KEY);
+          removeCookie(TOKEN_COOKIE);
+          removeCookie(USER_COOKIE);
+          setStatus("error");
+          setMessage("ไม่มีสิทธิ์เข้าใช้งานในนามลูกค้า");
+          return;
+        }
+
+        // ตรวจสอบว่ารหัสลูกค้ามีอยู่จริงผ่าน customer search API
+        // ก่อนเข้าสู่ระบบในนามลูกค้า
+        if (staffCid) {
+          const searchRes = await fetch(`${BASE_PATH}/api/customer/search`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ searchTerm: staffCid }),
+          });
+          const searchData = (await searchRes.json()) as {
+            success?: boolean;
+            data?: Record<string, unknown> | null;
+          };
+          if (
+            cancelled ||
+            !searchRes.ok ||
+            !searchData.success ||
+            !searchData.data
+          ) {
+            if (!cancelled) {
+              setStatus("error");
+              setMessage(`ไม่พบข้อมูลลูกค้า ${staffCid}`);
+            }
+            return;
+          }
+        }
+
+        // เก็บ custID ลูกค้าแยกต่างหาก และให้ขั้นตอนถัดไปทำงานด้วย
+        // รหัสลูกค้าเหมือนลูกค้า login เอง (null = เคลียร์ค่าเดิม)
+        setViewedCustomerId(staffCid);
 
         const payload = { ...data, token };
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
@@ -115,8 +168,8 @@ export default function AuthHandler() {
             body: JSON.stringify({
               username: data.username,
               personName: data.personName,
-              custID: data.custID,
-              custName: data.custName,
+              custID: staffCid ?? data.custID,
+              custName: staffCid ? "" : data.custName,
             }),
           })
             .then((res) => res.json())
@@ -159,7 +212,7 @@ export default function AuthHandler() {
     return () => {
       cancelled = true;
     };
-  }, [token, router]);
+  }, [token, staffCid, router]);
 
   if (!token) return null;
 

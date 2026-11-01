@@ -10,6 +10,7 @@ export interface AuthenUserInfo {
   username: string;
   custID: string;
   custName: string;
+  UserType?: "EMP" | "CUS";
 }
 
 export interface UserSession {
@@ -189,6 +190,15 @@ export function getSessionCustomerId(): string {
     "customerID",
     "customerId",
     "resaleID",
+  ]);
+}
+
+export function getCustomerInfoCustId(): string {
+  return pickField(getCustomerInfo(), [
+    "custID",
+    "custId",
+    "customerID",
+    "customerId",
   ]);
 }
 

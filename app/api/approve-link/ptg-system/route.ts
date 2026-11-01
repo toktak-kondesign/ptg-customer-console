@@ -97,7 +97,8 @@ export async function POST(
       username: body.username ?? "",
       userFullName: body.personName ?? "",
       custID: custID,
-      customerName: body.custName ?? "",
+      customerName:
+        body.custName || (customerRow.Name as string | undefined) || "",
       positionLevel: 0,
       pointSilver: 0,
       pointGold: 0,
