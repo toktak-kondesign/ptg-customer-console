@@ -378,13 +378,17 @@ export default function TruckCardHistoryPage() {
 
             <div className="px-5 sm:px-8 pb-8">
               <div className="overflow-x-auto rounded-lg border border-gray-200">
-                <table className="w-full min-w-[900px] text-sm border-collapse">
+                <table className="w-full min-w-[900px] text-sm border-collapse [&_th]:whitespace-nowrap [&_td]:whitespace-nowrap">
                   <thead>
                     <tr className="bg-white text-gray-800 border-b border-gray-200">
-                      {TABLE_HEADERS.map((header) => (
+                      {TABLE_HEADERS.map((header, index) => (
                         <th
                           key={header}
-                          className="text-center font-semibold px-4 py-3"
+                          className={`text-center font-semibold px-4 py-3${
+                            index === TABLE_HEADERS.length - 1
+                              ? " sticky right-0 bg-white shadow-[inset_1px_0_0_0_#e5e7eb]"
+                              : ""
+                          }`}
                         >
                           {header}
                         </th>
@@ -397,7 +401,7 @@ export default function TruckCardHistoryPage() {
                       return (
                         <tr
                           key={`${row.IDCode || "row"}-${index}`}
-                          className="border-b border-gray-100 last:border-b-0 hover:bg-blue-50/40 transition-colors"
+                          className="group border-b border-gray-100 last:border-b-0 hover:bg-blue-50/40 transition-colors"
                         >
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {index + 1}.
@@ -448,7 +452,7 @@ export default function TruckCardHistoryPage() {
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {formatDate(row.UseDate)}
                           </td>
-                          <td className="text-center px-4 py-2.5">
+                          <td className="text-center px-4 py-2.5 sticky right-0 bg-white shadow-[inset_1px_0_0_0_#f3f4f6] group-hover:bg-[#f9fbff] transition-colors">
                             {row.StatusCode === 0 &&
                               Number(row.IsInActive) !== 1 && (
                                 <button
