@@ -5,11 +5,15 @@ import { Modal } from "antd";
 import { CheckCircleFilled, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { formatAmount } from "@/app/payment-list/data";
-import { getReceiptLogDtlService } from "@/services/customer/receipt-log-dtl";
+import {
+  getReceiptLogDtlByVanService,
+  getReceiptLogDtlService,
+} from "@/services/customer/receipt-log-dtl";
 import type { ReceiptLogDtlRow } from "@/interfaces/receipt-log-dtl";
 
 interface ReceiptDeductionModalProps {
   open: boolean;
+  mode: "van" | "group";
   vanNo: string;
   receipt: string;
   headNum: string;
@@ -23,6 +27,7 @@ function formatDate(value: string | null | undefined): string {
 
 export default function ReceiptDeductionModal({
   open,
+  mode,
   vanNo,
   receipt,
   headNum,
@@ -33,12 +38,15 @@ export default function ReceiptDeductionModal({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open || !vanNo || !receipt || !headNum) return;
+    if (!open || !vanNo || !receipt || (mode === "group" && !headNum)) return;
     let cancelled = false;
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const result = await getReceiptLogDtlService(vanNo, receipt, headNum);
+      const result =
+        mode === "van"
+          ? await getReceiptLogDtlByVanService(vanNo, receipt)
+          : await getReceiptLogDtlService(vanNo, receipt, headNum);
       if (cancelled) return;
       if (result.status === "success") {
         setRows(result.results || []);
@@ -51,7 +59,7 @@ export default function ReceiptDeductionModal({
     return () => {
       cancelled = true;
     };
-  }, [open, vanNo, receipt, headNum]);
+  }, [open, mode, vanNo, receipt, headNum]);
 
   const total = rows.reduce((sum, row) => sum + (Number(row.DocTranAmt) || 0), 0);
 

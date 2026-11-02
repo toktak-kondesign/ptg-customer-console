@@ -83,7 +83,12 @@ export default function ReceiptStatusPage() {
   const [rows, setRows] = useState<ReceiptStatusRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deductionOpen, setDeductionOpen] = useState(false);
+  const [deductionTarget, setDeductionTarget] = useState<{
+    mode: "van" | "group";
+    vanNo: string;
+    receipt: string;
+    headNum: string;
+  } | null>(null);
 
   useEffect(() => {
     setSessionInfo(getCustomerInfo());
@@ -385,17 +390,33 @@ export default function ReceiptStatusPage() {
                           <p className="mt-1 text-sm text-gray-800">
                             กลุ่มที่ตัดชำระค่าสินค้า
                           </p>
-                          <div className="mt-1 ml-4 text-sm text-gray-700">
-                            <p>
-                              - กลุ่มสินค้าที่ตัดชำระ{" "}
-                              <span className="font-medium">
-                                {(data.Reference ?? "").trim() || "-"}
-                              </span>{" "}
-                              จำนวน :{" "}
-                              <span className="font-medium">
-                                {formatAmount(Number(data.TranAmt) || 0)}
-                              </span>
-                            </p>
+                          <div className="mt-1 ml-4 text-sm text-gray-700 space-y-0.5">
+                            {rows.map((row, index) => (
+                              <p key={`${row.HeadNum ?? "group"}-${index}`}>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setDeductionTarget({
+                                      mode: "group",
+                                      vanNo:
+                                        (row.Vanno ?? "").trim() || vanNoRaw,
+                                      receipt: (row.xReceiptID_c ?? "").trim(),
+                                      headNum: String(row.HeadNum ?? ""),
+                                    })
+                                  }
+                                  className="text-left hover:text-blue-500 transition"
+                                >
+                                  - กลุ่มสินค้าที่ตัดชำระ{" "}
+                                  <span className="font-medium underline underline-offset-2">
+                                    {(row.Reference ?? "").trim() || "-"}
+                                  </span>{" "}
+                                  จำนวน :{" "}
+                                  <span className="font-medium">
+                                    {formatAmount(Number(row.TranAmt) || 0)}
+                                  </span>
+                                </button>
+                              </p>
+                            ))}
                           </div>
                         </div>
 
@@ -408,7 +429,14 @@ export default function ReceiptStatusPage() {
                             </p>
                             <button
                               type="button"
-                              onClick={() => setDeductionOpen(true)}
+                              onClick={() =>
+                                setDeductionTarget({
+                                  mode: "van",
+                                  vanNo: vanNoRaw,
+                                  receipt: (data.xReceiptID_c ?? "").trim(),
+                                  headNum: "",
+                                })
+                              }
                               className="text-sm text-gray-400 mt-0.5 hover:text-blue-500 transition"
                             >
                               <span className="underline underline-offset-2">
@@ -429,11 +457,12 @@ export default function ReceiptStatusPage() {
         </div>
       </main>
       <ReceiptDeductionModal
-        open={deductionOpen}
-        vanNo={vanNoRaw}
-        receipt={(data.xReceiptID_c ?? "").trim()}
-        headNum={String(data.HeadNum ?? "")}
-        onClose={() => setDeductionOpen(false)}
+        open={deductionTarget !== null}
+        mode={deductionTarget?.mode ?? "van"}
+        vanNo={deductionTarget?.vanNo ?? vanNoRaw}
+        receipt={deductionTarget?.receipt ?? ""}
+        headNum={deductionTarget?.headNum ?? ""}
+        onClose={() => setDeductionTarget(null)}
       />
       <Footer />
     </div>
