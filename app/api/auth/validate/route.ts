@@ -14,6 +14,8 @@ export interface AuthenUserInfo {
   custID: string;
   custName: string;
   UserType?: "EMP" | "CUS";
+  // บาง environment ส่งกลับเป็น camelCase — normalize ก่อนส่งต่อให้ client
+  userType?: "EMP" | "CUS";
 }
 
 const AUTH_API_BASE_URL = (
@@ -64,6 +66,8 @@ export async function GET(request: NextRequest) {
     }
 
     const data: AuthenUserInfo = await response.json();
+    // field name ไม่คงที่ระหว่าง environment (UserType vs userType)
+    data.UserType = data.UserType ?? data.userType;
     return NextResponse.json(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
