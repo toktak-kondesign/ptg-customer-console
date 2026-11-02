@@ -230,7 +230,7 @@ export default function CustomerService() {
   return (
     <section className="py-12 bg-white">
       <AnimatedSection>
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-[90%] mx-auto px-6">
           <div className="mb-12">
             <h1 className="text-3xl font-bold text-gray-900">
               CUSTOMER SERVICE

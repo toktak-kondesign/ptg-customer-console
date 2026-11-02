@@ -110,7 +110,7 @@ export default function StatusDelivery() {
 
   return (
     <section ref={sectionRef} className="py-12 bg-white">
-      <AnimatedSection className="max-w-7xl mx-auto px-6 shadow-lg py-4">
+      <AnimatedSection className="max-w-[90%] mx-auto px-6 shadow-lg py-4">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">

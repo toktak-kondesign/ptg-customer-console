@@ -516,7 +516,7 @@ export default function PaymentListPage() {
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
       <main className="flex-1 py-8 sm:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-[90%] mx-auto px-4 sm:px-6">
           <div className="mb-7">
             <p className="text-sm text-blue-600 mb-2">
               <Link href="/" className="text-gray-500 hover:text-gray-700">
@@ -657,7 +657,10 @@ export default function PaymentListPage() {
           >
             <div className="space-y-4 py-4">
               <div>
-                <label htmlFor="history-company" className="block text-sm text-gray-600 mb-2">
+                <label
+                  htmlFor="history-company"
+                  className="block text-sm text-gray-600 mb-2"
+                >
                   บริษัท
                 </label>
                 <Select
@@ -680,7 +683,10 @@ export default function PaymentListPage() {
                 />
               </div>
               <div>
-                <label htmlFor="history-account" className="block text-sm text-gray-600 mb-2">
+                <label
+                  htmlFor="history-account"
+                  className="block text-sm text-gray-600 mb-2"
+                >
                   บัญชี VAN / รหัสลูกค้า
                 </label>
                 <Select
@@ -691,12 +697,16 @@ export default function PaymentListPage() {
                   options={historyOptions}
                   onChange={setHistoryAccount}
                   loading={historyLoading}
-                  disabled={!historyCompany || historyLoading || Boolean(historyError)}
+                  disabled={
+                    !historyCompany || historyLoading || Boolean(historyError)
+                  }
                   notFoundContent="ไม่พบข้อมูลบัญชี"
                 />
               </div>
               {historyError && (
-                <p role="alert" className="text-sm text-red-500">{historyError}</p>
+                <p role="alert" className="text-sm text-red-500">
+                  {historyError}
+                </p>
               )}
             </div>
           </Modal>

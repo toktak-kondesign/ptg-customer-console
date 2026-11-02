@@ -6,7 +6,7 @@ export default function BannerFooter() {
   return (
     <section className="py-12">
       <AnimatedSection>
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-[90%] mx-auto px-6">
           <div className="relative w-full aspect-[3/2] sm:aspect-[1774/887] overflow-hidden rounded-xl">
             <Image
               src={img("/images/ad-ptg.png")}

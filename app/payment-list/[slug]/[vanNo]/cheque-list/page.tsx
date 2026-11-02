@@ -332,7 +332,7 @@ export default function ChequeListPage() {
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
       <main className="flex-1 py-8 sm:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-[90%] mx-auto px-4 sm:px-6">
           <p className="text-sm mb-6">
             <Link href="/" className="text-gray-500 hover:text-gray-700">
               หน้าหลัก
@@ -544,7 +544,7 @@ export default function ChequeListPage() {
                 filteredRows.length > 0 &&
                 viewMode === "table" && (
                   <div className="overflow-auto max-h-[70vh] rounded-lg border border-gray-300">
-                    <table className="w-full min-w-[1100px] text-sm border-collapse">
+                    <table className="w-full min-w-[1100px] text-sm border-collapse [&_th]:whitespace-nowrap [&_td]:whitespace-nowrap">
                       <thead className="sticky top-0 z-10">
                         <tr className="text-gray-800">
                           {[
@@ -562,7 +562,7 @@ export default function ChequeListPage() {
                           ].map((title, index, all) => (
                             <th
                               key={title}
-                              className={`${index === all.length - 1 ? "text-right" : "text-center"} font-semibold px-4 py-3 border border-gray-300 bg-[#55AFF4]`}
+                              className={`${index === all.length - 1 ? "text-right sticky right-0 bg-clip-padding" : "text-center"} font-semibold px-4 py-3 border border-gray-300 bg-[#55AFF4]`}
                             >
                               {title}
                             </th>
@@ -576,7 +576,7 @@ export default function ChequeListPage() {
                             <tr
                               key={`${row.Runno || "row"}-${index}`}
                               onClick={() => setSelectedRow(row)}
-                              className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
+                              className="group odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
                             >
                               <td className="text-center px-4 py-2.5 border border-gray-300">
                                 {index + 1}
@@ -613,7 +613,7 @@ export default function ChequeListPage() {
                               >
                                 {status.label}
                               </td>
-                              <td className="text-right px-4 py-2.5 border border-gray-300">
+                              <td className="text-right px-4 py-2.5 border border-gray-300 sticky right-0 bg-clip-padding group-odd:bg-white group-even:bg-gray-50 group-hover:bg-blue-50 transition-colors">
                                 {formatAmount(Number(row.AMOUNT) || 0)}
                               </td>
                             </tr>

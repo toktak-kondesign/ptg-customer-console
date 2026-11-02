@@ -161,7 +161,7 @@ export default function Reward() {
 
   return (
     <section ref={sectionRef} className="py-12 bg-gray-50">
-      <AnimatedSection className="max-w-7xl mx-auto px-6">
+      <AnimatedSection className="max-w-[90%] mx-auto px-6">
         <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">

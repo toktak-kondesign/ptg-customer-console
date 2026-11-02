@@ -319,7 +319,7 @@ export default function PaymentLogPage() {
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
       <main className="flex-1 py-8 sm:py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-[90%] mx-auto px-4 sm:px-6">
           <p className="text-sm mb-6">
             <Link href="/" className="text-gray-500 hover:text-gray-700">
               หน้าหลัก
@@ -355,7 +355,8 @@ export default function PaymentLogPage() {
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 px-5 sm:px-8 pt-7">
               <div className="text-sm text-gray-800 space-y-2">
                 <p>
-                  รหัสลูกค้า : {maskCustomerId(customerResaleID)} : {customerName}
+                  รหัสลูกค้า : {maskCustomerId(customerResaleID)} :{" "}
+                  {customerName}
                 </p>
                 <p>ที่อยู่ : {address}</p>
                 <p>โทรศัพท์ : {customerPhone}</p>

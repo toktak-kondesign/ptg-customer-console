@@ -78,7 +78,7 @@ export default function CustomerPage() {
     <div className="flex min-h-screen flex-col overflow-x-clip bg-[#EFF5FC]">
       <Header />
       <main className="flex-1 py-6 sm:py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mx-auto max-w-[90%] px-4 sm:px-6">
           <nav
             aria-label="breadcrumb"
             className="mb-5 flex items-center gap-2 text-sm"

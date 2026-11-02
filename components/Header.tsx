@@ -108,7 +108,7 @@ export default function Header() {
     <header className="w-full">
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+        <div className="max-w-[90%] mx-auto px-4 sm:px-6 py-3">
           <Row align="middle" justify="space-between">
             <Col xs={12} sm={6} md={4} lg={3}>
               <div className="relative h-8 w-[120px]">
@@ -201,7 +201,7 @@ export default function Header() {
 
       {/* Navigation Bar */}
       <nav className="bg-[#0B132B] w-full px-4 sm:px-6 py-3 sm:py-4 overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-[90%] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-5 sm:gap-7">
             {navLinks.map((link) => (
               <Link

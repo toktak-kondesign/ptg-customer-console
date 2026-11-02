@@ -487,7 +487,7 @@ export default function TruckListPage() {
           style={{ backgroundImage: `url(${img("/images/banner_truck.jpg")})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20" />
-          <div className="relative mx-auto h-full max-w-7xl px-4 sm:px-6">
+          <div className="relative mx-auto h-full max-w-[90%] px-4 sm:px-6">
             <p className="pt-6 text-sm text-dark/80">
               <Link href="/" className="hover:text-dark/80">
                 หน้าหลัก
@@ -541,7 +541,7 @@ export default function TruckListPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-[90%] px-4 py-8 sm:px-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-3xl font-semibold text-gray-900">
               รถทั้งหมด <span className="text-blue-600">{trucks.length}</span>{" "}
