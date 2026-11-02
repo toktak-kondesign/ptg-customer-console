@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
-import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
+import {
+  AppstoreOutlined,
+  PrinterOutlined,
+  TableOutlined,
+} from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
 import { Tooltip, Modal } from "antd";
 import {
@@ -81,10 +86,7 @@ export default function StatusDelivery() {
       }
 
       setIsLoading(true);
-      const result = await getCustomerOrdersService(
-        custId,
-        controller.signal,
-      );
+      const result = await getCustomerOrdersService(custId, controller.signal);
       if (cancelled) return;
       if (result.status === "success") {
         setOrders(result.results);
@@ -313,13 +315,30 @@ export default function StatusDelivery() {
           width="80%"
         >
           {noteUrl && (
-            <img
-              src={noteUrl}
-              alt={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
-              className="w-full h-auto"
-            />
+            <>
+              <div className="flex justify-end mb-3 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  <PrinterOutlined /> พิมพ์ใบส่งสินค้า
+                </button>
+              </div>
+              <img
+                src={noteUrl}
+                alt={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
+                className="w-full h-auto"
+              />
+            </>
           )}
         </Modal>
+        {noteUrl &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <img src={noteUrl} alt="" className="delivery-note-print" />,
+            document.body,
+          )}
       </AnimatedSection>
     </section>
   );

@@ -132,9 +132,26 @@ body {
   margin: 10mm;
 }
 
+/* รูปใบส่งสินค้าสำหรับพิมพ์ (StatusDelivery) — ซ่อนบนหน้าจอ ใช้เฉพาะตอน print */
+.delivery-note-print {
+  display: none;
+}
+
 @media print {
   html,
   body {
     background: #fff;
+  }
+
+  /* พิมพ์เฉพาะรูปใบส่งสินค้า (StatusDelivery) — element นี้ถูก portal ไปใต้ body เฉพาะตอน modal เปิด */
+  body:has(> .delivery-note-print) > *:not(.delivery-note-print) {
+    display: none !important;
+  }
+  .delivery-note-print {
+    display: block;
+    width: 100%;
+    height: 95vh;
+    object-fit: contain;
+    object-position: top;
   }
 }
