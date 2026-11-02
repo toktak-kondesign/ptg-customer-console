@@ -340,7 +340,7 @@ export default function ReceiptStatusPage() {
                         <div className="relative pl-6">
                           <span className="absolute left-0 top-1 h-3.5 w-3.5 rounded-full border-2 border-gray-300 bg-white" />
                           <p className="text-sm text-[#df9b1c]">
-                            {formatThaiDateTime(data.Date01)}
+                            {formatThaiDateTime(data.xTimeList_c)}
                           </p>
                           <p className="mt-1 text-sm text-gray-800">
                             โอนเงินผ่านธนาคาร :{" "}
@@ -354,7 +354,7 @@ export default function ReceiptStatusPage() {
                         <div className="relative pl-6">
                           <span className="absolute left-0 top-1 h-3.5 w-3.5 rounded-full border-2 border-gray-300 bg-white" />
                           <p className="text-sm text-[#df9b1c]">
-                            {formatThaiDateTime(data.Date02)}
+                            {formatThaiDateTime(data.Date01)}
                           </p>
                           <p className="mt-1 text-sm text-gray-800">
                             ฝ่ายการเงิน ตรวจสอบข้อมูลและทำรายการรับเงินเข้าระบบ
@@ -380,7 +380,7 @@ export default function ReceiptStatusPage() {
                         <div className="relative pl-6">
                           <span className="absolute left-0 top-1 h-3.5 w-3.5 rounded-full border-2 border-gray-300 bg-white" />
                           <p className="text-sm text-[#df9b1c]">
-                            {formatThaiDate(data.xTimeList_c)}
+                            {formatThaiDateTime(data.Date02)}
                           </p>
                           <p className="mt-1 text-sm text-gray-800">
                             กลุ่มที่ตัดชำระค่าสินค้า
