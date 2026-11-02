@@ -5,7 +5,10 @@ import Image from "next/image";
 import { AppstoreOutlined, TableOutlined } from "@ant-design/icons";
 import AnimatedSection from "./AnimatedSection";
 import { Tooltip, Modal } from "antd";
-import { getAuthUser } from "@/lib/auth";
+import {
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  getSessionCustomerId,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
 import { useVisibleOnce } from "@/hooks/useVisibleOnce";
 import { getCustomerOrdersService } from "@/services/customer/orders";
@@ -53,6 +56,14 @@ export default function StatusDelivery() {
   const [error, setError] = useState<string | null>(null);
   const [noteOrder, setNoteOrder] = useState<CustomerOrder | null>(null);
   const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
+  const [sessionTick, setSessionTick] = useState(0);
+
+  useEffect(() => {
+    const handleChanged = () => setSessionTick((tick) => tick + 1);
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () =>
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+  }, []);
 
   // Fetch only when the section scrolls into view — it is below the fold,
   // and firing it on mount competes for connections with critical requests.
@@ -63,15 +74,15 @@ export default function StatusDelivery() {
     const controller = new AbortController();
 
     const loadOrders = async () => {
-      const user = getAuthUser();
-      if (!user?.custID) {
+      const custId = getSessionCustomerId();
+      if (!custId) {
         setIsLoading(false);
         return;
       }
 
       setIsLoading(true);
       const result = await getCustomerOrdersService(
-        user.custID,
+        custId,
         controller.signal,
       );
       if (cancelled) return;
@@ -91,7 +102,7 @@ export default function StatusDelivery() {
       cancelled = true;
       controller.abort();
     };
-  }, [visible]);
+  }, [visible, sessionTick]);
 
   const noteUrl = noteOrder ? getDeliveryNoteUrl(noteOrder) : null;
 

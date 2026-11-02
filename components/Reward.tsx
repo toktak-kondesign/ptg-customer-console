@@ -13,30 +13,13 @@ import { useVisibleOnce } from "@/hooks/useVisibleOnce";
 import { getRewardsService } from "@/services/shop/rewards";
 import type { RewardOrder } from "@/interfaces/reward";
 import { getRewardsBaseUrl } from "@/lib/env";
+import {
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  getAuthToken,
+  getSessionCustomerId,
+} from "@/lib/auth";
 
 type ViewMode = "cards" | "table";
-
-interface AuthPayload {
-  custID?: string;
-  token?: string;
-}
-
-function getAuthFromStorage(): { custId: string | null; token: string | null } {
-  if (typeof window === "undefined") {
-    return { custId: null, token: null };
-  }
-  try {
-    const raw = localStorage.getItem("ptg-auth-user");
-    if (!raw) return { custId: null, token: null };
-    const parsed = JSON.parse(raw) as AuthPayload;
-    return {
-      custId: parsed.custID ?? null,
-      token: parsed.token ?? null,
-    };
-  } catch {
-    return { custId: null, token: null };
-  }
-}
 
 const fallbackRewards: RewardOrder[] = [];
 
@@ -124,6 +107,14 @@ export default function Reward() {
   const [error, setError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<RewardOrder | null>(null);
   const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
+  const [sessionTick, setSessionTick] = useState(0);
+
+  useEffect(() => {
+    const handleChanged = () => setSessionTick((tick) => tick + 1);
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () =>
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+  }, []);
 
   // Fetch only when the section scrolls into view — it is below the fold,
   // and firing it on mount competes for connections with critical requests.
@@ -134,7 +125,8 @@ export default function Reward() {
     const controller = new AbortController();
 
     async function fetchRewards() {
-      const { custId, token } = getAuthFromStorage();
+      const custId = getSessionCustomerId();
+      const token = getAuthToken();
       if (!custId || !token) {
         setIsLoading(false);
         return;
@@ -165,7 +157,7 @@ export default function Reward() {
       cancelled = true;
       controller.abort();
     };
-  }, [visible]);
+  }, [visible, sessionTick]);
 
   return (
     <section ref={sectionRef} className="py-12 bg-gray-50">

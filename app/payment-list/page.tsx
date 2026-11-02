@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Tooltip } from "antd";
+import { Modal, Select, Tooltip } from "antd";
+import dayjs from "dayjs";
+import { getVanAccountsService } from "@/services/customer/van-accounts";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
@@ -382,6 +384,14 @@ export default function PaymentListPage() {
   const [apiRows, setApiRows] = useState<ColorDashboardRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyCompany, setHistoryCompany] = useState<string>();
+  const [historyAccount, setHistoryAccount] = useState<string>();
+  const [historyOptions, setHistoryOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   useEffect(() => {
     setCustomerInfo(getCustomerInfo());
@@ -426,6 +436,61 @@ export default function PaymentListPage() {
       cancelled = true;
     };
   }, [custID]);
+
+  const resaleID =
+    getCustomerField(customerInfo, ["ResaleID", "resaleID"]) || custID;
+
+  useEffect(() => {
+    setHistoryAccount(undefined);
+    setHistoryOptions([]);
+    setHistoryError(null);
+    if (!historyOpen || !historyCompany || !resaleID) {
+      setHistoryLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setHistoryLoading(true);
+    const load = async () => {
+      const result = await getVanAccountsService(historyCompany, resaleID);
+      if (cancelled) return;
+      if (result.status === "success") {
+        const options = new Map<string, string>();
+        for (const account of result.results.accounts || []) {
+          const vanNo = account.VANNO?.trim();
+          const accountID = vanNo || account.CustID?.trim() || custID;
+          if (accountID) {
+            options.set(
+              accountID,
+              `${vanNo ? "VAN" : "รหัสลูกค้า"}: ${accountID}${account.CreditDesc ? ` — ${account.CreditDesc}` : ""}`,
+            );
+          }
+        }
+        if (options.size === 0 && custID) {
+          options.set(custID, `รหัสลูกค้า: ${custID}`);
+        }
+        setHistoryOptions(
+          Array.from(options, ([value, label]) => ({ value, label })),
+        );
+      } else {
+        setHistoryError(result.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");
+      }
+      setHistoryLoading(false);
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [historyOpen, historyCompany, resaleID, custID]);
+
+  const openPaymentHistory = () => {
+    const slug = historyCompany && COMPANY_CODE_TO_SLUG[historyCompany];
+    if (!slug || !historyAccount || historyLoading || historyError) return;
+    router.push(
+      `/payment-list/${slug}/${encodeURIComponent(historyAccount)}/payment-log/?date=${dayjs().format("YYYY-MM-DD")}`,
+    );
+    setHistoryOpen(false);
+  };
 
   const companiesView: Company[] = companies
     .map((company) => ({
@@ -560,7 +625,81 @@ export default function PaymentListPage() {
                 {status.label}
               </div>
             ))}
+
+            <button
+              type="button"
+              disabled={!custID}
+              onClick={() => {
+                setHistoryCompany(undefined);
+                setHistoryAccount(undefined);
+                setHistoryOptions([]);
+                setHistoryError(null);
+                setHistoryOpen(true);
+              }}
+              className="sm:ml-auto rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ประวัติการชำระ
+            </button>
           </div>
+
+          <Modal
+            title="ประวัติการชำระของลูกค้า"
+            open={historyOpen}
+            onCancel={() => setHistoryOpen(false)}
+            onOk={openPaymentHistory}
+            okText="ดูประวัติการชำระ"
+            cancelText="ยกเลิก"
+            okButtonProps={{
+              disabled:
+                !historyAccount || historyLoading || Boolean(historyError),
+            }}
+            centered
+          >
+            <div className="space-y-4 py-4">
+              <div>
+                <label htmlFor="history-company" className="block text-sm text-gray-600 mb-2">
+                  บริษัท
+                </label>
+                <Select
+                  id="history-company"
+                  className="w-full"
+                  placeholder="เลือกบริษัท"
+                  value={historyCompany}
+                  options={companies.map((company) => ({
+                    value: Object.keys(COMPANY_CODE_TO_SLUG).find(
+                      (code) => COMPANY_CODE_TO_SLUG[code] === company.slug,
+                    )!,
+                    label: company.name,
+                  }))}
+                  onChange={(value) => {
+                    setHistoryCompany(value);
+                    setHistoryAccount(undefined);
+                    setHistoryOptions([]);
+                    setHistoryError(null);
+                  }}
+                />
+              </div>
+              <div>
+                <label htmlFor="history-account" className="block text-sm text-gray-600 mb-2">
+                  บัญชี VAN / รหัสลูกค้า
+                </label>
+                <Select
+                  id="history-account"
+                  className="w-full"
+                  placeholder="เลือกบัญชี VAN หรือรหัสลูกค้า"
+                  value={historyAccount}
+                  options={historyOptions}
+                  onChange={setHistoryAccount}
+                  loading={historyLoading}
+                  disabled={!historyCompany || historyLoading || Boolean(historyError)}
+                  notFoundContent="ไม่พบข้อมูลบัญชี"
+                />
+              </div>
+              {historyError && (
+                <p role="alert" className="text-sm text-red-500">{historyError}</p>
+              )}
+            </div>
+          </Modal>
 
           {isLoading && (
             <p className="text-sm text-gray-500 mb-4 px-1">

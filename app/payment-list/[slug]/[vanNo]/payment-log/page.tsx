@@ -101,7 +101,9 @@ export default function PaymentLogPage() {
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
   const vanNoRaw = decodeURIComponent(params.vanNo || "");
-  const vanNoDigits = vanNoRaw.replace(/\D/g, "");
+  const vanNoDigits = /^[\d\s-]+$/.test(vanNoRaw)
+    ? vanNoRaw.replace(/\D/g, "")
+    : "";
   const vanNoDisplay = vanNoDigits ? formatVanNumber(vanNoDigits) : vanNoRaw;
 
   const [currentMonth, setCurrentMonth] = useState<Dayjs>(() =>
