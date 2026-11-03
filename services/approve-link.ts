@@ -18,6 +18,59 @@ export interface CreateOutsourceLinkResult {
   error?: string;
 }
 
+// ref1 systems whose link, in staff mode, must come from the staff member's
+// own PTGApprove.dbo.ApproveLinkToPTGSystem row instead of createApproveLink.
+const STAFF_SYSTEM_LINK_REF1S = new Set(["ptg-rewards"]);
+
+export function isStaffSystemLink(ref1: string): boolean {
+  return STAFF_SYSTEM_LINK_REF1S.has(ref1);
+}
+
+// custID ที่ staff (EMP) กำลังสวมสิทธิ์อยู่ — "" ถ้าไม่ใช่ staff mode
+export function getStaffViewedCustomerId(): string {
+  const user = getAuthUser();
+  if (user?.UserType !== "EMP") return "";
+  return getViewedCustomerId();
+}
+
+/**
+ * Staff mode only: fetch the staff member's existing LinkId from
+ * PTGApprove.dbo.ApproveLinkToPTGSystem (ref2=username, ref3=personCode).
+ */
+async function fetchStaffSystemLink(
+  ref1: string,
+  identity: { username: string; personCode?: string },
+  signal?: AbortSignal,
+): Promise<CreateOutsourceLinkResult> {
+  try {
+    const response = await fetch(`${BASE_PATH}/api/approve-link/system-link/`, {
+      method: "POST",
+      signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ref1,
+        username: identity.username,
+        personCode: identity.personCode ?? "",
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success || !data.linkId) {
+      return {
+        success: false,
+        error: data.error ?? `Failed: ${response.status}`,
+      };
+    }
+
+    setOutsourceSystemLink(data.linkId);
+    return { success: true, link: data.linkId };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return { success: false, error: `An error occurred: ${message}` };
+  }
+}
+
 /**
  * Step 4: Create an outsource system approve link.
  * Takes 3 variables (ref1, ref3, custID) and calls the same createApproveLink
@@ -35,6 +88,14 @@ export async function createOutsourceSystemLink(
   custID: string,
   signal?: AbortSignal,
 ): Promise<CreateOutsourceLinkResult> {
+  // Staff mode: for STAFF_SYSTEM_LINK_REF1S the link must be the staff
+  // member's own ApproveLinkToPTGSystem row — createApproveLink would mint a
+  // link under the customer session instead, which can't carry &cid.
+  const identity = getApproveLinkIdentity();
+  if (identity && getStaffViewedCustomerId() && isStaffSystemLink(ref1)) {
+    return fetchStaffSystemLink(ref1, identity, signal);
+  }
+
   const token = getCustomerAccessToken();
   if (!token) {
     return { success: false, error: "No CustomerAccessToken in localStorage" };
@@ -92,11 +153,10 @@ function getApproveLinkIdentity(): {
 } | null {
   const user = getAuthUser();
   if (!user) return null;
-  const viewedCustId = getViewedCustomerId();
-  const isStaffMode = user.UserType === "EMP" && !!viewedCustId;
-  const custID = (isStaffMode ? viewedCustId : user.custID)?.trim() ?? "";
+  const viewedCustId = getStaffViewedCustomerId();
+  const custID = (viewedCustId || user.custID)?.trim() ?? "";
   const username = user.username?.trim() ?? "";
-  const personCode = isStaffMode ? (user.personCode?.trim() ?? "") : "";
+  const personCode = viewedCustId ? (user.personCode?.trim() ?? "") : "";
   if (!custID || (!username && !personCode)) return null;
   return { username, custID, ...(personCode ? { personCode } : {}) };
 }

@@ -13,6 +13,8 @@ import {
 import {
   createOutsourceSystemLink,
   getApproveLinkRedirectUrl,
+  getStaffViewedCustomerId,
+  isStaffSystemLink,
 } from "@/services/approve-link";
 import app from "next/app";
 
@@ -195,12 +197,17 @@ export default function CustomerService() {
   const resolvedServices = services.map((service) => {
     if (service.outsourceLink) {
       const link = outsourceLinks[service.title] ?? "";
-      return {
-        ...service,
-        href: link
-          ? `${service.href}?id=${encodeURIComponent(link)}&systemid=${encodeURIComponent(service.outsourceLink.ref1)}`
-          : "",
-      };
+      if (!link) return { ...service, href: "" };
+      const params = new URLSearchParams({
+        id: link,
+        systemid: service.outsourceLink.ref1,
+      });
+      // Staff mode (สวมสิทธิ์): เช่น /home?id={LinkId}&systemid=ptg-rewards&cid={custID}
+      const staffCid = isStaffSystemLink(service.outsourceLink.ref1)
+        ? getStaffViewedCustomerId()
+        : "";
+      if (staffCid) params.set("cid", staffCid);
+      return { ...service, href: `${service.href}?${params.toString()}` };
     }
     if (service.appendLink) {
       const link = ptgSystemLink ?? "";
