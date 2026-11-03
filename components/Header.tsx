@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Row, Col } from "antd";
+import { Row, Col, Tooltip } from "antd";
+import { LogoutOutlined } from "@ant-design/icons";
 import Image from "next/image";
 import CustomerMenu from "./CustomerMenu";
 import {
@@ -13,7 +14,7 @@ import {
   CUSTOMER_SESSION_CHANGED_EVENT,
   type AuthenUserInfo,
 } from "@/lib/auth";
-import { SITE_BASE_URL, BASE_PATH, img } from "@/lib/env";
+import { SITE_BASE_URL, img } from "@/lib/env";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 
 const NAV_HOME_URL = `${SITE_BASE_URL}Site/main`;
@@ -86,7 +87,16 @@ export default function Header() {
   const handleLogout = () => {
     clearAuth();
     setCustomer(null);
-    window.location.href = `${BASE_PATH}/`;
+    window.location.href = `${SITE_BASE_URL}PTGWeb/Logout`;
+  };
+
+  // ออกจาก staff mode — ล้าง session ที่ login ผ่าน token+cid ทั้งหมด
+  // แล้วกลับไปหน้า marketing ของเว็บหลัก (env-aware: staging/prod)
+  const handleStaffLogout = () => {
+    clearAuth();
+    setCustomer(null);
+    setStaffCustomer(null);
+    window.location.href = `${SITE_BASE_URL}marketing/MarketingMain`;
   };
 
   const handleCartClick = async () => {
@@ -266,6 +276,16 @@ export default function Header() {
                 {staffCustomer.id}
                 {staffCustomer.name ? ` | ${staffCustomer.name}` : ""}
               </span>
+              <Tooltip title="ออกจากระบบลูกค้า">
+                <button
+                  type="button"
+                  onClick={handleStaffLogout}
+                  className="ml-0.5 inline-flex items-center text-amber-700 hover:text-amber-900 cursor-pointer"
+                  aria-label="ออกจากระบบลูกค้า"
+                >
+                  <LogoutOutlined style={{ fontSize: "0.85rem" }} />
+                </button>
+              </Tooltip>
             </span>
           </div>
         </div>
