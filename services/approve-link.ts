@@ -1,8 +1,11 @@
 import {
   getAuthUser,
-  getCustomerAccessToken,
+  getFreshCustomerAccessToken,
   getViewedCustomerId,
+  setCustomerAccessToken,
+  setCustomerInfo,
   setOutsourceSystemLink,
+  setPtgSystemLink,
 } from "@/lib/auth";
 import { BASE_PATH, getApproveLinkBaseUrl } from "@/lib/env";
 
@@ -31,6 +34,35 @@ export function getStaffViewedCustomerId(): string {
   const user = getAuthUser();
   if (user?.UserType !== "EMP") return "";
   return getViewedCustomerId();
+}
+
+// Re-mint the CustomerAccessToken (8h lifetime) by re-running the ptg-system
+// login step — refreshes the stored system link + customer info alongside.
+async function refreshCustomerSession(): Promise<boolean> {
+  const user = getAuthUser();
+  const viewedCustId = getStaffViewedCustomerId();
+  const custID = (viewedCustId || user?.custID || "").trim();
+  if (!user || !custID) return false;
+  try {
+    const res = await fetch(`${BASE_PATH}/api/approve-link/ptg-system/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: user.username,
+        personName: user.personName,
+        custID,
+        custName: viewedCustId ? "" : user.custName,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success || !data.token) return false;
+    setCustomerAccessToken(data.token);
+    if (data.link) setPtgSystemLink(data.link);
+    if (data.customerInfo) setCustomerInfo(data.customerInfo);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -96,9 +128,17 @@ export async function createOutsourceSystemLink(
     return fetchStaffSystemLink(ref1, identity, signal);
   }
 
-  const token = getCustomerAccessToken();
+  // The JWT only lives 8h — a session left overnight sends a stale token and
+  // createApproveLink 401s. Re-mint it via the ptg-system step when expired.
+  let token = getFreshCustomerAccessToken();
   if (!token) {
-    return { success: false, error: "No CustomerAccessToken in localStorage" };
+    if (!(await refreshCustomerSession())) {
+      return { success: false, error: "No CustomerAccessToken in localStorage" };
+    }
+    token = getFreshCustomerAccessToken();
+    if (!token) {
+      return { success: false, error: "Failed to refresh CustomerAccessToken" };
+    }
   }
 
   try {

@@ -135,13 +135,15 @@ export default function PaymentLogPage() {
     setPickerYear(month.year());
   }, [dateParam]);
 
-  const resaleID = getCustomerField(sessionInfo, [
-    "ResaleID",
-    "resaleID",
-    "CUSTID",
-    "CustID",
-    "custID",
-  ]);
+  const resaleID =
+    searchParams.get("resaleID")?.trim() ||
+    getCustomerField(sessionInfo, [
+      "ResaleID",
+      "resaleID",
+      "CUSTID",
+      "CustID",
+      "custID",
+    ]);
   const requestDate = currentMonth.format("YYYY-MM-01");
 
   useEffect(() => {

@@ -99,6 +99,32 @@ export function setCustomerAccessToken(token: string): void {
   localStorage.setItem(STORAGE_KEYS.CUSTOMER_ACCESS_TOKEN, token);
 }
 
+// Returns the stored CustomerAccessToken only while its `exp` claim is still
+// valid (+30s leeway). The token is self-minted by /api/approve-link/ptg-system
+// with an 8h lifetime — expired tokens must be re-minted via that endpoint.
+export function getFreshCustomerAccessToken(): string | null {
+  const token = getCustomerAccessToken();
+  if (!token) return null;
+  try {
+    const b64 = (token.split(".")[1] ?? "")
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes)) as {
+      exp?: number;
+    };
+    if (
+      typeof payload.exp === "number" &&
+      payload.exp * 1000 > Date.now() + 30_000
+    ) {
+      return token;
+    }
+  } catch {
+    // malformed token — treat as expired
+  }
+  return null;
+}
+
 export function getPtgSystemLink(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(STORAGE_KEYS.PTG_SYSTEM_LINK);

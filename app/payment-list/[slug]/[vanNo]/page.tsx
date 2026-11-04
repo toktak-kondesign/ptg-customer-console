@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { notFound, useParams, useRouter } from "next/navigation";
+import {
+  notFound,
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
@@ -92,6 +97,7 @@ function amountClass(color1: number | null | undefined): string {
 
 export default function VanAccountDetailPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const params = useParams<{ slug: string; vanNo: string }>();
   const company = getCompanyBySlug(params.slug);
   const companyCode = COMPANY_BY_SLUG[params.slug];
@@ -126,13 +132,17 @@ export default function VanAccountDetailPage() {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
 
-  const resaleID = getCustomerField(sessionInfo, [
-    "ResaleID",
-    "resaleID",
-    "CUSTID",
-    "CustID",
-    "custID",
-  ]);
+  // ลูกค้าที่มีหลายนิติบุคคล — หน้า list ส่ง resaleID ของบัญชีที่คลิกมาด้วยเสมอ
+  const resaleParam = searchParams.get("resaleID")?.trim() || "";
+  const resaleID =
+    resaleParam ||
+    getCustomerField(sessionInfo, [
+      "ResaleID",
+      "resaleID",
+      "CUSTID",
+      "CustID",
+      "custID",
+    ]);
 
   // CustID ของ user ที่ login (เช่น C1500392) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
   const custId = getCustomerField(sessionInfo, ["CustID", "CUSTID", "custID"]);
@@ -237,6 +247,11 @@ export default function VanAccountDetailPage() {
     { length: Math.min(5, totalPages) },
     (_, i) => firstPageInWindow + i,
   );
+
+  const logParams = new URLSearchParams();
+  if (lastPayDate) logParams.set("date", lastPayDate);
+  if (resaleParam) logParams.set("resaleID", resaleParam);
+  const logQuery = logParams.toString();
 
   // การเลือกจ่ายต้องเรียงจากลำดับที่ 1 ถึงลำดับที่คลิกเสมอ
   const toggleRow = (index: number) => {
@@ -420,7 +435,7 @@ export default function VanAccountDetailPage() {
 
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log${lastPayDate ? `?date=${encodeURIComponent(lastPayDate)}` : ""}`}
+                  href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log${logQuery ? `?${logQuery}` : ""}`}
                   className="flex items-center gap-2 text-gray-600 mr-4 bg-emerald-100 px-3 py-1 rounded-lg hover:bg-emerald-200 transition"
                 >
                   <img

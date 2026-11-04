@@ -7,11 +7,20 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getAuthUser,
+  getCustomerInfo,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
 import { getVanAccountsService } from "@/services/customer/van-accounts";
+import { getColorDashboardService } from "@/services/customer/color-dashboard";
 import { maskCustomerId } from "@/lib/format";
-import type { VanAccount, VanAccountDetails } from "@/interfaces/van-account";
+import type {
+  VanAccount,
+  VanAccountDetails,
+  VanCustomer,
+} from "@/interfaces/van-account";
 
 const COMPANY_BY_SLUG: Record<string, string> = {
   ptg: "PTG",
@@ -70,6 +79,7 @@ export default function PaymentAccountDetailPage() {
     unknown
   > | null>(null);
   const [details, setDetails] = useState<VanAccountDetails | null>(null);
+  const [customers, setCustomers] = useState<VanCustomer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,10 +98,15 @@ export default function PaymentAccountDetailPage() {
     "CustID",
     "custID",
   ]);
+  const custID =
+    getCustomerField(sessionInfo, ["CustID", "CUSTID", "custId", "custID"]) ||
+    getAuthUser()?.custID ||
+    "";
 
   useEffect(() => {
     if (!companyCode || !resaleID) {
       setDetails(null);
+      setCustomers([]);
       setError(null);
       setIsLoading(false);
       return;
@@ -101,19 +116,56 @@ export default function PaymentAccountDetailPage() {
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const result = await getVanAccountsService(companyCode, resaleID);
+
+      // เจ้าของคนเดียวกันอาจเปิดหลายนิติบุคคล (หลาย resaleID) —
+      // ใช้ color dashboard ตัวเดียวกับหน้า payment-list หา resaleID
+      // ทั้งหมดของบริษัทนี้ แล้วโหลดบัญชีจากทุก resaleID
+      const resaleIDs = new Set<string>([resaleID]);
+      if (custID) {
+        const dashboard = await getColorDashboardService(custID);
+        if (cancelled) return;
+        if (dashboard.status === "success") {
+          for (const row of dashboard.results || []) {
+            const id = row.ResaleID?.trim();
+            if (row.Company === companyCode && id) resaleIDs.add(id);
+          }
+        }
+      }
+
+      const results = await Promise.all(
+        Array.from(resaleIDs).map((id) =>
+          getVanAccountsService(companyCode, id),
+        ),
+      );
       if (cancelled) return;
-      if (result.status === "success") {
-        setDetails({
-          ...result.results,
-          //แยกรายการที่เป็นหนี้ค้างชำระ กับเงินสดออกจากกัน 4 = เงินสด
-          accounts: (result.results.accounts || []).filter(
-            (account) => Number(account.xSalesType_c) !== 4,
-          ),
-        });
-      } else {
+
+      const succeeded = results
+        .filter((result) => result.status === "success")
+        .map((result) => result.results);
+
+      if (succeeded.length === 0) {
         setDetails(null);
-        setError(result.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");
+        setCustomers([]);
+        setError(results[0]?.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");
+      } else {
+        const customerList = succeeded
+          .map((result) => result.customer)
+          .filter((item): item is VanCustomer => Boolean(item));
+        setCustomers(customerList);
+        setDetails({
+          branches: succeeded.flatMap((result) => result.branches || []),
+          customer:
+            customerList.find(
+              (item) =>
+                item.ResaleID === resaleID || item.ResaleIDX === resaleID,
+            ) ??
+            customerList[0] ??
+            null,
+          //แยกรายการที่เป็นหนี้ค้างชำระ กับเงินสดออกจากกัน 4 = เงินสด
+          accounts: succeeded
+            .flatMap((result) => result.accounts || [])
+            .filter((account) => Number(account.xSalesType_c) !== 4),
+        });
       }
       setIsLoading(false);
     };
@@ -121,7 +173,7 @@ export default function PaymentAccountDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [companyCode, resaleID]);
+  }, [companyCode, resaleID, custID]);
 
   if (!company) return notFound();
 
@@ -137,7 +189,15 @@ export default function PaymentAccountDetailPage() {
       return;
     }
 
-    router.push(`/payment-list/${params.slug}/${encodeURIComponent(vannew)}`);
+    // ส่ง resaleID ของบัญชีนั้นไปด้วย — ลูกค้าที่มีหลายนิติบุคคล
+    // หน้า detail ต้องใช้ resaleID ให้ตรงกับเจ้าของบัญชี ไม่ใช่ของ session เสมอไป
+    const accountResaleID = account.ResaleID?.trim();
+    const query = accountResaleID
+      ? `?resaleID=${encodeURIComponent(accountResaleID)}`
+      : "";
+    router.push(
+      `/payment-list/${params.slug}/${encodeURIComponent(vannew)}${query}`,
+    );
   };
 
   const handlePlaceBillClick = () => {
@@ -146,6 +206,16 @@ export default function PaymentAccountDetailPage() {
 
   const customer = details?.customer;
   const accounts = details?.accounts || [];
+  const totalCustomerAmt = customers.reduce(
+    (sum, item) => sum + (Number(item.DocInvoiceAmt) || 0),
+    0,
+  );
+  const lastCustomerDate = customers.reduce<string | null>((latest, item) => {
+    if (!item.LastDate) return latest;
+    return !latest || new Date(item.LastDate) > new Date(latest)
+      ? item.LastDate
+      : latest;
+  }, null);
   const visibleAccounts = showAllAccounts
     ? accounts
     : accounts.filter((account) => account.IsShow === 0);
@@ -228,11 +298,11 @@ export default function PaymentAccountDetailPage() {
                     <span className="text-gray-400">(Total Amount)</span>
                   </p>
                   <p className="text-3xl font-bold text-blue-700 mt-1">
-                    {formatAmount(Number(customer?.DocInvoiceAmt) || 0)}{" "}
+                    {formatAmount(totalCustomerAmt)}{" "}
                     <span className="text-sm font-normal">บาท</span>
                   </p>
                   <p className="text-xs text-blue-500 mt-1">
-                    ข้อมูล ณ วันที่ {formatDate(customer?.LastDate)} น.
+                    ข้อมูล ณ วันที่ {formatDate(lastCustomerDate)} น.
                   </p>
                 </div>
                 <button
