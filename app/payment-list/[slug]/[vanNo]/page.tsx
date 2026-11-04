@@ -90,6 +90,9 @@ function extractLastPayDate(rows: LogPayCustRow[]): string {
 }
 
 function amountClass(color1: number | null | undefined): string {
+  if (color1 === 0) return "text-gray-900";
+  if (color1 === 1) return "text-[#619916]";
+  if (color1 === 2) return "text-[#dcb802]";
   if (color1 === 3) return "text-red-600";
   if (color1 === 4) return "text-green-600";
   return "text-gray-900";
