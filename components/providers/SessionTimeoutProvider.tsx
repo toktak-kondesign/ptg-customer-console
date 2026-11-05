@@ -6,9 +6,9 @@ import { SessionTimeoutModal } from "@/components/SessionTimeoutModal";
 export function SessionTimeoutProvider() {
   const { warningShown, secondsLeft, extendSession, logout, isExtending } =
     useSessionTimeout({
-      timeoutMinutes: 15,
-      warnBeforeSeconds: 30,
-      activityThrottleSeconds: 10,
+      timeoutMinutes: 15, //กำหนดเวลาการหมดอายุเซสชันเป็น 15 นาที
+      warnBeforeSeconds: 30, //แสดงหน้าต่างเตือนก่อนหมดเวลา 30 วินาที
+      activityThrottleSeconds: 10, //กรองการเคลื่อนไหวของเมาส์/คีย์บอร์ด ทุก 10 วินาที
     });
 
   return (

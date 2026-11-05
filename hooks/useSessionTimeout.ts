@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getAuthToken, getAuthUser, clearAuth } from "@/lib/auth";
+import {
+  getAuthToken,
+  getAuthUser,
+  clearAuth,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { BASE_PATH, LOGIN_URL } from "@/lib/env";
 
 const STORAGE_KEYS = {
@@ -44,6 +49,7 @@ export function useSessionTimeout({
   const [expiresAtMs, setExpiresAtMs] = useState<number>(0);
   const [warningShown, setWarningShown] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  const [hasUser, setHasUser] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [loggedOut, setLoggedOut] = useState(false);
   const [isExtending, setIsExtending] = useState(false);
@@ -158,12 +164,25 @@ export function useSessionTimeout({
     updateExpiresAt,
   ]);
 
+  // Wait until the user is logged in (AuthHandler writes it after mount)
+  useEffect(() => {
+    if (!enabled || hasUser) return;
+
+    const check = () => {
+      if (getAuthUser()) setHasUser(true);
+    };
+    check();
+    const handle = setInterval(check, 1000);
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, check);
+    return () => {
+      clearInterval(handle);
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, check);
+    };
+  }, [enabled, hasUser]);
+
   // Initialize session timeout state
   useEffect(() => {
-    if (!enabled) return;
-
-    const user = getAuthUser();
-    if (!user) return;
+    if (!enabled || !hasUser) return;
 
     const sharedExpiresAt = readNumber(STORAGE_KEYS.expiresAt);
     if (sharedExpiresAt && sharedExpiresAt > Date.now()) {
@@ -177,7 +196,7 @@ export function useSessionTimeout({
     updateLastActivity(lastActivity);
     updateExpiresAt(lastActivity);
     setInitialized(true);
-  }, [enabled, updateExpiresAt, updateLastActivity]);
+  }, [enabled, hasUser, updateExpiresAt, updateLastActivity]);
 
   // Countdown tick
   useEffect(() => {
