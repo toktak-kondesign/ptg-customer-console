@@ -6,7 +6,7 @@ import { SessionTimeoutModal } from "@/components/SessionTimeoutModal";
 export function SessionTimeoutProvider() {
   const { warningShown, secondsLeft, extendSession, logout, isExtending } =
     useSessionTimeout({
-      timeoutMinutes: 15,
+      timeoutMinutes: 1,
       warnBeforeSeconds: 30,
       activityThrottleSeconds: 10,
     });
