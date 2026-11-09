@@ -8,8 +8,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../data";
 import {
-  getAuthUser,
   getCustomerInfo,
+  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
 import { img } from "@/lib/env";
@@ -98,10 +98,7 @@ export default function PaymentAccountDetailPage() {
     "CustID",
     "custID",
   ]);
-  const custID =
-    getCustomerField(sessionInfo, ["CustID", "CUSTID", "custId", "custID"]) ||
-    getAuthUser()?.custID ||
-    "";
+  const custID = getSessionCustomerId();
 
   useEffect(() => {
     if (!companyCode || !resaleID) {

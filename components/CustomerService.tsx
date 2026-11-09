@@ -7,7 +7,7 @@ import AnimatedSection from "./AnimatedSection";
 import { getRewardsBaseUrl, img } from "../lib/env";
 import {
   getPtgSystemLink,
-  getCustomerInfo,
+  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
 import {
@@ -110,17 +110,7 @@ const services: ServiceEntry[] = [
 ];
 
 function resolveCustID(): string {
-  const info = getCustomerInfo();
-  if (!info) return "";
-  const keys = Object.keys(info);
-  for (const name of ["CustID", "CUSTID", "custId", "custID"]) {
-    const key = keys.find((k) => k.toLowerCase() === name.toLowerCase());
-    if (key) {
-      const value = info[key];
-      if (value !== null && value !== undefined) return String(value).trim();
-    }
-  }
-  return "";
+  return getSessionCustomerId();
 }
 
 export default function CustomerService() {

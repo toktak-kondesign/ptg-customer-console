@@ -12,7 +12,11 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { companies, getCompanyBySlug, formatAmount } from "../../../data";
 import { getBank, getBankLogo, getBankName } from "@/lib/banks";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getCustomerInfo,
+  getSessionCustomerId,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
 import { getChequeListService } from "@/services/customer/cheque-list";
 import type { ChequeListRow } from "@/interfaces/cheque-list";
@@ -44,21 +48,6 @@ const THAI_MONTHS_SHORT = [
 ];
 
 type ViewMode = "table" | "list";
-
-function getCustomerField(
-  info: Record<string, unknown> | null,
-  names: string[],
-): string {
-  if (!info) return "";
-  const keys = Object.keys(info);
-  for (const name of names) {
-    const key = keys.find((item) => item.toLowerCase() === name.toLowerCase());
-    if (key && info[key] !== null && info[key] !== undefined) {
-      return String(info[key]).trim();
-    }
-  }
-  return "";
-}
 
 function formatVanNumber(value: string): string {
   const digits = value.replace(/\D/g, "");
@@ -162,10 +151,7 @@ export default function ChequeListPage() {
   );
   const [pickerYear, setPickerYear] = useState<number>(currentMonth.year());
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [, setSessionInfo] = useState<Record<string, unknown> | null>(null);
   const [rowsByCompany, setRowsByCompany] = useState<
     Record<string, ChequeListRow[]>
   >({});
@@ -183,7 +169,7 @@ export default function ChequeListPage() {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
 
-  const custID = getCustomerField(sessionInfo, ["custID", "CustID", "CUSTID"]);
+  const custID = getSessionCustomerId();
   const requestDate = currentMonth.format("YYYY-MM-01");
   const companyCodes = companies.map((item) => COMPANY_BY_SLUG[item.slug]);
 

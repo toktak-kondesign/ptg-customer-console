@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
   getCustomerInfo,
-  getAuthUser,
+  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
 import {
@@ -402,10 +402,7 @@ export default function PaymentListPage() {
     };
   }, []);
 
-  const custID =
-    getCustomerField(customerInfo, ["CustID", "CUSTID", "custId", "custID"]) ||
-    getAuthUser()?.custID ||
-    "";
+  const custID = getSessionCustomerId();
 
   useEffect(() => {
     if (!custID) {

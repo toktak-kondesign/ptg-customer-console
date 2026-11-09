@@ -11,7 +11,11 @@ import "dayjs/locale/th";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../data";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getCustomerInfo,
+  getSessionCustomerId,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
 import {
   getPlaceBillPdfUrl,
@@ -47,21 +51,6 @@ const THAI_MONTHS_SHORT = [
   "พ.ย.",
   "ธ.ค.",
 ];
-
-function getCustomerField(
-  info: Record<string, unknown> | null,
-  names: string[],
-): string {
-  if (!info) return "";
-  const keys = Object.keys(info);
-  for (const name of names) {
-    const key = keys.find((item) => item.toLowerCase() === name.toLowerCase());
-    if (key && info[key] !== null && info[key] !== undefined) {
-      return String(info[key]).trim();
-    }
-  }
-  return "";
-}
 
 function formatVanNumber(value: string | null | undefined): string {
   const raw = (value || "").trim();
@@ -109,10 +98,7 @@ export default function PlaceBillPage() {
   );
   const [pickerYear, setPickerYear] = useState<number>(currentMonth.year());
   const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
-  const [sessionInfo, setSessionInfo] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [, setSessionInfo] = useState<Record<string, unknown> | null>(null);
   const [details, setDetails] = useState<PlaceBillDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,14 +111,7 @@ export default function PlaceBillPage() {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
 
-  const customerID = getCustomerField(sessionInfo, [
-    "CustID",
-    "CUSTID",
-    "custID",
-    "custId",
-    "customerID",
-    "customerId",
-  ]);
+  const customerID = getSessionCustomerId();
   const placeDate = currentMonth.format("YYYY-MM-01");
 
   useEffect(() => {

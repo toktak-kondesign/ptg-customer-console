@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import Link from "next/link";
 import { getCompanyBySlug } from "@/app/payment-list/data";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getCustomerInfo,
+  getSessionCustomerId,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { getPayingBillService } from "@/services/customer/paying-bill";
 import {
   isPaymentMethodKey,
@@ -83,9 +87,7 @@ export default function PayingBillPrintPage() {
   if (!company || !method) return notFound();
 
   const customer: SlipCustomer = {
-    custId:
-      bill?.custId ??
-      getCustomerField(sessionInfo, ["CustID", "CUSTID", "custID"]),
+    custId: bill?.custId ?? getSessionCustomerId(),
     custId13:
       bill?.custId13 ??
       getCustomerField(sessionInfo, [

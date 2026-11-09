@@ -18,6 +18,7 @@ import {
   setViewedCustomerId,
 } from "@/lib/auth";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
+import { refreshCustomerSession } from "@/services/approve-link";
 import type { CustomerAccountRow } from "@/interfaces/customer";
 import type { CustomerProfile } from "./data";
 
@@ -63,6 +64,9 @@ export default function CustomerHero({
     // เลือกบัญชีตัวเอง = เคลียร์ override กลับไปใช้ session ปกติ
     const ownCustId = getAuthUser()?.custID?.trim();
     setViewedCustomerId(account.CustID === ownCustId ? null : account.CustID);
+    // re-mint JWT + ptg-customer-info ให้ตรงกับบัญชีที่สลับ —
+    // ทุกหน้าที่อ่าน custID/ResaleID จาก localStorage จะได้ข้อมูลบัญชีล่าสุด
+    void refreshCustomerSession();
     router.push(`/customer/${encodeURIComponent(account.CustID)}`);
   };
 

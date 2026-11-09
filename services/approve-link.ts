@@ -2,6 +2,7 @@ import {
   getAuthUser,
   getFreshCustomerAccessToken,
   getViewedCustomerId,
+  notifyCustomerSessionChanged,
   setCustomerAccessToken,
   setCustomerInfo,
   setOutsourceSystemLink,
@@ -38,9 +39,9 @@ export function getStaffViewedCustomerId(): string {
 
 // Re-mint the CustomerAccessToken (8h lifetime) by re-running the ptg-system
 // login step — refreshes the stored system link + customer info alongside.
-async function refreshCustomerSession(): Promise<boolean> {
+export async function refreshCustomerSession(): Promise<boolean> {
   const user = getAuthUser();
-  const viewedCustId = getStaffViewedCustomerId();
+  const viewedCustId = getViewedCustomerId();
   const custID = (viewedCustId || user?.custID || "").trim();
   if (!user || !custID) return false;
   try {
@@ -59,6 +60,7 @@ async function refreshCustomerSession(): Promise<boolean> {
     setCustomerAccessToken(data.token);
     if (data.link) setPtgSystemLink(data.link);
     if (data.customerInfo) setCustomerInfo(data.customerInfo);
+    notifyCustomerSessionChanged();
     return true;
   } catch {
     return false;

@@ -15,6 +15,7 @@ import { getCompanyBySlug, formatAmount } from "../../data";
 import {
   getAuthUser,
   getCustomerInfo,
+  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
@@ -147,8 +148,8 @@ export default function VanAccountDetailPage() {
       "custID",
     ]);
 
-  // CustID ของ user ที่ login (เช่น C1500392) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
-  const custId = getCustomerField(sessionInfo, ["CustID", "CUSTID", "custID"]);
+  // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
+  const custId = getSessionCustomerId();
   const branchID =
     getCustomerField(sessionInfo, ["THBranchID", "BranchID"]) ||
     rows[0]?.THBranchID ||

@@ -19,8 +19,10 @@ import {
   getAuthUser,
   getCustomerInfo,
   getSessionCustomerId,
+  setViewedCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
+import { refreshCustomerSession } from "@/services/approve-link";
 import { img } from "@/lib/env";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
 import type { CustomerAccountRow } from "@/interfaces/customer";
@@ -173,7 +175,7 @@ export default function TruckCardHistoryPage() {
     "ResaleID",
     "resaleID",
   ]);
-  const custID = overrideCustId || sessionCustID;
+  const custID = overrideCustId || getSessionCustomerId() || sessionCustID;
 
   const openSwitcher = () => {
     setSwitcherOpen(true);
@@ -200,7 +202,12 @@ export default function TruckCardHistoryPage() {
   const handleSelectAccount = (account: CustomerAccountRow) => {
     setSwitcherOpen(false);
     if (account.CustID === custID) return;
-    if (account.CustID === sessionCustID) {
+    const isSessionAccount =
+      account.CustID === (getAuthUser()?.custID?.trim() || sessionCustID);
+    setViewedCustomerId(isSessionAccount ? null : account.CustID);
+    // re-mint JWT + ptg-customer-info ให้ตรงกับบัญชีที่สลับ
+    void refreshCustomerSession();
+    if (isSessionAccount) {
       setOverrideCustId("");
       setOverrideCustName("");
     } else {
