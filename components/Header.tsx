@@ -276,16 +276,19 @@ export default function Header() {
                 {staffCustomer.id}
                 {staffCustomer.name ? ` | ${staffCustomer.name}` : ""}
               </span>
-              <Tooltip title="ออกจากระบบลูกค้า">
-                <button
-                  type="button"
-                  onClick={handleStaffLogout}
-                  className="ml-0.5 inline-flex items-center text-amber-700 hover:text-amber-900 cursor-pointer mr-2"
-                  aria-label="ออกจากระบบลูกค้า"
-                >
-                  <LogoutOutlined style={{ fontSize: "0.85rem" }} />
-                </button>
-              </Tooltip>
+              {/* ปุ่มออกจากระบบเฉพาะ staff สวมสิทธิ์ — ลูกค้าสลับบัญชีเองไม่แสดง */}
+              {customer?.UserType === "EMP" && (
+                <Tooltip title="ออกจากระบบลูกค้า">
+                  <button
+                    type="button"
+                    onClick={handleStaffLogout}
+                    className="ml-0.5 inline-flex items-center text-amber-700 hover:text-amber-900 cursor-pointer mr-2"
+                    aria-label="ออกจากระบบลูกค้า"
+                  >
+                    <LogoutOutlined style={{ fontSize: "0.85rem" }} />
+                  </button>
+                </Tooltip>
+              )}
             </span>
           </div>
         </div>
