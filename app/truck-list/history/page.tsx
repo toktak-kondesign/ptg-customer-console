@@ -3,14 +3,27 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Button, DatePicker, Modal, Popover } from "antd";
+import { Button, DatePicker, Modal, Popover, Spin } from "antd";
+import {
+  CheckOutlined,
+  RightOutlined,
+  SwapOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import "dayjs/locale/th";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getCustomerInfo, CUSTOMER_SESSION_CHANGED_EVENT } from "@/lib/auth";
+import {
+  getAuthUser,
+  getCustomerInfo,
+  getSessionCustomerId,
+  CUSTOMER_SESSION_CHANGED_EVENT,
+} from "@/lib/auth";
 import { img } from "@/lib/env";
+import { getCustomerAccountsService } from "@/services/customer/accounts";
+import type { CustomerAccountRow } from "@/interfaces/customer";
 import {
   cancelCardOtuService,
   getCardOTUListService,
@@ -138,6 +151,12 @@ export default function TruckCardHistoryPage() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelDone, setCancelDone] = useState<string | null>(null);
+  const [overrideCustId, setOverrideCustId] = useState("");
+  const [overrideCustName, setOverrideCustName] = useState("");
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [accounts, setAccounts] = useState<CustomerAccountRow[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [accountsError, setAccountsError] = useState<string | null>(null);
 
   useEffect(() => {
     setSessionInfo(getCustomerInfo());
@@ -147,13 +166,48 @@ export default function TruckCardHistoryPage() {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
 
-  const custID = getCustomerField(sessionInfo, [
+  const sessionCustID = getCustomerField(sessionInfo, [
     "CustID",
     "custID",
     "CUSTID",
     "ResaleID",
     "resaleID",
   ]);
+  const custID = overrideCustId || sessionCustID;
+
+  const openSwitcher = () => {
+    setSwitcherOpen(true);
+    setAccountsLoading(true);
+    setAccountsError(null);
+    const baseId =
+      getAuthUser()?.custID?.trim() || sessionCustID || getSessionCustomerId();
+    if (!baseId) {
+      setAccounts([]);
+      setAccountsLoading(false);
+      return;
+    }
+    getCustomerAccountsService(baseId).then((res) => {
+      if (res.status === "success") {
+        setAccounts(res.results);
+      } else {
+        setAccounts([]);
+        setAccountsError(res.error ?? "ไม่สามารถโหลดรายการบัญชีได้");
+      }
+      setAccountsLoading(false);
+    });
+  };
+
+  const handleSelectAccount = (account: CustomerAccountRow) => {
+    setSwitcherOpen(false);
+    if (account.CustID === custID) return;
+    if (account.CustID === sessionCustID) {
+      setOverrideCustId("");
+      setOverrideCustName("");
+    } else {
+      setOverrideCustId(account.CustID);
+      setOverrideCustName(account.Name);
+    }
+  };
   const requestDate = currentMonth.format("YYYY-MM-01");
 
   useEffect(() => {
@@ -317,54 +371,75 @@ export default function TruckCardHistoryPage() {
                   className="object-contain"
                 />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-gray-500">
                   รายละเอียดการขอบัตรรถบรรทุกชั่วคราว
                 </p>
-                <DatePicker
-                  picker="month"
-                  value={currentMonth}
-                  onChange={handlePickMonth}
-                  allowClear={false}
-                  variant="borderless"
-                  suffixIcon={null}
-                  inputReadOnly
-                  format={(value) => formatMonthTitle(value)}
-                  className="!w-auto !p-0 [&_input]:!w-auto [&_input]:!cursor-pointer [&_input]:!caret-transparent [&_input]:!text-3xl [&_input]:!font-bold [&_input]:!text-blue-600"
-                />
-                <div className="mt-3 inline-flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleChangeMonth(-1)}
-                    aria-label="เดือนก่อนหน้า"
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-                  >
-                    ‹
-                  </button>
-                  <Popover
-                    content={monthPickerContent}
-                    trigger="click"
-                    open={isMonthPickerOpen}
-                    onOpenChange={handleMonthPickerOpenChange}
-                    placement="bottom"
-                  >
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-1.5">
+                    <DatePicker
+                      picker="month"
+                      value={currentMonth}
+                      onChange={handlePickMonth}
+                      allowClear={false}
+                      variant="borderless"
+                      suffixIcon={null}
+                      inputReadOnly
+                      format={(value) => formatMonthTitle(value)}
+                      className="!w-auto !p-0 [&_input]:!w-auto [&_input]:!cursor-pointer [&_input]:!caret-transparent [&_input]:!text-3xl [&_input]:!font-bold [&_input]:!text-blue-600"
+                    />
                     <button
                       type="button"
-                      aria-label="เลือกเดือน"
-                      className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                      onClick={() => handleChangeMonth(-1)}
+                      aria-label="เดือนก่อนหน้า"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
                     >
-                      <span className="block h-2 w-2 rounded-full bg-current" />
+                      ‹
                     </button>
-                  </Popover>
+                    <Popover
+                      content={monthPickerContent}
+                      trigger="click"
+                      open={isMonthPickerOpen}
+                      onOpenChange={handleMonthPickerOpenChange}
+                      placement="bottom"
+                    >
+                      <button
+                        type="button"
+                        aria-label="เลือกเดือน"
+                        className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-400 transition hover:bg-gray-100 hover:text-blue-600"
+                      >
+                        <span className="block h-2 w-2 rounded-full bg-current" />
+                      </button>
+                    </Popover>
+                    <button
+                      type="button"
+                      onClick={() => handleChangeMonth(1)}
+                      aria-label="เดือนถัดไป"
+                      className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                    >
+                      ›
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => handleChangeMonth(1)}
-                    aria-label="เดือนถัดไป"
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                    onClick={openSwitcher}
+                    className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:border-blue-400 hover:bg-blue-50"
                   >
-                    ›
+                    <SwapOutlined className="text-base text-blue-600" />
+                    สลับลูกค้า
                   </button>
                 </div>
+                {overrideCustId && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    แสดงข้อมูลของ{" "}
+                    <span className="font-semibold text-blue-700">
+                      {overrideCustId}
+                      {overrideCustName ? ` : ${overrideCustName}` : ""}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
 
@@ -589,6 +664,92 @@ export default function TruckCardHistoryPage() {
             ปิด
           </Button>
         </div>
+      </Modal>
+
+      <Modal
+        open={switcherOpen}
+        onCancel={() => setSwitcherOpen(false)}
+        footer={null}
+        centered
+        width={440}
+        title={
+          <span className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2E7FE0] text-white">
+              <UserOutlined />
+            </span>
+            <span>
+              <span className="block text-base font-semibold text-[#1B3A6E]">
+                เปลี่ยนรหัสลูกค้า
+              </span>
+              <span className="block text-xs font-normal text-[#8BA2BF]">
+                เลือกบัญชีลูกค้าที่ต้องการดูประวัติ
+              </span>
+            </span>
+          </span>
+        }
+      >
+        {accountsLoading ? (
+          <div className="flex justify-center py-8">
+            <Spin />
+          </div>
+        ) : accountsError ? (
+          <p className="py-6 text-center text-sm text-[#8BA2BF]">
+            {accountsError}
+          </p>
+        ) : accounts.length === 0 ? (
+          <p className="py-6 text-center text-sm text-[#8BA2BF]">
+            ไม่พบบัญชีอื่นที่เชื่อมโยงกับบัญชีนี้
+          </p>
+        ) : (
+          <div className="max-h-[55vh] overflow-y-auto">
+            {accounts.map((account) => {
+              const isCurrent = account.CustID === custID;
+              return (
+                <button
+                  key={account.CustID}
+                  type="button"
+                  onClick={() => handleSelectAccount(account)}
+                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                    isCurrent ? "bg-[#EBF4FE]" : "hover:bg-[#F4F9FF]"
+                  }`}
+                >
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                      isCurrent
+                        ? "bg-[#2E7FE0] text-white"
+                        : "bg-[#E8F1FC] text-[#2E7FE0]"
+                    }`}
+                  >
+                    <UserOutlined className="text-lg" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold text-[#1B3A6E]">
+                      {account.CustID}
+                      {isCurrent && (
+                        <span className="ml-2 text-xs font-normal text-[#2E7FE0]">
+                          บัญชีปัจจุบัน
+                        </span>
+                      )}
+                    </span>
+                    <span className="block truncate text-sm text-[#5E7DA3]">
+                      {account.Name}
+                    </span>
+                    {account.xFullName_c && (
+                      <span className="block truncate text-xs text-[#8BA2BF]">
+                        {account.xFullName_c}
+                      </span>
+                    )}
+                  </span>
+                  {isCurrent ? (
+                    <CheckOutlined className="shrink-0 text-[#2E7FE0]" />
+                  ) : (
+                    <RightOutlined className="shrink-0 text-xs text-[#8BA2BF] transition-transform group-hover:translate-x-0.5" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </Modal>
     </div>
   );
