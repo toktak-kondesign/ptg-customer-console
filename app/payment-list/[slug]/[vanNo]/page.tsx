@@ -467,7 +467,7 @@ export default function VanAccountDetailPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-sm">
+              <table className="w-full min-w-[900px] text-sm whitespace-nowrap">
                 <thead className="bg-gray-200 text-gray-700">
                   <tr>
                     <th className="text-center font-semibold px-4 py-3 w-14">
@@ -491,10 +491,10 @@ export default function VanAccountDetailPage() {
                     <th className="text-left font-semibold px-4 py-3">
                       พนักงาน
                     </th>
-                    <th className="text-right font-semibold px-4 py-3">
+                    <th className="text-right font-semibold px-4 py-3 sticky right-32 z-10 bg-gray-200 w-32">
                       จำนวนเงิน
                     </th>
-                    <th className="text-left font-semibold px-4 py-3">
+                    <th className="text-left font-semibold px-4 py-3 sticky right-0 z-10 bg-gray-200 w-32">
                       หมายเหตุ
                     </th>
                   </tr>
@@ -507,7 +507,7 @@ export default function VanAccountDetailPage() {
                     return (
                       <tr
                         key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`}
-                        className="hover:bg-gray-50"
+                        className="group hover:bg-gray-50"
                       >
                         <td className="px-4 py-3 text-center">
                           <input
@@ -536,11 +536,13 @@ export default function VanAccountDetailPage() {
                           {row.Address1?.trim() || "-"}
                         </td>
                         <td
-                          className={`px-4 py-3 text-right ${color} font-medium`}
+                          className={`px-4 py-3 text-right ${color} font-medium sticky right-32 z-10 bg-white group-hover:bg-gray-50`}
                         >
                           {formatAmount(Number(row.DocInvoiceAmt) || 0)}
                         </td>
-                        <td className={`px-4 py-3 ${color}`}>
+                        <td
+                          className={`px-4 py-3 ${color} sticky right-0 z-10 bg-white group-hover:bg-gray-50`}
+                        >
                           {row.CustID?.trim() || "-"}
                         </td>
                       </tr>
