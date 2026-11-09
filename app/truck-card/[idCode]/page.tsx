@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import QRCode from "react-qr-code";
 import { Button, Spin } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
-import { BASE_PATH, img } from "@/lib/env";
+import { img } from "@/lib/env";
 import { downloadNodeAsImage } from "@/lib/download-node-image";
 import { getCardOtuDetailService } from "@/services/customer/card-otu-request";
 import type {
@@ -96,7 +96,7 @@ export default function TruckCardPage() {
                   />
                 ) : (
                   <QRCode
-                    value={`${window.location.origin}${BASE_PATH}/truck-card/${head.IDCode}`}
+                    value={String(head.IDCode)}
                     size={176}
                   />
                 )}

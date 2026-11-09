@@ -20,9 +20,15 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { BASE_PATH, img } from "@/lib/env";
+import { img } from "@/lib/env";
 import { downloadNodeAsImage } from "@/lib/download-node-image";
-import { getAuthUser, getCustomerInfo, getCustomerInfoCustId, getSessionCustomerId, getViewedCustomerId } from "@/lib/auth";
+import {
+  getAuthUser,
+  getCustomerInfo,
+  getCustomerInfoCustId,
+  getSessionCustomerId,
+  getViewedCustomerId,
+} from "@/lib/auth";
 import { isValidThaiPlate, normalizePlate } from "@/lib/thaiPlate";
 import { getCustomerAccountsService } from "@/services/customer/accounts";
 import { getCustomerProfileService } from "@/services/customer/profile";
@@ -382,6 +388,23 @@ export default function RequestCardModal({
     setStep(1);
   };
 
+  const handleSkipProducts = () => {
+    Modal.confirm({
+      title: "ต้องการขอบัตรรถรับสินค้าชั่วคราว แบบไม่ระบุชนิดสินค้าใช่หรือไม่",
+      okText: "ใช่",
+      cancelText: "ไม่",
+      centered: true,
+      onOk: () => {
+        setGroup("");
+        setDraftQty(
+          Object.fromEntries(products.map((item) => [item.key, "0"])),
+        );
+        setFormError(null);
+        setStep(3);
+      },
+    });
+  };
+
   const handleSelectGroup = (name: string) => {
     if (name !== group) {
       setDraftQty(Object.fromEntries(products.map((item) => [item.key, "0"])));
@@ -411,10 +434,9 @@ export default function RequestCardModal({
       phone: phoneValue,
       // เจ้าหน้าที่ทำแทนลูกค้า → CreateBy = PersonCode ของเจ้าหน้าที่
       // ลูกค้าทำเอง → CreateBy = CustID จาก ptg-customer-info
-      createBy: (
-        getViewedCustomerId()
-          ? getAuthUser()?.personCode || getAuthUser()?.username || cust.id
-          : getCustomerInfoCustId() || cust.id
+      createBy: (getViewedCustomerId()
+        ? getAuthUser()?.personCode || getAuthUser()?.username || cust.id
+        : getCustomerInfoCustId() || cust.id
       ).slice(0, 20),
       items: selectedItems.map(({ item, qty }) => ({
         itemCode: item.itemCode,
@@ -655,7 +677,7 @@ export default function RequestCardModal({
                 </div>
               )}
 
-              <div className="mt-5 flex justify-center gap-3">
+              <div className="mt-5 flex items-center gap-3">
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
@@ -663,6 +685,17 @@ export default function RequestCardModal({
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
+                </Button>
+
+                <Button
+                  type="primary"
+                  className="ml-auto bg-orange-500 text-white"
+                  variant="outlined"
+                  color="orange"
+                  size="large"
+                  onClick={handleSkipProducts}
+                >
+                  ไม่ต้องการระบุสินค้า
                 </Button>
               </div>
             </div>
@@ -802,18 +835,25 @@ export default function RequestCardModal({
                   {plateNormalized}
                 </SummaryRow>
                 <SummaryRow label="รายการสินค้า">
-                  <ul className="space-y-1">
-                    {selectedItems.map(({ item, qty }) => (
-                      <li key={item.key} className="flex justify-between gap-3">
-                        <span className="truncate">
-                          เลขที่ {item.docNo} : {item.name}
-                        </span>
-                        <span className="shrink-0 text-blue-700">
-                          {formatQty(qty)} {item.unit}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  {selectedItems.length === 0 ? (
+                    <span>ไม่ระบุสินค้า</span>
+                  ) : (
+                    <ul className="space-y-1">
+                      {selectedItems.map(({ item, qty }) => (
+                        <li
+                          key={item.key}
+                          className="flex justify-between gap-3"
+                        >
+                          <span className="truncate">
+                            เลขที่ {item.docNo} : {item.name}
+                          </span>
+                          <span className="shrink-0 text-blue-700">
+                            {formatQty(qty)} {item.unit}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </SummaryRow>
               </div>
 
@@ -828,7 +868,7 @@ export default function RequestCardModal({
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   disabled={submitting}
-                  onClick={() => backToStep(2)}
+                  onClick={() => backToStep(group ? 2 : 1)}
                   className="min-w-[140px]"
                 >
                   ย้อนกลับ
@@ -862,10 +902,7 @@ export default function RequestCardModal({
                 />
                 <div className="mt-4 flex justify-center">
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
-                    <QRCode
-                      value={`${window.location.origin}${BASE_PATH}/truck-card/${result.idCode}`}
-                      size={176}
-                    />
+                    <QRCode value={String(result.idCode)} size={176} />
                   </div>
                 </div>
                 <p className="mt-2 text-center text-xs tracking-wider text-gray-500">
