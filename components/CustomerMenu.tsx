@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { useCustomerPoints } from "@/lib/CustomerPointsContext";
 import { formatPoint } from "@/lib/pointPrecision";
 import type { AuthenUserInfo } from "@/lib/auth";
-import { getSessionCustomerId } from "@/lib/auth";
+import {
+  CUSTOMER_SESSION_CHANGED_EVENT,
+  getSessionCustomerId,
+} from "@/lib/auth";
 import { getApproveLinkRedirectUrl } from "@/services/approve-link";
 import { SITE_BASE_URL, LOGIN_URL } from "@/lib/env";
 
@@ -29,6 +32,9 @@ export default function CustomerMenu({
   const [showMenu, setShowMenu] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [resolvingRef1, setResolvingRef1] = useState<string | null>(null);
+  // อ่านใน effect เท่านั้น — อ่านตอน render ทำให้ href ที่ SSR ไม่ตรงกับ client
+  // (hydration mismatch)
+  const [sessionCustId, setSessionCustId] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
   const {
     goldPoints,
@@ -68,6 +74,14 @@ export default function CustomerMenu({
     };
   }, [showMenu]);
 
+  useEffect(() => {
+    const handleChanged = () => setSessionCustId(getSessionCustomerId());
+    handleChanged();
+    window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+    return () =>
+      window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
@@ -100,7 +114,6 @@ export default function CustomerMenu({
     );
   }
 
-  const sessionCustId = getSessionCustomerId();
   const customerInfoHref = sessionCustId
     ? `/customer/${encodeURIComponent(sessionCustId)}`
     : CUSTOMER_INFO_URL;

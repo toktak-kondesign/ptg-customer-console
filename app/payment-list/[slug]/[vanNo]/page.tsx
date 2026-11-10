@@ -128,9 +128,15 @@ export default function VanAccountDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
+  const [custId, setCustId] = useState("");
+
   useEffect(() => {
-    setSessionInfo(getCustomerInfo());
-    const handleChanged = () => setSessionInfo(getCustomerInfo());
+    const handleChanged = () => {
+      setSessionInfo(getCustomerInfo());
+      setCustId(getSessionCustomerId());
+    };
+    handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     return () =>
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
@@ -148,8 +154,6 @@ export default function VanAccountDetailPage() {
       "custID",
     ]);
 
-  // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
-  const custId = getSessionCustomerId();
   const branchID =
     getCustomerField(sessionInfo, ["THBranchID", "BranchID"]) ||
     rows[0]?.THBranchID ||

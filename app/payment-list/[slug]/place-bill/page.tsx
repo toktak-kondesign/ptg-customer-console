@@ -103,15 +103,19 @@ export default function PlaceBillPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [customerID, setCustomerID] = useState("");
+
   useEffect(() => {
-    setSessionInfo(getCustomerInfo());
-    const handleChanged = () => setSessionInfo(getCustomerInfo());
+    const handleChanged = () => {
+      setSessionInfo(getCustomerInfo());
+      setCustomerID(getSessionCustomerId());
+    };
+    handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     return () =>
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
 
-  const customerID = getSessionCustomerId();
   const placeDate = currentMonth.format("YYYY-MM-01");
 
   useEffect(() => {

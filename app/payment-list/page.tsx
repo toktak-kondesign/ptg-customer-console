@@ -224,7 +224,7 @@ function PieChart({ rows }: { rows: Company["rows"] }) {
               </span>
             </span>
             <span className="flex items-center gap-3 shrink-0">
-              <span className="text-gray-900 font-medium">
+              <span className={slice.status.textClass}>
                 {formatAmount(slice.value)}
               </span>
               <span className="text-gray-400 w-12 text-right">
@@ -393,16 +393,21 @@ export default function PaymentListPage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState<string | null>(null);
 
+  const [custID, setCustID] = useState("");
+
   useEffect(() => {
-    setCustomerInfo(getCustomerInfo());
-    const handleChanged = () => setCustomerInfo(getCustomerInfo());
+    const handleChanged = () => {
+      setCustomerInfo(getCustomerInfo());
+      // อ่าน localStorage ใน effect เท่านั้น — ถ้าอ่านตอน render server จะได้ ""
+      // แต่ client ได้ค่าจริง ทำให้ hydration mismatch (disabled ไม่ตรงกัน)
+      setCustID(getSessionCustomerId());
+    };
+    handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     return () => {
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     };
   }, []);
-
-  const custID = getSessionCustomerId();
 
   useEffect(() => {
     if (!custID) {

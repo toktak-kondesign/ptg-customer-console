@@ -83,9 +83,14 @@ export default function PaymentAccountDetailPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [custID, setCustID] = useState("");
+
   useEffect(() => {
-    setSessionInfo(getCustomerInfo());
-    const handleChanged = () => setSessionInfo(getCustomerInfo());
+    const handleChanged = () => {
+      setSessionInfo(getCustomerInfo());
+      setCustID(getSessionCustomerId());
+    };
+    handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     return () =>
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
@@ -98,8 +103,6 @@ export default function PaymentAccountDetailPage() {
     "CustID",
     "custID",
   ]);
-  const custID = getSessionCustomerId();
-
   useEffect(() => {
     if (!companyCode || !resaleID) {
       setDetails(null);

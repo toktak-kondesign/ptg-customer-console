@@ -161,15 +161,18 @@ export default function ChequeListPage() {
   const [keyword, setKeyword] = useState("");
   const [selectedRow, setSelectedRow] = useState<ChequeListRow | null>(null);
 
+  const [custID, setCustID] = useState("");
+
   useEffect(() => {
-    setSessionInfo(getCustomerInfo());
-    const handleChanged = () => setSessionInfo(getCustomerInfo());
+    const handleChanged = () => {
+      setSessionInfo(getCustomerInfo());
+      setCustID(getSessionCustomerId());
+    };
+    handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
     return () =>
       window.removeEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
   }, []);
-
-  const custID = getSessionCustomerId();
   const requestDate = currentMonth.format("YYYY-MM-01");
   const companyCodes = companies.map((item) => COMPANY_BY_SLUG[item.slug]);
 
