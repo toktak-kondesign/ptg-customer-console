@@ -470,7 +470,14 @@ export default function PaymentListPage() {
           Array.from(options, ([value, label]) => ({ value, label })),
         );
       } else {
+        // Degrade แทนที่จะปิด modal — ให้เลือกดูประวัติด้วยรหัสลูกค้าได้
+        // แม้ดึงรายการบัญชี VAN ไม่สำเร็จ
         setHistoryError(result.error || "ไม่สามารถโหลดข้อมูลบัญชีได้");
+        if (custID) {
+          setHistoryOptions([
+            { value: custID, label: `รหัสลูกค้า: ${custID}` },
+          ]);
+        }
       }
       setHistoryLoading(false);
     };
@@ -482,7 +489,7 @@ export default function PaymentListPage() {
 
   const openPaymentHistory = () => {
     const slug = historyCompany && COMPANY_CODE_TO_SLUG[historyCompany];
-    if (!slug || !historyAccount || historyLoading || historyError) return;
+    if (!slug || !historyAccount || historyLoading) return;
     router.push(
       `/payment-list/${slug}/${encodeURIComponent(historyAccount)}/payment-log/?date=${dayjs().format("YYYY-MM-DD")}`,
     );
@@ -647,8 +654,7 @@ export default function PaymentListPage() {
             okText="ดูประวัติการชำระ"
             cancelText="ยกเลิก"
             okButtonProps={{
-              disabled:
-                !historyAccount || historyLoading || Boolean(historyError),
+              disabled: !historyAccount || historyLoading,
             }}
             centered
           >
@@ -694,9 +700,7 @@ export default function PaymentListPage() {
                   options={historyOptions}
                   onChange={setHistoryAccount}
                   loading={historyLoading}
-                  disabled={
-                    !historyCompany || historyLoading || Boolean(historyError)
-                  }
+                  disabled={!historyCompany || historyLoading}
                   notFoundContent="ไม่พบข้อมูลบัญชี"
                 />
               </div>
@@ -723,7 +727,7 @@ export default function PaymentListPage() {
                 (sum, row) => sum + row.amount,
                 0,
               );
-              const view = viewByCompany[company.name] ?? "table";
+              const view = viewByCompany[company.name] ?? "pie";
               const hasData = company.rows.length > 0;
               return (
                 <section
