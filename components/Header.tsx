@@ -282,7 +282,7 @@ export default function Header() {
                   <button
                     type="button"
                     onClick={handleStaffLogout}
-                    className="ml-0.5 inline-flex items-center text-amber-700 hover:text-amber-900 cursor-pointer mr-2"
+                    className="ml-0.5 inline-flex items-center text-amber-700 hover:text-amber-900 cursor-pointer mr-4"
                     aria-label="ออกจากระบบลูกค้า"
                   >
                     <LogoutOutlined style={{ fontSize: "0.85rem" }} />
