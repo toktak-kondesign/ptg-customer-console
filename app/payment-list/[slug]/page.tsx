@@ -203,10 +203,6 @@ export default function PaymentAccountDetailPage() {
 
   const customer = details?.customer;
   const accounts = details?.accounts || [];
-  const totalCustomerAmt = customers.reduce(
-    (sum, item) => sum + (Number(item.DocInvoiceAmt) || 0),
-    0,
-  );
   const lastCustomerDate = customers.reduce<string | null>((latest, item) => {
     if (!item.LastDate) return latest;
     return !latest || new Date(item.LastDate) > new Date(latest)
@@ -295,7 +291,7 @@ export default function PaymentAccountDetailPage() {
                     <span className="text-gray-400">(Total Amount)</span>
                   </p>
                   <p className="text-3xl font-bold text-blue-700 mt-1">
-                    {formatAmount(totalCustomerAmt)}{" "}
+                    {formatAmount(totalUsed)}{" "}
                     <span className="text-sm font-normal">บาท</span>
                   </p>
                   <p className="text-xs text-blue-500 mt-1">
