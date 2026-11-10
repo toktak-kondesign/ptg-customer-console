@@ -176,6 +176,11 @@ export default function AuthHandler() {
             .then((res) => res.json())
             .then((approveData) => {
               if (approveData.success) {
+                if (approveData.warning)
+                  console.warn(
+                    "[AuthHandler] approve-link degraded:",
+                    approveData.warning,
+                  );
                 if (approveData.token)
                   setCustomerAccessToken(approveData.token);
                 if (approveData.link) setPtgSystemLink(approveData.link);

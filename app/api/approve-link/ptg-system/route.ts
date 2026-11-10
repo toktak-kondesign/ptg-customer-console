@@ -33,6 +33,7 @@ interface PtgSystemResponse {
   token?: string;
   link?: string;
   customerInfo?: Record<string, unknown>;
+  warning?: string;
   error?: string;
 }
 
@@ -55,41 +56,42 @@ export async function POST(
       );
     }
 
-    // Step 1: Fetch customer info from customer-info API
+    const warnings: string[] = [];
+
+    // Step 1: Fetch customer info from customer-info API — best effort.
+    // Inner pages only strictly need the JWT + custID; a missing customerInfo
+    // degrades the session (e.g. no ResaleID) instead of breaking it.
     const customerInfoParams = new URLSearchParams({
       custID: custID,
       company: "PTG",
     });
-    const customerInfoRes = await fetch(
-      `${PDF_API_URL}/api/customer-info/customer?${customerInfoParams.toString()}`,
-      { cache: "no-store" },
-    );
-
-    if (!customerInfoRes.ok) {
-      return NextResponse.json<PtgSystemResponse>(
-        {
-          success: false,
-          error: `Failed to fetch customer info: ${customerInfoRes.status}`,
-        },
-        { status: 502 },
+    let customerRow: Record<string, unknown> | undefined;
+    try {
+      const customerInfoRes = await fetch(
+        `${PDF_API_URL}/api/customer-info/customer?${customerInfoParams.toString()}`,
+        { cache: "no-store" },
       );
-    }
-
-    const customerInfoData: CustomerInfoResponse =
-      await customerInfoRes.json();
-    const customerRow = customerInfoData.results?.[0];
-    if (!customerRow) {
-      return NextResponse.json<PtgSystemResponse>(
-        { success: false, error: "Customer not found" },
-        { status: 404 },
+      if (!customerInfoRes.ok) {
+        warnings.push(
+          `Failed to fetch customer info: ${customerInfoRes.status}`,
+        );
+      } else {
+        const customerInfoData: CustomerInfoResponse =
+          await customerInfoRes.json();
+        customerRow = customerInfoData.results?.[0];
+        if (!customerRow) warnings.push("Customer not found");
+      }
+    } catch (error) {
+      warnings.push(
+        `Failed to fetch customer info: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
 
     // ResaleID may vary in casing from DB — check common variants
     const resaleID =
-      (customerRow.ResaleID as string) ??
-      (customerRow.resaleID as string) ??
-      (customerRow.RESALEID as string) ??
+      (customerRow?.ResaleID as string) ??
+      (customerRow?.resaleID as string) ??
+      (customerRow?.RESALEID as string) ??
       "";
 
     // Step 2: Build Customer from AuthenUserInfo + customer info, then generate JWT
@@ -98,7 +100,7 @@ export async function POST(
       userFullName: body.personName ?? "",
       custID: custID,
       customerName:
-        body.custName || (customerRow.Name as string | undefined) || "",
+        body.custName || (customerRow?.Name as string | undefined) || "",
       positionLevel: 0,
       pointSilver: 0,
       pointGold: 0,
@@ -106,50 +108,56 @@ export async function POST(
     };
     const token = generateCustomerAccessToken(customer);
 
-    // Step 3: Call createApproveLink with ref1=ResaleID, ref2=custID, ref3=custID
-    const baseUrl = getSiteBaseUrl();
-    const approveLinkUrl = `${baseUrl}approvalapiex/v1/master/createApproveLink`;
-    const requestBody = {
-      ref1: resaleID,
-      ref2: custID,
-      ref3: custID,
-      ref4: "",
-    };
-    console.log("[ptg-system] JWT token:", token);
-    console.log("[ptg-system] createApproveLink URL:", approveLinkUrl);
-    console.log("[ptg-system] request body:", JSON.stringify(requestBody));
-    const approveLinkRes = await fetch(approveLinkUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "*/*",
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!approveLinkRes.ok) {
-      const errBody = await approveLinkRes.text().catch(() => "");
-      console.error(
-        `[ptg-system] createApproveLink returned ${approveLinkRes.status}: ${errBody.slice(0, 500)}`,
-      );
-      return NextResponse.json<PtgSystemResponse>(
-        {
-          success: false,
-          error: `createApproveLink returned ${approveLinkRes.status}`,
-        },
-        { status: 502 },
-      );
+    // Step 3: Call createApproveLink with ref1=ResaleID, ref2=custID, ref3=custID.
+    // Best effort — the link only powers the external SSO redirect, so a
+    // failure here must not take down the inner pages with it.
+    let link = "";
+    if (!resaleID) {
+      warnings.push("Missing ResaleID — skipped createApproveLink");
+    } else {
+      const baseUrl = getSiteBaseUrl();
+      const approveLinkUrl = `${baseUrl}approvalapiex/v1/master/createApproveLink`;
+      const requestBody = {
+        ref1: resaleID,
+        ref2: custID,
+        ref3: custID,
+        ref4: "",
+      };
+      try {
+        const approveLinkRes = await fetch(approveLinkUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+          body: JSON.stringify(requestBody),
+        });
+        if (!approveLinkRes.ok) {
+          const errBody = await approveLinkRes.text().catch(() => "");
+          console.error(
+            `[ptg-system] createApproveLink returned ${approveLinkRes.status}: ${errBody.slice(0, 500)}`,
+          );
+          warnings.push(`createApproveLink returned ${approveLinkRes.status}`);
+        } else {
+          const approveData: CreateApproveLinkResponse =
+            await approveLinkRes.json();
+          link = approveData.results ?? "";
+        }
+      } catch (error) {
+        console.error("[ptg-system] createApproveLink error:", error);
+        warnings.push(
+          `createApproveLink failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+      }
     }
-
-    const approveData: CreateApproveLinkResponse = await approveLinkRes.json();
-    const link = approveData.results ?? "";
 
     return NextResponse.json<PtgSystemResponse>({
       success: true,
       token,
       link,
-      customerInfo: customerRow,
+      ...(customerRow ? { customerInfo: customerRow } : {}),
+      ...(warnings.length ? { warning: warnings.join("; ") } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
