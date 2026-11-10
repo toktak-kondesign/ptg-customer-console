@@ -377,7 +377,7 @@ export default function RequestCardModal({
       setFormError(res.error ?? "ไม่สามารถตรวจสอบข้อมูลรถได้");
       return;
     }
-    if (res.pendingBills.length > 0) {
+    if (res.pendingBills.length > 5) {
       setPendingBills(res.pendingBills);
       return;
     }
