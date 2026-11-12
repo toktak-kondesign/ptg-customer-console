@@ -216,16 +216,16 @@ function ActionCard({
   classOptional?: string;
   onClick?: () => void;
 }) {
-  const className = `group flex items-center gap-3 rounded-xl border border-white/30  px-4 py-3 shadow-lg  transition hover:-translate-y-0.5 hover:shadow-xl ${classOptional || "bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 backdrop-blur"}`;
+  const className = `group flex flex-col gap-2 rounded-xl border border-white/30 px-3 py-3 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl sm:flex-row sm:items-center sm:gap-3 sm:px-4 ${classOptional || "bg-gradient-to-br from-gray-100/95 via-gray-300/90 to-gray-500/90 backdrop-blur"}`;
   const content = (
     <>
-      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-700">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-700 sm:h-14 sm:w-14">
         {icon}
       </span>
-      <span className="flex-1 text-base font-semibold text-gray-800">
+      <span className="flex-1 sm:text-sm font-semibold leading-snug text-gray-800 sm:text-base">
         {title}
       </span>
-      <span className="text-gray-600 transition group-hover:translate-x-1">
+      <span className="hidden text-gray-600 transition group-hover:translate-x-1 sm:block">
         ›
       </span>
     </>
@@ -478,28 +478,59 @@ export default function TruckListPage() {
     </div>
   );
 
+  const actionCards = (
+    <>
+      <ActionCard
+        title="ขอบัตรรถรับสินค้าชั่วคราว"
+        onClick={() => setRequestOpen(true)}
+        classOptional="a_gradient_blue"
+        icon={
+          <Image
+            src={img("/images/profile_card.png")}
+            alt="temporary card"
+            width={32}
+            height={32}
+          />
+        }
+      />
+      <ActionCard
+        title="ประวัติการขอบัตรรถ"
+        href="/truck-list/history"
+        classOptional=""
+        icon={
+          <Image
+            src={img("/images/history_icon.png")}
+            alt="history"
+            width={32}
+            height={32}
+          />
+        }
+      />
+    </>
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
       <main className="flex-1">
         <section
-          className="relative h-[320px] w-full bg-cover bg-center"
+          className="relative h-[145px] sm:h-[320px] w-full bg-cover bg-left sm:bg-cover bg-no-repeat"
           style={{ backgroundImage: `url(${img("/images/banner_truck.jpg")})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20" />
           <div className="relative mx-auto h-full max-w-[90%] px-4 sm:px-6">
-            <p className="pt-6 text-sm text-dark/80">
+            <p className="pt-2 text-sm text-dark/80 sm:pt-6">
               <Link href="/" className="hover:text-dark/80">
                 หน้าหลัก
               </Link>
               <span className="mx-2 text-dark-80">|</span>
               <span className="text-dark/80">ข้อมูลรายการรถบรรทุก</span>
             </p>
-            <div className="absolute bottom-8 left-4 sm:left-6 text-white">
-              <h1 className="text-3xl sm:text-4xl font-bold drop-shadow">
+            <div className="absolute bottom-1 sm:bottom-8 left-4 sm:left-6 text-white">
+              <h1 className="text-xl md:text-3xl sm:text-4xl font-bold drop-shadow">
                 รายการรถบรรทุก
               </h1>
-              <p className="text-right text-base font-medium text-gray-300">
+              <p className="text-right text-sm md:text-base font-medium text-gray-300">
                 Find Truck
               </p>
             </div>
@@ -511,44 +542,22 @@ export default function TruckListPage() {
                   <span className="text-xs font-medium">คัน</span>
                 </p>
               </div> */}
-              <ActionCard
-                title="ขอบัตรรถรับสินค้าชั่วคราว"
-                onClick={() => setRequestOpen(true)}
-                classOptional="a_gradient_blue"
-                icon={
-                  <Image
-                    src={img("/images/profile_card.png")}
-                    alt="temporary card"
-                    width={32}
-                    height={32}
-                  />
-                }
-              />
-              <ActionCard
-                title="ประวัติการขอบัตรรถ"
-                href="/truck-list/history"
-                classOptional=""
-                icon={
-                  <Image
-                    src={img("/images/history_icon.png")}
-                    alt="history"
-                    width={32}
-                    height={32}
-                  />
-                }
-              />
+              {actionCards}
             </div>
           </div>
         </section>
 
-        <div className="mx-auto max-w-[90%] px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-[90%] px-0 sm:px-4 py-8 sm:px-6">
+          <div className="mb-6 grid grid-cols-2 gap-3 md:hidden">
+            {actionCards}
+          </div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-3xl font-semibold text-gray-900">
               รถทั้งหมด <span className="text-blue-600">{trucks.length}</span>{" "}
               คัน
             </h2>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap">
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="order-1 flex items-center gap-2 text-sm text-gray-600 whitespace-nowrap">
                 แสดง
                 <select
                   value={pageSize}
@@ -567,9 +576,9 @@ export default function TruckListPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="ค้นหาทะเบียนรถ"
-                className="w-full sm:w-56 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                className="order-3 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 sm:order-2 sm:w-56"
               />
-              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5">
+              <div className="order-2 ml-auto inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 sm:order-3 sm:ml-0">
                 {(["table", "card"] as const).map((key) => (
                   <button
                     key={key}
@@ -605,25 +614,25 @@ export default function TruckListPage() {
           ) : (
             <>
               {view === "card" ? (
-                <div className="grid gap-5 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                   {pagedTrucks.map((t) => (
                     <TruckCardFlip key={t.RunID} truck={t} />
                   ))}
                 </div>
               ) : (
-                <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-                  <table className="w-full min-w-[860px] text-left text-sm">
+                <div className="overflow-x-scroll rounded-xl border border-gray-200 bg-white shadow-sm">
+                  <table className="w-full min-w-[860px] text-left text-sm [&_td]:whitespace-nowrap [&_th]:whitespace-nowrap">
                     <thead>
                       <tr className="border-b border-gray-200 text-semibold uppercase tracking-wide bg-[#19368f] text-white">
                         <th className="px-4 py-3 font-medium">#</th>
+                        <th className="px-4 py-3 font-medium">ทะเบียนรถ</th>
                         <th className="px-4 py-3 font-medium">RunID</th>
                         <th className="px-4 py-3 font-medium">เลขบัตร</th>
-                        <th className="px-4 py-3 font-medium">ทะเบียนรถ</th>
                         <th className="px-4 py-3 font-medium">รหัสลูกค้า</th>
                         <th className="px-4 py-3 font-medium">หมายเหตุ</th>
                         <th className="px-4 py-3 font-medium">วันที่สร้าง</th>
                         <th className="px-4 py-3 font-medium">ใช้บัตรล่าสุด</th>
-                        <th className="px-4 py-3 text-center font-medium">
+                        <th className="sticky right-0 bg-[#19368f] px-4 py-3 text-center font-medium shadow-[inset_1px_0_0_0_rgba(255,255,255,0.35)]">
                           จัดการ
                         </th>
                       </tr>
@@ -632,15 +641,15 @@ export default function TruckListPage() {
                       {pagedTrucks.map((t) => (
                         <tr
                           key={t.RunID}
-                          className="transition hover:bg-blue-50/40"
+                          className="group transition hover:bg-blue-50/40"
                         >
                           <td className="px-4 py-3 text-gray-500">{t.Row1}</td>
+                          <td className="px-4 py-3 font-semibold text-blue-700">
+                            {t.CarRegister}
+                          </td>
                           <td className="px-4 py-3 text-gray-500">{t.RunID}</td>
                           <td className="px-4 py-3 font-mono text-gray-700">
                             {t.CardID}
-                          </td>
-                          <td className="px-4 py-3 font-semibold text-blue-700">
-                            {t.CarRegister}
                           </td>
                           <td className="px-4 py-3 text-gray-500">
                             {t.CustID}
@@ -651,10 +660,10 @@ export default function TruckListPage() {
                           <td className="px-4 py-3 whitespace-nowrap text-gray-500">
                             {t.DateCreated.slice(0, 16)}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-gray-500">
+                          <td className="px-4 py-3 text-gray-500">
                             {t.LastUseCard ? t.LastUseCard.slice(0, 16) : "-"}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="sticky right-0 bg-white px-4 py-3 shadow-[inset_1px_0_0_0_#f3f4f6] transition-colors group-hover:bg-[#f9fbff]">
                             <div className="flex items-center justify-center gap-4">
                               <CardZoomButton truck={t} />
                               <CancelButton

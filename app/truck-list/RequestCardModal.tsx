@@ -63,7 +63,7 @@ const formatQty = (value: number) =>
 
 const ModalTitle = ({ plate }: { plate?: string }) => (
   <span className="flex items-center gap-2.5">
-    <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-gray-200">
+    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 sm:h-14 sm:w-14">
       <Image
         src={img("/images/profile_card.png")}
         alt=""
@@ -71,7 +71,7 @@ const ModalTitle = ({ plate }: { plate?: string }) => (
         height={32}
       />
     </span>
-    <span className="text-lg font-semibold text-gray-800">
+    <span className="text-base font-semibold text-gray-800 sm:text-lg">
       ขอบัตรรถรับสินค้าชั่วคราว
       {plate && (
         <span className="ml-2 rounded-md bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
@@ -137,7 +137,7 @@ const SummaryRow = ({
   children: React.ReactNode;
 }) => (
   <div className="flex gap-3 py-2 text-sm">
-    <span className="w-44 shrink-0 text-gray-500">{label}</span>
+    <span className="w-24 shrink-0 text-gray-500 sm:w-44">{label}</span>
     <span className="min-w-0 flex-1 font-medium text-gray-800">{children}</span>
   </div>
 );
@@ -490,7 +490,7 @@ export default function RequestCardModal({
         width={760}
         mask={{ closable: step !== 4 }}
         title={
-          <div className="flex items-center justify-between gap-3 pr-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 pr-6 sm:gap-3">
             <ModalTitle plate={step > 0 ? plateNormalized : undefined} />
             <Link
               href="/truck-list/history"
@@ -504,7 +504,15 @@ export default function RequestCardModal({
         }
       >
         <div className="pt-2">
-          <Steps current={step} size="small" items={STEP_ITEMS} />
+          <div className="hidden sm:block">
+            <Steps current={step} size="small" items={STEP_ITEMS} />
+          </div>
+          <p className="text-sm text-gray-500 sm:hidden">
+            ขั้นตอน {step + 1}/{STEP_ITEMS.length} ·{" "}
+            <span className="font-medium text-gray-800">
+              {STEP_ITEMS[step].title}
+            </span>
+          </p>
 
           {step === 0 && (
             <div className="mt-5">
@@ -512,7 +520,7 @@ export default function RequestCardModal({
                 ข้อมูลลูกค้าที่ต้องการรับสินค้า{" "}
                 <span className="text-red-500">*</span>
               </p>
-              <div className="mt-2 flex items-center gap-4 rounded-lg border border-gray-200 p-3">
+              <div className="mt-2 flex flex-wrap items-center gap-4 rounded-lg border border-gray-200 p-3">
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-gray-100">
                   <Image
                     src={logo ?? img("/images/avatar-customer.svg")}
@@ -544,7 +552,7 @@ export default function RequestCardModal({
                 </button>
               </div>
 
-              {/* <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex justify-end">
                 <button
                   type="button"
                   role="checkbox"
@@ -564,9 +572,9 @@ export default function RequestCardModal({
                       <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
                     )}
                   </span>
-                  รับ QR โดยตรง
+                  ไม่ระบุเบอร์โทรศัพท์
                 </button>
-              </div> */}
+              </div>
 
               {!qrDirect && (
                 <div className="mt-4">
@@ -612,7 +620,7 @@ export default function RequestCardModal({
                   iconPlacement="end"
                   loading={submitting}
                   onClick={handleStep1Next}
-                  className="min-w-[260px]"
+                  className="w-full sm:w-auto sm:min-w-[260px]"
                 >
                   ถัดไป
                 </Button>
@@ -634,7 +642,7 @@ export default function RequestCardModal({
                   ไม่พบสินค้าที่สามารถรับได้
                 </p>
               ) : (
-                <div className="mt-3 grid h-72 grid-cols-2 grid-rows-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:h-72 sm:grid-cols-2 sm:grid-rows-2">
                   {groups.map((g, index) => {
                     const empty = g.qty === 0;
                     return (
@@ -643,9 +651,9 @@ export default function RequestCardModal({
                         type="button"
                         disabled={empty}
                         onClick={() => handleSelectGroup(g.name)}
-                        className={`flex flex-col justify-between rounded-2xl p-5 text-left transition ${
+                        className={`flex flex-col justify-between rounded-2xl p-4 text-left transition sm:p-5 ${
                           GROUP_STYLES[g.name]
-                        } ${index === 0 ? "row-span-2" : ""} ${
+                        } ${index === 0 ? "sm:row-span-2" : ""} ${
                           g.name === group
                             ? "ring-2 ring-blue-500"
                             : "ring-1 ring-transparent"
@@ -655,7 +663,7 @@ export default function RequestCardModal({
                             : "hover:shadow-md"
                         }`}
                       >
-                        <span className="text-lg font-semibold text-gray-800">
+                        <span className="text-base font-semibold text-gray-800 sm:text-lg">
                           {g.name}
                         </span>
                         <Image
@@ -666,7 +674,7 @@ export default function RequestCardModal({
                           width={0}
                           height={0}
                           sizes="100vw"
-                          className="h-auto w-4/5"
+                          className="h-auto w-20 self-end sm:w-4/5"
                         />
                         <span className="mt-1 text-sm text-gray-600">
                           {g.qty} รายการ
@@ -677,19 +685,19 @@ export default function RequestCardModal({
                 </div>
               )}
 
-              <div className="mt-5 flex items-center gap-3">
+              <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   onClick={() => backToStep(0)}
-                  className="min-w-[140px]"
+                  className="flex-1 sm:flex-none sm:min-w-[140px]"
                 >
                   ย้อนกลับ
                 </Button>
 
                 <Button
                   type="primary"
-                  className="ml-auto bg-orange-500 text-white"
+                  className="flex-1 bg-orange-500 text-white sm:ml-auto sm:flex-none"
                   variant="outlined"
                   color="orange"
                   size="large"
@@ -741,7 +749,7 @@ export default function RequestCardModal({
                     return (
                       <div
                         key={item.key}
-                        className={`flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-4 py-3 transition ${
+                        className={`flex flex-col items-stretch gap-2 rounded-lg border border-gray-200 px-4 py-3 transition sm:flex-row sm:items-center sm:justify-between sm:gap-3 ${
                           disabled ? "opacity-50" : ""
                         }`}
                       >
@@ -753,7 +761,7 @@ export default function RequestCardModal({
                             จำนวน {formatQty(item.available)} {item.unit}
                           </p>
                         </div>
-                        <div className="flex shrink-0 items-center overflow-hidden rounded-md border border-gray-200">
+                        <div className="flex shrink-0 items-center self-end overflow-hidden rounded-md border border-gray-200 sm:self-auto">
                           <button
                             type="button"
                             aria-label="ลดจำนวน"
@@ -797,12 +805,12 @@ export default function RequestCardModal({
                 </p>
               )}
 
-              <div className="mt-5 flex justify-center gap-3">
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   onClick={() => backToStep(1)}
-                  className="min-w-[140px]"
+                  className="flex-1 sm:flex-none sm:min-w-[140px]"
                 >
                   ย้อนกลับ
                 </Button>
@@ -812,7 +820,7 @@ export default function RequestCardModal({
                   icon={<ArrowRightOutlined />}
                   iconPlacement="end"
                   onClick={handleStep2Next}
-                  className="min-w-[140px]"
+                  className="flex-1 sm:flex-none sm:min-w-[140px]"
                 >
                   ถัดไป
                 </Button>
@@ -863,13 +871,13 @@ export default function RequestCardModal({
                 </p>
               )}
 
-              <div className="mt-5 flex justify-center gap-3">
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Button
                   size="large"
                   icon={<ArrowLeftOutlined />}
                   disabled={submitting}
                   onClick={() => backToStep(group ? 2 : 1)}
-                  className="min-w-[140px]"
+                  className="flex-1 sm:flex-none sm:min-w-[140px]"
                 >
                   ย้อนกลับ
                 </Button>
@@ -879,7 +887,7 @@ export default function RequestCardModal({
                   icon={<SaveOutlined />}
                   loading={submitting}
                   onClick={handleConfirm}
-                  className="min-w-[200px]"
+                  className="flex-1 sm:flex-none sm:min-w-[200px]"
                 >
                   ยืนยันบันทึกข้อมูล
                 </Button>
@@ -891,7 +899,7 @@ export default function RequestCardModal({
             <div className="mt-5">
               <div
                 ref={cardRef}
-                className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-6 shadow-sm"
+                className="mx-auto max-w-lg rounded-2xl border border-gray-200 p-4 shadow-sm sm:p-6"
               >
                 <Image
                   src={img("/logo/logo.png")}
@@ -961,13 +969,13 @@ export default function RequestCardModal({
                   {formError}
                 </p>
               )}
-              <div className="mt-5 flex justify-center gap-3">
+              <div className="mt-5 flex flex-wrap justify-center gap-3">
                 <Button
                   size="large"
                   icon={<DownloadOutlined />}
                   loading={downloading}
                   onClick={handleDownloadImage}
-                  className="min-w-[200px]"
+                  className="flex-1 sm:flex-none sm:min-w-[200px]"
                 >
                   ดาวน์โหลดรูปภาพ
                 </Button>
@@ -975,7 +983,7 @@ export default function RequestCardModal({
                   type="primary"
                   size="large"
                   onClick={onClose}
-                  className="min-w-[200px]"
+                  className="flex-1 sm:flex-none sm:min-w-[200px]"
                 >
                   ปิด
                 </Button>
@@ -1005,6 +1013,7 @@ export default function RequestCardModal({
           className="mt-3"
           size="small"
           pagination={false}
+          scroll={{ x: 480 }}
           rowKey="_key"
           dataSource={(pendingBills ?? []).map((bill, index) => ({
             ...bill,

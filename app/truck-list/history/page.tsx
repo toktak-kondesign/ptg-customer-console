@@ -368,7 +368,7 @@ export default function TruckCardHistoryPage() {
           </p>
 
           <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="flex items-start gap-5 px-5 sm:px-8 py-8">
+            <div className="flex items-start gap-4 px-5 py-6 sm:gap-5 sm:px-8 sm:py-8">
               <div className="relative w-14 h-14 shrink-0">
                 <Image
                   src={img("/images/icon-head.png")}
@@ -383,7 +383,7 @@ export default function TruckCardHistoryPage() {
                   รายละเอียดการขอบัตรรถบรรทุกชั่วคราว
                 </p>
 
-                <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-1.5">
                     <DatePicker
                       picker="month"
@@ -394,7 +394,7 @@ export default function TruckCardHistoryPage() {
                       suffixIcon={null}
                       inputReadOnly
                       format={(value) => formatMonthTitle(value)}
-                      className="!w-auto !p-0 [&_input]:!w-auto [&_input]:!cursor-pointer [&_input]:!caret-transparent [&_input]:!text-3xl [&_input]:!font-bold [&_input]:!text-blue-600"
+                      className="!w-auto !p-0 [&_input]:!w-auto [&_input]:!cursor-pointer [&_input]:!caret-transparent [&_input]:!text-2xl sm:[&_input]:!text-3xl [&_input]:!font-bold [&_input]:!text-blue-600"
                     />
                     <button
                       type="button"
@@ -432,7 +432,7 @@ export default function TruckCardHistoryPage() {
                   <button
                     type="button"
                     onClick={openSwitcher}
-                    className="inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:border-blue-400 hover:bg-blue-50"
+                    className="ml-auto inline-flex items-center gap-2 rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-600 transition hover:border-blue-400 hover:bg-blue-50 sm:ml-0"
                   >
                     <SwapOutlined className="text-base text-blue-600" />
                     สลับลูกค้า
