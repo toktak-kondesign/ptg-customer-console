@@ -626,7 +626,7 @@ export default function TruckListPage() {
                       <tr className="border-b border-gray-200 text-semibold uppercase tracking-wide bg-[#19368f] text-white">
                         <th className="px-4 py-3 font-medium">#</th>
                         <th className="px-4 py-3 font-medium">ทะเบียนรถ</th>
-                        <th className="px-4 py-3 font-medium">RunID</th>
+                        {/* <th className="px-4 py-3 font-medium">RunID</th> */}
                         <th className="px-4 py-3 font-medium">เลขบัตร</th>
                         <th className="px-4 py-3 font-medium">รหัสลูกค้า</th>
                         <th className="px-4 py-3 font-medium">หมายเหตุ</th>
@@ -647,7 +647,7 @@ export default function TruckListPage() {
                           <td className="px-4 py-3 font-semibold text-blue-700">
                             {t.CarRegister}
                           </td>
-                          <td className="px-4 py-3 text-gray-500">{t.RunID}</td>
+                          {/* <td className="px-4 py-3 text-gray-500">{t.RunID}</td> */}
                           <td className="px-4 py-3 font-mono text-gray-700">
                             {t.CardID}
                           </td>

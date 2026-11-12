@@ -93,17 +93,24 @@ const STEP_ITEMS = [
   { title: "บัตรชั่วคราว" },
 ];
 
+const MERGED_CONCRETE_GROUP = "ผลิตภัณฑ์คอนกรีตและหินทรายบรรจุกระสอบ";
+
+const GROUP_NAME_MAP: Record<string, string> = {
+  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": MERGED_CONCRETE_GROUP,
+  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: MERGED_CONCRETE_GROUP,
+};
+
+const canonicalGroup = (name: string) => GROUP_NAME_MAP[name] ?? name;
+
 const GROUP_STYLES: Record<string, string> = {
   กลุ่มหิน:
     "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
-  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "bg-red-100",
-  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "bg-blue-100",
+  [MERGED_CONCRETE_GROUP]: "bg-blue-100",
 };
 
 const GROUP_IMAGES: Record<string, string> = {
   กลุ่มหิน: "/images/stone_group.png",
-  "คอนกรีตบล็อก และหินทรายบรรจุกระสอบ": "/images/concrete_block_group.png",
-  ผลิตภัณฑ์คอนกรีตสำเร็จรูป: "/images/concrete_mixed_group.png",
+  [MERGED_CONCRETE_GROUP]: "/images/concrete_mixed_group-v2.png",
 };
 
 const GROUP_ORDER = Object.keys(GROUP_STYLES);
@@ -314,9 +321,10 @@ export default function RequestCardModal({
 
   const groups = useMemo(() => {
     const counts = new Map<string, number>();
-    products.forEach((item) =>
-      counts.set(item.group, (counts.get(item.group) ?? 0) + 1),
-    );
+    products.forEach((item) => {
+      const name = canonicalGroup(item.group);
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    });
     return GROUP_ORDER.map((name) => ({
       name,
       qty: counts.get(name) ?? 0,
@@ -325,7 +333,9 @@ export default function RequestCardModal({
 
   const filteredProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
-    const inGroup = products.filter((item) => item.group === group);
+    const inGroup = products.filter(
+      (item) => canonicalGroup(item.group) === group,
+    );
     if (!q) return inGroup;
     return inGroup.filter(
       (item) =>
@@ -653,7 +663,7 @@ export default function RequestCardModal({
                         onClick={() => handleSelectGroup(g.name)}
                         className={`flex flex-col justify-between rounded-2xl p-4 text-left transition sm:p-5 ${
                           GROUP_STYLES[g.name]
-                        } ${index === 0 ? "sm:row-span-2" : ""} ${
+                        } ${index === 0 ? "sm:row-span-2" : "sm:row-span-2"} ${
                           g.name === group
                             ? "ring-2 ring-blue-500"
                             : "ring-1 ring-transparent"
@@ -674,7 +684,7 @@ export default function RequestCardModal({
                           width={0}
                           height={0}
                           sizes="100vw"
-                          className="h-auto w-20 self-end sm:w-4/5"
+                          className="h-auto w-20 sm:self-end object-contain sm:w-4/5"
                         />
                         <span className="mt-1 text-sm text-gray-600">
                           {g.qty} รายการ

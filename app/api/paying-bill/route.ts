@@ -89,6 +89,8 @@ function validate(body: Partial<CreatePayingBillRequest>): string | null {
   if (!body.billDate || !toDateOnly(body.billDate)) return "กรุณาระบุวันที่ให้ถูกต้อง";
 
   if (body.method.startsWith("cheque")) {
+    if (!body.receiptPerson?.trim()) return "ไม่พบชื่อผู้ทำรายการ กรุณาเข้าสู่ระบบใหม่";
+    if (body.receiptPerson.trim().length > 100) return "ชื่อผู้ทำรายการต้องไม่เกิน 100 ตัวอักษร";
     if (!body.checkNo?.trim()) return "กรุณาระบุเลขที่เช็ค";
     if (!body.bankBranch?.trim()) return "กรุณาระบุสาขาของธนาคารเจ้าของเช็ค";
   }
@@ -115,26 +117,37 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     const runno = await generateRunno(isCheque);
-    const created = await prismaDataCenter.ptgPayingBill.create({
-      data: {
-        runno,
-        company: body.company!.trim(),
-        custId13: body.custId13?.trim() || null,
-        custId: body.custId!.trim(),
-        branchId: body.branchId?.trim() || "00000",
-        vanNo: body.vanNo!.replace(/\D/g, ""),
-        type: isCheque ? "check" : "tranfer",
-        amount: Number(body.amount),
-        bankType: body.bankType!.trim(),
-        bankReceipt: body.bankReceipt!.trim(),
-        checkNo: body.checkNo?.trim() || "",
-        billDate,
-        tranferTime: body.tranferTime?.trim() || "",
-        typeBill: "",
-        receiveDate,
-        bankBranch: body.bankBranch?.trim() || null,
-        userCreate: body.userCreate!.trim(),
-      },
+    const created = await prismaDataCenter.$transaction(async (tx) => {
+      const receiptDate = isCheque
+        ? (await tx.$queryRaw<{ receiptDate: Date }[]>`SELECT GETDATE() AS receiptDate`)[0].receiptDate
+        : undefined;
+
+      return tx.ptgPayingBill.create({
+        data: {
+          runno,
+          company: body.company!.trim(),
+          custId13: body.custId13?.trim() || null,
+          custId: body.custId!.trim(),
+          branchId: body.branchId?.trim() || "00000",
+          vanNo: body.vanNo!.replace(/\D/g, ""),
+          type: isCheque ? "check" : "tranfer",
+          amount: Number(body.amount),
+          bankType: body.bankType!.trim(),
+          bankReceipt: body.bankReceipt!.trim(),
+          checkNo: body.checkNo?.trim() || "",
+          billDate,
+          tranferTime: body.tranferTime?.trim() || "",
+          typeBill: "",
+          receiveDate,
+          bankBranch: body.bankBranch?.trim() || null,
+          userCreate: body.userCreate!.trim(),
+          ...(isCheque && {
+            chequeStatus: "1",
+            dateChequeReceipt01: receiptDate,
+            receiptPerson: body.receiptPerson!.trim(),
+          }),
+        },
+      });
     });
 
     logCustomerAccess({

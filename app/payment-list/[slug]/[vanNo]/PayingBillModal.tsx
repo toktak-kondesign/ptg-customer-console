@@ -135,6 +135,7 @@ export default function PayingBillModal({
   const [billDate, setBillDate] = useState(toDateInputValue());
   const [tranferTime, setTranferTime] = useState(toTimeInputValue());
   const [localError, setLocalError] = useState<string | null>(null);
+  const [pendingCheque, setPendingCheque] = useState<PayingBillFormValues | null>(null);
 
   // รีเซ็ตฟอร์มทุกครั้งที่เปิด modal ใหม่ / เปลี่ยนวิธีชำระ
   useEffect(() => {
@@ -147,6 +148,7 @@ export default function PayingBillModal({
     setBillDate(toDateInputValue());
     setTranferTime(toTimeInputValue());
     setLocalError(null);
+    setPendingCheque(null);
   }, [open, method, defaultAmount]);
 
   if (!method) return null;
@@ -167,7 +169,7 @@ export default function PayingBillModal({
     }
 
     setLocalError(null);
-    onSubmit({
+    const values: PayingBillFormValues = {
       amount: parsed,
       bankType: method === "van" ? "UOB" : bankFrom,
       bankReceipt:
@@ -176,12 +178,15 @@ export default function PayingBillModal({
       billDate,
       tranferTime,
       bankBranch: isCheque ? bankBranch.trim() : undefined,
-    });
+    };
+    if (isCheque) setPendingCheque(values);
+    else onSubmit(values);
   };
 
   const message = error ?? localError;
 
   return (
+    <>
     <Modal
       title={
         <span className="text-xl font-medium text-gray-800">กรอกข้อมูล</span>
@@ -355,5 +360,44 @@ export default function PayingBillModal({
         </div>
       </div>
     </Modal>
+    <Modal
+      title="กรุณาตรวจสอบ ข้อมูล"
+      open={open && pendingCheque !== null}
+      onCancel={() => { if (!saving) setPendingCheque(null); }}
+      onOk={() => { if (pendingCheque && !saving) onSubmit(pendingCheque); }}
+      okText="ยืนยัน"
+      cancelText="ย้อนกลับ"
+      confirmLoading={saving}
+      cancelButtonProps={{ disabled: saving }}
+      closable={!saving}
+      mask={{ closable: !saving }}
+      keyboard={!saving}
+      centered
+      width={600}
+    >
+      {pendingCheque && (
+        <div className="space-y-4 pt-4">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-base">
+            <dt>ธนาคารที่นำฝาก :</dt>
+            <dd>{getBankName(pendingCheque.bankReceipt)}</dd>
+            <dt>จำนวนเงิน :</dt>
+            <dd>{pendingCheque.amount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</dd>
+            <dt>เลขที่เช็ค :</dt>
+            <dd className="break-all">{pendingCheque.checkNo}</dd>
+            <dt>ธนาคารเจ้าของเช็ค :</dt>
+            <dd>{getBankName(pendingCheque.bankType)}</dd>
+            <dt>สาขา :</dt>
+            <dd className="break-all">{pendingCheque.bankBranch}</dd>
+            <dt>วันที่บนเช็ค :</dt>
+            <dd>{dayjs(pendingCheque.billDate).locale("th").format("D MMMM BBBB")}</dd>
+          </dl>
+          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+          <p className="rounded-lg bg-orange-50 px-4 py-3 font-semibold text-orange-600">
+            ถ้าหากข้อมูลถูกต้องแล้วระบบจะส่งข้อมูลไปยังแผนกการเงิน
+          </p>
+        </div>
+      )}
+    </Modal>
+    </>
   );
 }

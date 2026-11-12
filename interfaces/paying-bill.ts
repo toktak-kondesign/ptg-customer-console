@@ -38,6 +38,7 @@ export interface CreatePayingBillRequest {
   tranferTime: string;
   bankBranch?: string;
   userCreate: string;
+  receiptPerson?: string;
 }
 
 /** ค่าจากฟอร์มใน PayingBillModal ที่ส่งให้ API (ส่วนที่เหลือมาจาก session/page) */

@@ -236,7 +236,7 @@ export default function VanAccountDetailPage() {
   if (!company) return notFound();
 
   const totalAmount = rows.reduce(
-    (sum, row) => sum + (Number(row.InvoiceAmt) || 0),
+    (sum, row) => sum + (Number(row.DocInvoiceAmt) || 0),
     0,
   );
 
@@ -298,7 +298,8 @@ export default function VanAccountDetailPage() {
 
   const handleSubmitPayingBill = async (values: PayingBillFormValues) => {
     if (!modalMethod || !companyCode) return;
-    const username = getAuthUser()?.username ?? "";
+    const user = getAuthUser();
+    const username = user?.username ?? "";
 
     setIsSaving(true);
     setSaveError(null);
@@ -310,6 +311,9 @@ export default function VanAccountDetailPage() {
       branchId: branchID,
       vanNo: vanNoDigits,
       userCreate: username,
+      receiptPerson: modalMethod.startsWith("cheque")
+        ? user?.personName?.trim() || ""
+        : undefined,
       ...values,
     });
     setIsSaving(false);
