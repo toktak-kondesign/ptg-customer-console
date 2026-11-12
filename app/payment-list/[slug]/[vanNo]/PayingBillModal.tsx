@@ -9,11 +9,7 @@ import dayjs from "dayjs";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import "dayjs/locale/th";
 import { BANKS, getBankLogo, getBankName } from "@/lib/banks";
-import {
-  maskCustomerId,
-  toDateInputValue,
-  toTimeInputValue,
-} from "@/lib/format";
+import { toDateInputValue, toTimeInputValue } from "@/lib/format";
 import type {
   PaymentMethodKey,
   PayingBillFormValues,
@@ -25,9 +21,8 @@ interface PayingBillModalProps {
   /** ยอดรวมของรายการที่เลือกไว้ ใช้เป็นค่าตั้งต้นของช่องจำนวนเงิน */
   defaultAmount: number;
   customerName: string;
-  customerResaleID?: string;
+  customerCustId?: string;
   vanNo?: string;
-  vanNoLabel?: string;
   saving: boolean;
   error: string | null;
   onClose: () => void;
@@ -126,9 +121,8 @@ export default function PayingBillModal({
   method,
   defaultAmount,
   customerName,
-  customerResaleID,
+  customerCustId,
   vanNo,
-  vanNoLabel = "เลข VANNO",
   saving,
   error,
   onClose,
@@ -405,13 +399,13 @@ export default function PayingBillModal({
             </div>
             <dl className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-2xl border border-slate-100 bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-[auto_minmax(0,1fr)] [&_dd]:min-w-0 [&_dd]:break-words [&_dd]:font-medium [&_dt]:text-slate-500">
               <dt className="col-span-full mb-2 flex items-center gap-2 !text-teal-700 font-semibold"><UserOutlined /> ข้อมูลลูกค้า</dt>
-              <dt>รหัสและชื่อลูกค้า :</dt>
+              <dt>CustID และชื่อลูกค้า :</dt>
               <dd>
-                {maskCustomerId(customerResaleID)} : {customerName}
+                {customerCustId || "-"} : {customerName}
               </dd>
               {vanNo && (
                 <>
-                  <dt>{vanNoLabel} :</dt>
+                  <dt>เลข VANNO :</dt>
                   <dd>{vanNo}</dd>
                 </>
               )}

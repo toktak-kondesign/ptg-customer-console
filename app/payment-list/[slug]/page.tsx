@@ -192,9 +192,14 @@ export default function PaymentAccountDetailPage() {
     // ส่ง resaleID ของบัญชีนั้นไปด้วย — ลูกค้าที่มีหลายนิติบุคคล
     // หน้า detail ต้องใช้ resaleID ให้ตรงกับเจ้าของบัญชี ไม่ใช่ของ session เสมอไป
     const accountResaleID = account.ResaleID?.trim();
-    const query = accountResaleID
-      ? `?resaleID=${encodeURIComponent(accountResaleID)}`
-      : "";
+    const accountCustID = account.CustID?.trim();
+    if (!accountCustID) {
+      alert("ไม่พบรหัสลูกค้าของบัญชีที่เลือก");
+      return;
+    }
+    const queryParams = new URLSearchParams({ custId: accountCustID });
+    if (accountResaleID) queryParams.set("resaleID", accountResaleID);
+    const query = `?${queryParams.toString()}`;
     router.push(
       `/payment-list/${params.slug}/${encodeURIComponent(vannew)}${query}`,
     );

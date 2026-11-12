@@ -132,7 +132,8 @@ export default function VanAccountDetailPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
-  const accountCustId = rows[0]?.CustID?.trim() ||
+  const accountCustId =
+    searchParams.get("custId")?.trim() ||
     (!isVanAccountNumber ? vanNoRaw.trim() : "");
 
   useEffect(() => {
@@ -776,9 +777,8 @@ export default function VanAccountDetailPage() {
         method={modalMethod}
         defaultAmount={selectedTotal}
         customerName={customerName}
-        customerResaleID={customerResaleID}
-        vanNo={vanNoRaw.trim() ? vanNoDisplay : undefined}
-        vanNoLabel={isVanAccountNumber ? "เลข VANNO" : "รหัสลูกค้า"}
+        customerCustId={accountCustId}
+        vanNo={isVanAccountNumber ? vanNoDisplay : "-"}
         saving={isSaving}
         error={saveError}
         onClose={closeModal}
