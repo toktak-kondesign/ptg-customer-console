@@ -87,6 +87,30 @@ export async function createCardOtuService(
   }
 }
 
+export async function sendCardOtuSmsService(
+  phoneNumber: string,
+  message: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${BASE_PATH}/api/sms/send-phone`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, message }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      return {
+        success: false,
+        error: data.error ?? `Failed to send SMS: ${response.status}`,
+      };
+    }
+    return { success: true };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { success: false, error: `An error occurred while sending SMS: ${msg}` };
+  }
+}
+
 export async function getRequestProductsService(
   custID: string,
 ): Promise<RequestProductsResponse> {

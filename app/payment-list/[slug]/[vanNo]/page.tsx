@@ -15,7 +15,6 @@ import { getCompanyBySlug, formatAmount } from "../../data";
 import {
   getAuthUser,
   getCustomerInfo,
-  getSessionCustomerId,
   CUSTOMER_SESSION_CHANGED_EVENT,
 } from "@/lib/auth";
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
@@ -107,7 +106,11 @@ export default function VanAccountDetailPage() {
   const companyCode = COMPANY_BY_SLUG[params.slug];
   const vanNoRaw = decodeURIComponent(params.vanNo || "");
   const vanNoDigits = vanNoRaw.replace(/\D/g, "");
-  const vanNoDisplay = vanNoDigits ? formatVanNumber(vanNoDigits) : vanNoRaw;
+  const isVanAccountNumber =
+    /^\d+$/.test(vanNoRaw.trim()) && vanNoDigits.length === 10;
+  const vanNoDisplay = isVanAccountNumber
+    ? formatVanNumber(vanNoDigits)
+    : vanNoRaw;
 
   const [sessionInfo, setSessionInfo] = useState<Record<
     string,
@@ -129,12 +132,12 @@ export default function VanAccountDetailPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
-  const [custId, setCustId] = useState("");
+  const accountCustId = rows[0]?.CustID?.trim() ||
+    (!isVanAccountNumber ? vanNoRaw.trim() : "");
 
   useEffect(() => {
     const handleChanged = () => {
       setSessionInfo(getCustomerInfo());
-      setCustId(getSessionCustomerId());
     };
     handleChanged();
     window.addEventListener(CUSTOMER_SESSION_CHANGED_EVENT, handleChanged);
@@ -300,6 +303,10 @@ export default function VanAccountDetailPage() {
     if (!modalMethod || !companyCode) return;
     const user = getAuthUser();
     const username = user?.username ?? "";
+    if (!accountCustId) {
+      setSaveError("ไม่พบรหัสลูกค้าของบัญชีที่เลือก กรุณาโหลดข้อมูลใหม่");
+      return;
+    }
 
     setIsSaving(true);
     setSaveError(null);
@@ -307,9 +314,9 @@ export default function VanAccountDetailPage() {
       method: modalMethod,
       company: companyCode,
       custId13: resaleID,
-      custId,
+      custId: accountCustId,
       branchId: branchID,
-      vanNo: vanNoDigits,
+      vanNo: isVanAccountNumber ? vanNoDigits : "0000000",
       userCreate: username,
       receiptPerson: modalMethod.startsWith("cheque")
         ? user?.personName?.trim() || ""
@@ -769,6 +776,9 @@ export default function VanAccountDetailPage() {
         method={modalMethod}
         defaultAmount={selectedTotal}
         customerName={customerName}
+        customerResaleID={customerResaleID}
+        vanNo={vanNoRaw.trim() ? vanNoDisplay : undefined}
+        vanNoLabel={isVanAccountNumber ? "เลข VANNO" : "รหัสลูกค้า"}
         saving={isSaving}
         error={saveError}
         onClose={closeModal}

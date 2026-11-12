@@ -20,7 +20,7 @@ import {
   SwapOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { img } from "@/lib/env";
+import { BASE_PATH, img } from "@/lib/env";
 import { downloadNodeAsImage } from "@/lib/download-node-image";
 import {
   getAuthUser,
@@ -36,6 +36,7 @@ import {
   checkCarService,
   createCardOtuService,
   getRequestProductsService,
+  sendCardOtuSmsService,
 } from "@/services/customer/card-otu-request";
 import type { CustomerAccountRow } from "@/interfaces/customer";
 import type { PendingBillRow } from "@/interfaces/card-temp";
@@ -469,6 +470,14 @@ export default function RequestCardModal({
       createDate: res.createDate ?? new Date().toISOString(),
     });
     setStep(4);
+
+    if (phoneValue) {
+      const cardUrl = `${window.location.origin}${BASE_PATH}/truck-card/${res.idCode}`;
+      void sendCardOtuSmsService(
+        phoneValue,
+        `บัตรรถบรรทุกชั่วคราว ${cardUrl} สามารถนำไปใช้แทนกรณีลืมบัตรรถบรรทุก เงื่อนไขเป็นไปตามที่บริษัทกำหนด`,
+      );
+    }
   };
 
   const handleDownloadImage = async () => {

@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BankOutlined, CloseOutlined } from "@ant-design/icons";
+import { BankOutlined, CloseOutlined, FileProtectOutlined, UserOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { DatePicker, Modal, Select } from "antd";
 import thTH from "antd/es/date-picker/locale/th_TH";
 import dayjs from "dayjs";
 import buddhistEra from "dayjs/plugin/buddhistEra";
 import "dayjs/locale/th";
 import { BANKS, getBankLogo, getBankName } from "@/lib/banks";
-import { toDateInputValue, toTimeInputValue } from "@/lib/format";
+import {
+  maskCustomerId,
+  toDateInputValue,
+  toTimeInputValue,
+} from "@/lib/format";
 import type {
   PaymentMethodKey,
   PayingBillFormValues,
@@ -21,6 +25,9 @@ interface PayingBillModalProps {
   /** ยอดรวมของรายการที่เลือกไว้ ใช้เป็นค่าตั้งต้นของช่องจำนวนเงิน */
   defaultAmount: number;
   customerName: string;
+  customerResaleID?: string;
+  vanNo?: string;
+  vanNoLabel?: string;
   saving: boolean;
   error: string | null;
   onClose: () => void;
@@ -119,6 +126,9 @@ export default function PayingBillModal({
   method,
   defaultAmount,
   customerName,
+  customerResaleID,
+  vanNo,
+  vanNoLabel = "เลข VANNO",
   saving,
   error,
   onClose,
@@ -135,7 +145,8 @@ export default function PayingBillModal({
   const [billDate, setBillDate] = useState(toDateInputValue());
   const [tranferTime, setTranferTime] = useState(toTimeInputValue());
   const [localError, setLocalError] = useState<string | null>(null);
-  const [pendingCheque, setPendingCheque] = useState<PayingBillFormValues | null>(null);
+  const [pendingCheque, setPendingCheque] =
+    useState<PayingBillFormValues | null>(null);
 
   // รีเซ็ตฟอร์มทุกครั้งที่เปิด modal ใหม่ / เปลี่ยนวิธีชำระ
   useEffect(() => {
@@ -187,217 +198,261 @@ export default function PayingBillModal({
 
   return (
     <>
-    <Modal
-      title={
-        <span className="text-xl font-medium text-gray-800">กรอกข้อมูล</span>
-      }
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      centered
-      width={method === "van" ? 640 : 760}
-      closeIcon={<CloseOutlined className="text-gray-400" />}
-      mask={{ closable: !saving }}
-    >
-      <div className="pt-4">
-        {method === "van" && (
-          <div className="flex items-center justify-center gap-4">
-            <label className="text-base text-gray-700">
-              กรอกจำนวนเงินที่ต้องการชำระ :
-            </label>
-            <div className="w-80">
-              <AmountInput value={amount} onChange={setAmount} />
+      <Modal
+        title={
+          <span className="text-xl font-medium text-gray-800">กรอกข้อมูล</span>
+        }
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        centered
+        width={method === "van" ? 640 : 760}
+        closeIcon={<CloseOutlined className="text-gray-400" />}
+        mask={{ closable: !saving }}
+      >
+        <div className="pt-4">
+          {method === "van" && (
+            <div className="flex items-center justify-center gap-4">
+              <label className="text-base text-gray-700">
+                กรอกจำนวนเงินที่ต้องการชำระ :
+              </label>
+              <div className="w-80">
+                <AmountInput value={amount} onChange={setAmount} />
+              </div>
+            </div>
+          )}
+
+          {method === "bank" && (
+            <>
+              <p className="mb-3 text-lg text-gray-800">โอนเงินผ่านธนาคาร :</p>
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex-1">
+                  <BankPicker
+                    label="โอนจาก :"
+                    value={bankFrom}
+                    onChange={setBankFrom}
+                  />
+                </div>
+                <span className="text-2xl text-gray-400">&rarr;</span>
+                <div className="flex-1">
+                  <BankPicker
+                    label="ไปยัง :"
+                    value={bankTo}
+                    onChange={setBankTo}
+                  />
+                </div>
+              </div>
+
+              <p className="mb-3 text-lg text-gray-800">รายละเอียดการโอน :</p>
+              <div className="mb-3 flex items-center gap-4 rounded-lg border border-gray-200 p-4">
+                <span className="text-base text-gray-600">จำนวนเงิน :</span>
+                <div className="ml-auto w-72">
+                  <AmountInput value={amount} onChange={setAmount} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-base text-gray-600">
+                    วันที่ทำรายการโอนชำระ :
+                  </p>
+                  <DatePicker
+                    value={dayjs(billDate)}
+                    onChange={(date) => {
+                      if (date) setBillDate(date.format("YYYY-MM-DD"));
+                    }}
+                    format="D MMMM BBBB"
+                    locale={thaiPickerLocale}
+                    allowClear={false}
+                    size="large"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 p-4">
+                  <div>
+                    <p className="text-base text-gray-600">เวลาที่โอนชำระ :</p>
+                    <input
+                      type="time"
+                      value={tranferTime}
+                      onChange={(event) => setTranferTime(event.target.value)}
+                      className="mt-1 rounded-md border border-gray-300 px-3 py-1.5 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                  <span className="mt-6 text-base text-gray-600">น.</span>
+                </div>
+              </div>
+            </>
+          )}
+
+          {isCheque && (
+            <>
+              <p className="mb-3 text-lg text-gray-800">
+                รายละเอียดเช็ค (นำฝาก
+                {receiveBank === "UOB" ? "ธนาคารยูโอบี" : "ธนาคารกรุงไทย"}) :
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="mb-1 text-base text-gray-600">จำนวนเงิน :</p>
+                  <AmountInput value={amount} onChange={setAmount} />
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="mb-1 text-base text-gray-600">เลขที่เช็ค :</p>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={checkNo}
+                    onChange={(event) =>
+                      setCheckNo(
+                        event.target.value.replace(/\D/g, "").slice(0, 30),
+                      )
+                    }
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="mb-1 text-base text-gray-600">
+                    ธนาคารเจ้าของเช็ค :
+                  </p>
+                  <Select
+                    value={bankFrom || undefined}
+                    onChange={setBankFrom}
+                    options={bankSelectOptions}
+                    placeholder="เลือกธนาคาร"
+                    className="w-full"
+                  />
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="mb-1 text-base text-gray-600">สาขา :</p>
+                  <input
+                    type="text"
+                    value={bankBranch}
+                    onChange={(event) =>
+                      setBankBranch(event.target.value.slice(0, 100))
+                    }
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="mb-1 text-base text-gray-600">วันที่บนเช็ค :</p>
+                  <DatePicker
+                    value={dayjs(billDate)}
+                    onChange={(date) => {
+                      if (date) setBillDate(date.format("YYYY-MM-DD"));
+                    }}
+                    format="D MMMM BBBB"
+                    locale={thaiPickerLocale}
+                    allowClear={false}
+                    size="large"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {customerName && method === "bank" && (
+            <p className="mt-3 text-sm text-gray-400">
+              ผู้โอน : {customerName}
+            </p>
+          )}
+
+          {message && (
+            <p className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
+              {message}
+            </p>
+          )}
+
+          <div className="mt-6 flex justify-center">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={saving}
+              className="rounded-md bg-[#1155BB] px-16 py-3 text-lg font-medium text-white transition hover:bg-[#0d47a1] disabled:cursor-not-allowed disabled:bg-gray-300"
+            >
+              {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        title={null}
+        styles={{ container: { borderRadius: 24, padding: 28 }, footer: { marginTop: 24 } }}
+        open={open && pendingCheque !== null}
+        onCancel={() => {
+          if (!saving) setPendingCheque(null);
+        }}
+        onOk={() => {
+          if (pendingCheque && !saving) onSubmit(pendingCheque);
+        }}
+        okText="ยืนยันและส่งข้อมูล"
+        cancelText="ย้อนกลับแก้ไข"
+        confirmLoading={saving}
+        okButtonProps={{ size: "large", className: "!rounded-xl !bg-teal-600 !border-teal-600 !px-6" }}
+        cancelButtonProps={{ disabled: saving, size: "large", className: "!rounded-xl" }}
+        closable={!saving}
+        mask={{ closable: !saving }}
+        keyboard={!saving}
+        centered
+        width={600}
+      >
+        {pendingCheque && (
+          <div className="space-y-5 pt-3">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal-600 text-4xl text-white shadow-lg shadow-teal-100 ring-8 ring-teal-50">
+                <FileProtectOutlined />
+              </div>
+              <h2 className="mt-6 text-2xl font-semibold text-slate-900">กรุณาตรวจสอบข้อมูล</h2>
+              <p className="mt-2 text-sm text-slate-500">ตรวจสอบรายละเอียดใบนำฝากเช็คก่อนยืนยันส่งข้อมูล</p>
+            </div>
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-2xl border border-slate-100 bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-[auto_minmax(0,1fr)] [&_dd]:min-w-0 [&_dd]:break-words [&_dd]:font-medium [&_dt]:text-slate-500">
+              <dt className="col-span-full mb-2 flex items-center gap-2 !text-teal-700 font-semibold"><UserOutlined /> ข้อมูลลูกค้า</dt>
+              <dt>รหัสและชื่อลูกค้า :</dt>
+              <dd>
+                {maskCustomerId(customerResaleID)} : {customerName}
+              </dd>
+              {vanNo && (
+                <>
+                  <dt>{vanNoLabel} :</dt>
+                  <dd>{vanNo}</dd>
+                </>
+              )}
+            </dl>
+            <dl className="grid grid-cols-1 gap-x-4 gap-y-3 rounded-2xl border border-slate-200 p-5 text-sm text-slate-700 sm:grid-cols-[auto_minmax(0,1fr)] [&_dd]:min-w-0 [&_dd]:break-words [&_dd]:font-medium [&_dt]:text-slate-500">
+              <dt className="col-span-full mb-1 flex items-center gap-2 !text-teal-700 font-semibold"><BankOutlined /> รายละเอียดเช็ค</dt>
+              <dt>ธนาคารที่นำฝาก :</dt>
+              <dd>{getBankName(pendingCheque.bankReceipt)}</dd>
+              <dt className="self-center">จำนวนเงิน :</dt>
+              <dd className="text-2xl font-semibold tabular-nums text-teal-700">
+                {pendingCheque.amount.toLocaleString("th-TH", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                บาท
+              </dd>
+              <dt>เลขที่เช็ค :</dt>
+              <dd className="break-all">{pendingCheque.checkNo}</dd>
+              <dt>ธนาคารเจ้าของเช็ค :</dt>
+              <dd>{getBankName(pendingCheque.bankType)}</dd>
+              <dt>สาขา :</dt>
+              <dd className="break-all">{pendingCheque.bankBranch}</dd>
+              <dt>วันที่บนเช็ค :</dt>
+              <dd>
+                {dayjs(pendingCheque.billDate)
+                  .locale("th")
+                  .format("D MMMM BBBB")}
+              </dd>
+            </dl>
+            {error && (
+              <p className="text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            )}
+            <div className="flex items-start gap-3 rounded-xl border border-orange-100 bg-orange-50 px-4 py-3 text-sm font-medium text-orange-600">
+              <ExclamationCircleOutlined className="mt-0.5 text-lg" />
+              <p>ถ้าหากข้อมูลถูกต้องแล้วระบบจะส่งข้อมูลไปยังแผนกการเงิน</p>
             </div>
           </div>
         )}
-
-        {method === "bank" && (
-          <>
-            <p className="mb-3 text-lg text-gray-800">โอนเงินผ่านธนาคาร :</p>
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex-1">
-                <BankPicker
-                  label="โอนจาก :"
-                  value={bankFrom}
-                  onChange={setBankFrom}
-                />
-              </div>
-              <span className="text-2xl text-gray-400">&rarr;</span>
-              <div className="flex-1">
-                <BankPicker
-                  label="ไปยัง :"
-                  value={bankTo}
-                  onChange={setBankTo}
-                />
-              </div>
-            </div>
-
-            <p className="mb-3 text-lg text-gray-800">รายละเอียดการโอน :</p>
-            <div className="mb-3 flex items-center gap-4 rounded-lg border border-gray-200 p-4">
-              <span className="text-base text-gray-600">จำนวนเงิน :</span>
-              <div className="ml-auto w-72">
-                <AmountInput value={amount} onChange={setAmount} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="text-base text-gray-600">
-                  วันที่ทำรายการโอนชำระ :
-                </p>
-                <DatePicker
-                  value={dayjs(billDate)}
-                  onChange={(date) => {
-                    if (date) setBillDate(date.format("YYYY-MM-DD"));
-                  }}
-                  format="D MMMM BBBB"
-                  locale={thaiPickerLocale}
-                  allowClear={false}
-                  size="large"
-                  className="mt-1"
-                />
-              </div>
-              <div className="flex items-center gap-2 rounded-lg border border-gray-200 p-4">
-                <div>
-                  <p className="text-base text-gray-600">เวลาที่โอนชำระ :</p>
-                  <input
-                    type="time"
-                    value={tranferTime}
-                    onChange={(event) => setTranferTime(event.target.value)}
-                    className="mt-1 rounded-md border border-gray-300 px-3 py-1.5 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
-                  />
-                </div>
-                <span className="mt-6 text-base text-gray-600">น.</span>
-              </div>
-            </div>
-          </>
-        )}
-
-        {isCheque && (
-          <>
-            <p className="mb-3 text-lg text-gray-800">
-              รายละเอียดเช็ค (นำฝาก
-              {receiveBank === "UOB" ? "ธนาคารยูโอบี" : "ธนาคารกรุงไทย"}) :
-            </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="mb-1 text-base text-gray-600">จำนวนเงิน :</p>
-                <AmountInput value={amount} onChange={setAmount} />
-              </div>
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="mb-1 text-base text-gray-600">เลขที่เช็ค :</p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={checkNo}
-                  onChange={(event) =>
-                    setCheckNo(
-                      event.target.value.replace(/\D/g, "").slice(0, 30),
-                    )
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="mb-1 text-base text-gray-600">
-                  ธนาคารเจ้าของเช็ค :
-                </p>
-                <Select
-                  value={bankFrom || undefined}
-                  onChange={setBankFrom}
-                  options={bankSelectOptions}
-                  placeholder="เลือกธนาคาร"
-                  className="w-full"
-                />
-              </div>
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="mb-1 text-base text-gray-600">สาขา :</p>
-                <input
-                  type="text"
-                  value={bankBranch}
-                  onChange={(event) =>
-                    setBankBranch(event.target.value.slice(0, 100))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-lg text-gray-700 focus:border-blue-500 focus:outline-none"
-                />
-              </div>
-              <div className="rounded-lg border border-gray-200 p-4">
-                <p className="mb-1 text-base text-gray-600">วันที่บนเช็ค :</p>
-                <DatePicker
-                  value={dayjs(billDate)}
-                  onChange={(date) => {
-                    if (date) setBillDate(date.format("YYYY-MM-DD"));
-                  }}
-                  format="D MMMM BBBB"
-                  locale={thaiPickerLocale}
-                  allowClear={false}
-                  size="large"
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </>
-        )}
-
-        {customerName && method === "bank" && (
-          <p className="mt-3 text-sm text-gray-400">ผู้โอน : {customerName}</p>
-        )}
-
-        {message && (
-          <p className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
-            {message}
-          </p>
-        )}
-
-        <div className="mt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={saving}
-            className="rounded-md bg-[#1155BB] px-16 py-3 text-lg font-medium text-white transition hover:bg-[#0d47a1] disabled:cursor-not-allowed disabled:bg-gray-300"
-          >
-            {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
-          </button>
-        </div>
-      </div>
-    </Modal>
-    <Modal
-      title="กรุณาตรวจสอบ ข้อมูล"
-      open={open && pendingCheque !== null}
-      onCancel={() => { if (!saving) setPendingCheque(null); }}
-      onOk={() => { if (pendingCheque && !saving) onSubmit(pendingCheque); }}
-      okText="ยืนยัน"
-      cancelText="ย้อนกลับ"
-      confirmLoading={saving}
-      cancelButtonProps={{ disabled: saving }}
-      closable={!saving}
-      mask={{ closable: !saving }}
-      keyboard={!saving}
-      centered
-      width={600}
-    >
-      {pendingCheque && (
-        <div className="space-y-4 pt-4">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-base">
-            <dt>ธนาคารที่นำฝาก :</dt>
-            <dd>{getBankName(pendingCheque.bankReceipt)}</dd>
-            <dt>จำนวนเงิน :</dt>
-            <dd>{pendingCheque.amount.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} บาท</dd>
-            <dt>เลขที่เช็ค :</dt>
-            <dd className="break-all">{pendingCheque.checkNo}</dd>
-            <dt>ธนาคารเจ้าของเช็ค :</dt>
-            <dd>{getBankName(pendingCheque.bankType)}</dd>
-            <dt>สาขา :</dt>
-            <dd className="break-all">{pendingCheque.bankBranch}</dd>
-            <dt>วันที่บนเช็ค :</dt>
-            <dd>{dayjs(pendingCheque.billDate).locale("th").format("D MMMM BBBB")}</dd>
-          </dl>
-          {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
-          <p className="rounded-lg bg-orange-50 px-4 py-3 font-semibold text-orange-600">
-            ถ้าหากข้อมูลถูกต้องแล้วระบบจะส่งข้อมูลไปยังแผนกการเงิน
-          </p>
-        </div>
-      )}
-    </Modal>
+      </Modal>
     </>
   );
 }
