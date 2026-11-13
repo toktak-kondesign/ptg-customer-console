@@ -39,6 +39,8 @@ export interface CreatePayingBillRequest {
   bankBranch?: string;
   userCreate: string;
   receiptPerson?: string;
+  /** มีค่าเฉพาะ staff (EMP) ที่สวมสิทธิ์ลูกค้า เพื่อให้ API บันทึกสถานะรับเช็ค */
+  staffViewedCustomerId?: string;
 }
 
 /** ค่าจากฟอร์มใน PayingBillModal ที่ส่งให้ API (ส่วนที่เหลือมาจาก session/page) */

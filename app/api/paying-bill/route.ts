@@ -89,8 +89,10 @@ function validate(body: Partial<CreatePayingBillRequest>): string | null {
   if (!body.billDate || !toDateOnly(body.billDate)) return "กรุณาระบุวันที่ให้ถูกต้อง";
 
   if (body.method.startsWith("cheque")) {
-    if (!body.receiptPerson?.trim()) return "ไม่พบชื่อผู้ทำรายการ กรุณาเข้าสู่ระบบใหม่";
-    if (body.receiptPerson.trim().length > 100) return "ชื่อผู้ทำรายการต้องไม่เกิน 100 ตัวอักษร";
+    if (body.staffViewedCustomerId?.trim()) {
+      if (!body.receiptPerson?.trim()) return "ไม่พบชื่อผู้ทำรายการ กรุณาเข้าสู่ระบบใหม่";
+      if (body.receiptPerson.trim().length > 100) return "ชื่อผู้ทำรายการต้องไม่เกิน 100 ตัวอักษร";
+    }
     if (!body.checkNo?.trim()) return "กรุณาระบุเลขที่เช็ค";
     if (!body.bankBranch?.trim()) return "กรุณาระบุสาขาของธนาคารเจ้าของเช็ค";
   }
@@ -112,13 +114,15 @@ export async function POST(request: Request): Promise<Response> {
   if (invalid) return jsonResponse({ success: false, error: invalid }, 400);
 
   const isCheque = body.method!.startsWith("cheque");
+  const recordChequeReceipt =
+    isCheque && Boolean(body.staffViewedCustomerId?.trim());
   const billDate = toDateOnly(body.billDate!)!;
   const receiveDate = toDateOnly(new Date().toISOString().slice(0, 10))!;
 
   try {
     const runno = await generateRunno(isCheque);
     const created = await prismaDataCenter.$transaction(async (tx) => {
-      const receiptDate = isCheque
+      const receiptDate = recordChequeReceipt
         ? (await tx.$queryRaw<{ receiptDate: Date }[]>`SELECT GETDATE() AS receiptDate`)[0].receiptDate
         : undefined;
 
@@ -141,7 +145,7 @@ export async function POST(request: Request): Promise<Response> {
           receiveDate,
           bankBranch: body.bankBranch?.trim() || null,
           userCreate: body.userCreate!.trim(),
-          ...(isCheque && {
+          ...(recordChequeReceipt && {
             chequeStatus: "1",
             dateChequeReceipt01: receiptDate,
             receiptPerson: body.receiptPerson!.trim(),

@@ -20,6 +20,7 @@ import {
 import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
 import { getLogPayCustService } from "@/services/customer/log-pay-cust";
 import { createPayingBillService } from "@/services/customer/paying-bill";
+import { getStaffViewedCustomerId } from "@/services/approve-link";
 import { BANKS } from "@/lib/banks";
 import { maskCustomerId } from "@/lib/format";
 import { img } from "@/lib/env";
@@ -304,6 +305,9 @@ export default function VanAccountDetailPage() {
     if (!modalMethod || !companyCode) return;
     const user = getAuthUser();
     const username = user?.username ?? "";
+    const staffViewedCustomerId = getStaffViewedCustomerId();
+    const recordChequeReceipt =
+      modalMethod.startsWith("cheque") && Boolean(staffViewedCustomerId);
     if (!accountCustId) {
       setSaveError("ไม่พบรหัสลูกค้าของบัญชีที่เลือก กรุณาโหลดข้อมูลใหม่");
       return;
@@ -319,8 +323,11 @@ export default function VanAccountDetailPage() {
       branchId: branchID,
       vanNo: isVanAccountNumber ? vanNoDigits : "0000000",
       userCreate: username,
-      receiptPerson: modalMethod.startsWith("cheque")
+      receiptPerson: recordChequeReceipt
         ? user?.personName?.trim() || ""
+        : undefined,
+      staffViewedCustomerId: recordChequeReceipt
+        ? staffViewedCustomerId
         : undefined,
       ...values,
     });
