@@ -323,6 +323,7 @@ export default function VanAccountDetailPage() {
       branchId: branchID,
       vanNo: isVanAccountNumber ? vanNoDigits : "0000000",
       userCreate: username,
+      userType: user?.UserType,
       receiptPerson: recordChequeReceipt
         ? user?.personName?.trim() || ""
         : undefined,

@@ -38,6 +38,7 @@ export interface CreatePayingBillRequest {
   tranferTime: string;
   bankBranch?: string;
   userCreate: string;
+  userType?: "EMP" | "CUS";
   receiptPerson?: string;
   /** มีค่าเฉพาะ staff (EMP) ที่สวมสิทธิ์ลูกค้า เพื่อให้ API บันทึกสถานะรับเช็ค */
   staffViewedCustomerId?: string;
