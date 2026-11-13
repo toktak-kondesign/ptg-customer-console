@@ -53,6 +53,12 @@ const WarningIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
   </svg>
 );
 
+function maskCardId(value: string): string {
+  const cardId = value.trim();
+  if (!cardId || cardId.length <= 3) return cardId || "-";
+  return `${"x".repeat(cardId.length - 3)}${cardId.slice(-3)}`;
+}
+
 const CancelButton = ({
   plate,
   cardId,
@@ -649,7 +655,7 @@ export default function TruckListPage() {
                           </td>
                           {/* <td className="px-4 py-3 text-gray-500">{t.RunID}</td> */}
                           <td className="px-4 py-3 font-mono text-gray-700">
-                            {t.CardID}
+                            {maskCardId(t.CardID)}
                           </td>
                           <td className="px-4 py-3 text-gray-500">
                             {t.CustID}
