@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { BankOutlined, CloseOutlined, FileProtectOutlined, UserOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import {
+  BankOutlined,
+  CloseOutlined,
+  FileProtectOutlined,
+  UserOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import { DatePicker, Modal, Select } from "antd";
 import thTH from "antd/es/date-picker/locale/th_TH";
 import dayjs from "dayjs";
@@ -326,7 +332,9 @@ export default function PayingBillModal({
                   />
                 </div>
                 <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="mb-1 text-base text-gray-600">วันที่บนเช็ค :</p>
+                  <p className="mb-1 text-base text-gray-600">
+                    วันที่ครบกำหนด :
+                  </p>
                   <DatePicker
                     value={dayjs(billDate)}
                     onChange={(date) => {
@@ -369,7 +377,10 @@ export default function PayingBillModal({
       </Modal>
       <Modal
         title={null}
-        styles={{ container: { borderRadius: 24, padding: 28 }, footer: { marginTop: 24 } }}
+        styles={{
+          container: { borderRadius: 24, padding: 28 },
+          footer: { marginTop: 24 },
+        }}
         open={open && pendingCheque !== null}
         onCancel={() => {
           if (!saving) setPendingCheque(null);
@@ -380,8 +391,15 @@ export default function PayingBillModal({
         okText="ยืนยันและส่งข้อมูล"
         cancelText="ย้อนกลับแก้ไข"
         confirmLoading={saving}
-        okButtonProps={{ size: "large", className: "!rounded-xl !bg-teal-600 !border-teal-600 !px-6" }}
-        cancelButtonProps={{ disabled: saving, size: "large", className: "!rounded-xl" }}
+        okButtonProps={{
+          size: "large",
+          className: "!rounded-xl !bg-blue-900 !border-blue-600 !px-6",
+        }}
+        cancelButtonProps={{
+          disabled: saving,
+          size: "large",
+          className: "!rounded-xl",
+        }}
         closable={!saving}
         mask={{ closable: !saving }}
         keyboard={!saving}
@@ -391,14 +409,20 @@ export default function PayingBillModal({
         {pendingCheque && (
           <div className="space-y-5 pt-3">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-teal-600 text-4xl text-white shadow-lg shadow-teal-100 ring-8 ring-teal-50">
+              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-blue-900 text-4xl text-white shadow-lg shadow-blue-100 ring-8 ring-blue-50">
                 <FileProtectOutlined />
               </div>
-              <h2 className="mt-6 text-2xl font-semibold text-slate-900">กรุณาตรวจสอบข้อมูล</h2>
-              <p className="mt-2 text-sm text-slate-500">ตรวจสอบรายละเอียดใบนำฝากเช็คก่อนยืนยันส่งข้อมูล</p>
+              <h2 className="mt-6 text-2xl font-semibold text-slate-900">
+                กรุณาตรวจสอบข้อมูล
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                ตรวจสอบรายละเอียดใบนำฝากเช็คก่อนยืนยันส่งข้อมูล
+              </p>
             </div>
             <dl className="grid grid-cols-1 gap-x-4 gap-y-2 rounded-2xl border border-slate-100 bg-slate-50 p-5 text-sm text-slate-700 sm:grid-cols-[auto_minmax(0,1fr)] [&_dd]:min-w-0 [&_dd]:break-words [&_dd]:font-medium [&_dt]:text-slate-500">
-              <dt className="col-span-full mb-2 flex items-center gap-2 !text-teal-700 font-semibold"><UserOutlined /> ข้อมูลลูกค้า</dt>
+              <dt className="col-span-full mb-2 flex items-center gap-2 !text-blue-700 font-semibold">
+                <UserOutlined /> ข้อมูลลูกค้า
+              </dt>
               <dt>CustID และชื่อลูกค้า :</dt>
               <dd>
                 {customerCustId || "-"} : {customerName}
@@ -411,11 +435,13 @@ export default function PayingBillModal({
               )}
             </dl>
             <dl className="grid grid-cols-1 gap-x-4 gap-y-3 rounded-2xl border border-slate-200 p-5 text-sm text-slate-700 sm:grid-cols-[auto_minmax(0,1fr)] [&_dd]:min-w-0 [&_dd]:break-words [&_dd]:font-medium [&_dt]:text-slate-500">
-              <dt className="col-span-full mb-1 flex items-center gap-2 !text-teal-700 font-semibold"><BankOutlined /> รายละเอียดเช็ค</dt>
+              <dt className="col-span-full mb-1 flex items-center gap-2 !text-blue-700 font-semibold">
+                <BankOutlined /> รายละเอียดเช็ค
+              </dt>
               <dt>ธนาคารที่นำฝาก :</dt>
               <dd>{getBankName(pendingCheque.bankReceipt)}</dd>
               <dt className="self-center">จำนวนเงิน :</dt>
-              <dd className="text-2xl font-semibold tabular-nums text-teal-700">
+              <dd className="text-2xl font-semibold tabular-nums text-blue-700">
                 {pendingCheque.amount.toLocaleString("th-TH", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -428,7 +454,7 @@ export default function PayingBillModal({
               <dd>{getBankName(pendingCheque.bankType)}</dd>
               <dt>สาขา :</dt>
               <dd className="break-all">{pendingCheque.bankBranch}</dd>
-              <dt>วันที่บนเช็ค :</dt>
+              <dt>วันที่ครบกำหนด :</dt>
               <dd>
                 {dayjs(pendingCheque.billDate)
                   .locale("th")
