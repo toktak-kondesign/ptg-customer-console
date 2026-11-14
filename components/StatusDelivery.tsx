@@ -192,7 +192,10 @@ export default function StatusDelivery() {
                       ปริมาณ (ลบ.ม.)
                     </div>
                     <div className="font-bold text-lg text-gray-900 mb-2">
-                      {order.VolSend}
+                      {order.VolSend.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </div>
                   </div>
                   {order.custsign === 1 && (
@@ -278,7 +281,10 @@ export default function StatusDelivery() {
                         {order.CarDriverName}
                       </td>
                       <td className="px-4 py-3 text-right font-bold text-gray-900">
-                        {order.VolSend}
+                        {order.VolSend.toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {order.custsign === 1 && (
