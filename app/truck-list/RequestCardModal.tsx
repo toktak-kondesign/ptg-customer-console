@@ -43,7 +43,10 @@ import type { PendingBillRow } from "@/interfaces/card-temp";
 import { resolveCustomerProfile } from "@/app/customer/[customerId]/data";
 import type { RequestProductItem } from "./data";
 
-const isStoneProduct = (item: RequestProductItem) => item.name.includes("หิน");
+const STONE_GROUP = "กลุ่มหิน";
+
+const isStoneProduct = (item: RequestProductItem) =>
+  canonicalGroup(item.group) === STONE_GROUP;
 
 const STONE_MAX_QTY = 40;
 
@@ -104,13 +107,13 @@ const GROUP_NAME_MAP: Record<string, string> = {
 const canonicalGroup = (name: string) => GROUP_NAME_MAP[name] ?? name;
 
 const GROUP_STYLES: Record<string, string> = {
-  กลุ่มหิน:
+  [STONE_GROUP]:
     "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
   [MERGED_CONCRETE_GROUP]: "bg-blue-100",
 };
 
 const GROUP_IMAGES: Record<string, string> = {
-  กลุ่มหิน: "/images/stone_group.png",
+  [STONE_GROUP]: "/images/stone_group.png",
   [MERGED_CONCRETE_GROUP]: "/images/concrete_mixed_group-v2.png",
 };
 
@@ -736,10 +739,12 @@ export default function RequestCardModal({
                   รับได้ไม่เกินปริมาณที่มี
                 </span>
               </h3>
-              <p className="mt-1 text-sm text-red-600">
-                *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
-                สินค้าเท่านั้น และบรรทุกได้ไม่เกิน 40 คิวต่อบัตร
-              </p>
+              {group === STONE_GROUP && (
+                <p className="mt-1 text-sm text-red-600">
+                  *หมายเหตุ : หากต้องการบรรทุกสินค้าประเภทหินจะเลือกสินค้าได้ 1
+                  สินค้าเท่านั้น และบรรทุกได้ไม่เกิน 40 คิวต่อบัตร
+                </p>
+              )}
               <div className="mt-3 flex items-center gap-2">
                 <SearchOutlined />
                 <input
