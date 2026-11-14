@@ -39,17 +39,32 @@ const DELIVERY_NOTE_FOLDERS: Record<string, string> = {
   "TW5410-0014": "BillMONO",
 };
 
-function getDeliveryNoteUrl(order: CustomerOrder): string | null {
-  const folder =
+const DELIVERY_NOTE_FOLDER_ORDER = [
+  "BillPTG",
+  "BillMix",
+  "BillMONO",
+  "Bill24",
+  "BillAKE",
+];
+
+function getDeliveryNoteCandidates(order: CustomerOrder): string[] {
+  const billId = order.BillID?.trim();
+  if (!billId) return [];
+  const preferred =
     DELIVERY_NOTE_FOLDERS[order.TypeProductID?.trim()] ??
     (order.Typename?.includes("ผาทอง24")
       ? "Bill24"
       : order.Typename?.includes("ขนส่ง")
         ? "BillAKE"
         : null);
-  const billId = order.BillID?.trim();
-  if (!folder || !billId) return null;
-  return `${DELIVERY_NOTE_BASE_URL}/${folder}/${encodeURIComponent(billId)}.jpg`;
+  const folders = [
+    ...(preferred ? [preferred] : []),
+    ...DELIVERY_NOTE_FOLDER_ORDER,
+  ];
+  return [...new Set(folders)].map(
+    (folder) =>
+      `${DELIVERY_NOTE_BASE_URL}/${folder}/${encodeURIComponent(billId)}.jpg`,
+  );
 }
 
 type ViewMode = "cards" | "table";
@@ -63,29 +78,37 @@ function DeliveryNoteButton({
   order: CustomerOrder;
   size: number;
   className?: string;
-  onOpen: (order: CustomerOrder) => void;
+  onOpen: (order: CustomerOrder, url: string) => void;
 }) {
-  const [exists, setExists] = useState(order.custsign === 1);
+  const [foundUrl, setFoundUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (exists) return;
-    const url = getDeliveryNoteUrl(order);
-    if (!url) return;
+    const candidates = getDeliveryNoteCandidates(order);
+    if (candidates.length === 0) return;
+    let cancelled = false;
+    let index = 0;
     const probe = new window.Image();
-    probe.onload = () => setExists(true);
-    probe.src = url;
+    const tryNext = () => {
+      if (index < candidates.length) probe.src = candidates[index++];
+    };
+    probe.onload = () => {
+      if (!cancelled) setFoundUrl(probe.src);
+    };
+    probe.onerror = tryNext;
+    tryNext();
     return () => {
+      cancelled = true;
       probe.onload = null;
       probe.onerror = null;
     };
-  }, [order, exists]);
+  }, [order]);
 
-  if (!exists) return null;
+  if (!foundUrl) return null;
   return (
     <Tooltip title="ดูใบส่งสินค้า">
       <button
         type="button"
-        onClick={() => onOpen(order)}
+        onClick={() => onOpen(order, foundUrl)}
         className={className}
       >
         <Image
@@ -104,7 +127,10 @@ export default function StatusDelivery() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [noteOrder, setNoteOrder] = useState<CustomerOrder | null>(null);
+  const [note, setNote] = useState<{
+    order: CustomerOrder;
+    url: string;
+  } | null>(null);
   const [sectionRef, visible] = useVisibleOnce<HTMLElement>();
   const [sessionTick, setSessionTick] = useState(0);
 
@@ -151,7 +177,7 @@ export default function StatusDelivery() {
     };
   }, [visible, sessionTick]);
 
-  const noteUrl = noteOrder ? getDeliveryNoteUrl(noteOrder) : null;
+  const noteUrl = note?.url ?? null;
 
   return (
     <section ref={sectionRef} className="py-12 bg-white">
@@ -247,7 +273,7 @@ export default function StatusDelivery() {
                     order={order}
                     size={32}
                     className="inline-flex ml-auto hover:opacity-70 transition cursor-pointer"
-                    onOpen={setNoteOrder}
+                    onOpen={(order, url) => setNote({ order, url })}
                   />
                 </div>
               ))
@@ -326,7 +352,7 @@ export default function StatusDelivery() {
                           order={order}
                           size={28}
                           className="inline-flex items-center justify-center hover:opacity-70 transition cursor-pointer"
-                          onOpen={setNoteOrder}
+                          onOpen={(order, url) => setNote({ order, url })}
                         />
                       </td>
                     </tr>
@@ -338,9 +364,9 @@ export default function StatusDelivery() {
         )}
 
         <Modal
-          title={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
+          title={`ใบส่งสินค้า ${note?.order.BillID ?? ""}`}
           open={!!noteUrl}
-          onCancel={() => setNoteOrder(null)}
+          onCancel={() => setNote(null)}
           footer={null}
           centered
           width="80%"
@@ -358,7 +384,7 @@ export default function StatusDelivery() {
               </div>
               <img
                 src={noteUrl}
-                alt={`ใบส่งสินค้า ${noteOrder?.BillID ?? ""}`}
+                alt={`ใบส่งสินค้า ${note?.order.BillID ?? ""}`}
                 className="w-full h-auto"
               />
             </>
