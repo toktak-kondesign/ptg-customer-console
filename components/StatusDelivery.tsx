@@ -54,6 +54,51 @@ function getDeliveryNoteUrl(order: CustomerOrder): string | null {
 
 type ViewMode = "cards" | "table";
 
+function DeliveryNoteButton({
+  order,
+  size,
+  className,
+  onOpen,
+}: {
+  order: CustomerOrder;
+  size: number;
+  className?: string;
+  onOpen: (order: CustomerOrder) => void;
+}) {
+  const [exists, setExists] = useState(order.custsign === 1);
+
+  useEffect(() => {
+    if (exists) return;
+    const url = getDeliveryNoteUrl(order);
+    if (!url) return;
+    const probe = new window.Image();
+    probe.onload = () => setExists(true);
+    probe.src = url;
+    return () => {
+      probe.onload = null;
+      probe.onerror = null;
+    };
+  }, [order, exists]);
+
+  if (!exists) return null;
+  return (
+    <Tooltip title="ดูใบส่งสินค้า">
+      <button
+        type="button"
+        onClick={() => onOpen(order)}
+        className={className}
+      >
+        <Image
+          src={img("/images/deliveryNote.svg")}
+          alt="delivery note"
+          width={size}
+          height={size}
+        />
+      </button>
+    </Tooltip>
+  );
+}
+
 export default function StatusDelivery() {
   const [view, setView] = useState<ViewMode>("cards");
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
@@ -198,22 +243,12 @@ export default function StatusDelivery() {
                       })}
                     </div>
                   </div>
-                  {order.custsign === 1 && (
-                    <Tooltip title="ดูใบส่งสินค้า">
-                      <button
-                        type="button"
-                        onClick={() => setNoteOrder(order)}
-                        className="inline-flex ml-auto hover:opacity-70 transition cursor-pointer"
-                      >
-                        <Image
-                          src={img("/images/deliveryNote.svg")}
-                          alt="devivery note"
-                          width={32}
-                          height={32}
-                        />
-                      </button>
-                    </Tooltip>
-                  )}
+                  <DeliveryNoteButton
+                    order={order}
+                    size={32}
+                    className="inline-flex ml-auto hover:opacity-70 transition cursor-pointer"
+                    onOpen={setNoteOrder}
+                  />
                 </div>
               ))
             )}
@@ -287,22 +322,12 @@ export default function StatusDelivery() {
                         })}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {order.custsign === 1 && (
-                          <Tooltip title="ดูใบส่งสินค้า">
-                            <button
-                              type="button"
-                              onClick={() => setNoteOrder(order)}
-                              className="inline-flex items-center justify-center hover:opacity-70 transition cursor-pointer"
-                            >
-                              <Image
-                                src={img("/images/deliveryNote.svg")}
-                                alt="delivery note"
-                                width={28}
-                                height={28}
-                              />
-                            </button>
-                          </Tooltip>
-                        )}
+                        <DeliveryNoteButton
+                          order={order}
+                          size={28}
+                          className="inline-flex items-center justify-center hover:opacity-70 transition cursor-pointer"
+                          onOpen={setNoteOrder}
+                        />
                       </td>
                     </tr>
                   ))
