@@ -514,7 +514,7 @@ export default function VanAccountDetailPage() {
                       ประเภทสินค้า
                     </th>
                     <th className="text-left font-semibold px-4 py-3">
-                      พนักงาน
+                      หน้างาน
                     </th>
                     <th className="text-right font-semibold px-4 py-3 sticky right-32 z-10 bg-gray-200 w-32">
                       จำนวนเงิน
