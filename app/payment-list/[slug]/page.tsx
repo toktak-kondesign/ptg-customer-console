@@ -398,10 +398,9 @@ export default function PaymentAccountDetailPage() {
                 <tbody className="divide-y divide-gray-100">
                   {visibleAccounts.map((account, index) => {
                     const hasVanNumber = Boolean(account.VANNO);
-                    const dataClass = hasVanNumber
-                      ? (ACCOUNT_COLOR_CLASS[Number(account.iColor1)] ??
-                        "text-gray-500")
-                      : "text-gray-400";
+                    const dataClass =
+                      ACCOUNT_COLOR_CLASS[Number(account.iColor1)] ??
+                      "text-gray-500";
                     return (
                       <tr
                         key={`${account.CustID}-${account.VANNO}-${index}`}
