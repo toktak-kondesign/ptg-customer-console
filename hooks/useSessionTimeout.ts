@@ -169,6 +169,7 @@ export function useSessionTimeout({
     if (!enabled || hasUser) return;
 
     const check = () => {
+      if (new URLSearchParams(window.location.search).has("token")) return;
       if (getAuthUser()) setHasUser(true);
     };
     check();
@@ -203,7 +204,11 @@ export function useSessionTimeout({
     if (!enabled || !initialized) return;
 
     const tick = () => {
-      const remaining = Math.round((expiresAtMs - Date.now()) / 1000);
+      if (new URLSearchParams(window.location.search).has("token")) return;
+      const sharedExpiry = readNumber(STORAGE_KEYS.expiresAt);
+      const lastActivity = readNumber(STORAGE_KEYS.lastActivity);
+      const currentExpiry = sharedExpiry || (lastActivity ? lastActivity + timeoutMs : expiresAtMs);
+      const remaining = Math.round((currentExpiry - Date.now()) / 1000);
       setSecondsLeft(Math.max(0, remaining));
 
       if (remaining <= 0) {
@@ -225,7 +230,7 @@ export function useSessionTimeout({
         tickHandleRef.current = null;
       }
     };
-  }, [enabled, initialized, expiresAtMs, warningShown, warnBeforeSeconds, logout]);
+  }, [enabled, initialized, expiresAtMs, warningShown, warnBeforeSeconds, timeoutMs, logout]);
 
   // Activity listeners
   useEffect(() => {

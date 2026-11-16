@@ -139,12 +139,13 @@ export default function AuthHandler() {
 
         // เก็บ custID ลูกค้าแยกต่างหาก และให้ขั้นตอนถัดไปทำงานด้วย
         // รหัสลูกค้าเหมือนลูกค้า login เอง (null = เคลียร์ค่าเดิม)
-        setViewedCustomerId(staffCid);
-
         const payload = { ...data, token };
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
         setCookie(TOKEN_COOKIE, token!);
         setCookie(USER_COOKIE, JSON.stringify(data));
+        localStorage.removeItem("ptg-session-expires-at");
+        localStorage.setItem("ptg-session-last-activity", String(Date.now()));
+        setViewedCustomerId(staffCid);
 
         setStatus("success");
         setMessage(`ยินดีต้อนรับ ${data.personName || data.custName || ""}`);
