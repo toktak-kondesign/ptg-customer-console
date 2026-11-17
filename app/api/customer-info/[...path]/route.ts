@@ -192,7 +192,10 @@ export async function GET(request: NextRequest): Promise<Response> {
       : Promise.resolve(null);
     const [upstream, imageResult] = await Promise.all([profilePromise, imagePromise]);
 
-    if (normalizedPath === "place-bill-pdf") {
+    if (
+      normalizedPath === "place-bill-pdf" ||
+      normalizedPath === "etax-invoice-pdf"
+    ) {
       const headers = new Headers({
         "Content-Type":
           upstream.headers.get("content-type") ?? "application/pdf",

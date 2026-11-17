@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   notFound,
   useParams,
@@ -9,6 +9,8 @@ import {
 } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { Button, Modal } from "antd";
+import { PrinterOutlined } from "@ant-design/icons";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getCompanyBySlug, formatAmount } from "../../data";
@@ -132,6 +134,11 @@ export default function VanAccountDetailPage() {
   const [modalMethod, setModalMethod] = useState<PaymentMethodKey | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [pdfModal, setPdfModal] = useState<{
+    url: string;
+    title: string;
+  } | null>(null);
+  const pdfFrameRef = useRef<HTMLIFrameElement>(null);
 
   // CustID ของบัญชีที่กำลังดู (รองรับการสลับบัญชี) — แยกจาก ResaleID ที่เป็นเลข 13 หลัก
   const accountCustId =
@@ -293,6 +300,16 @@ export default function VanAccountDetailPage() {
     setSelectedMethod(key);
     setSaveError(null);
     setModalMethod(key);
+  };
+
+  const handlePrintPdf = () => {
+    const frame = pdfFrameRef.current;
+    try {
+      frame?.contentWindow?.focus();
+      frame?.contentWindow?.print();
+    } catch {
+      if (pdfModal) window.open(pdfModal.url, "_blank");
+    }
   };
 
   const closeModal = () => {
@@ -556,15 +573,16 @@ export default function VanAccountDetailPage() {
                         </td>
                         <td className={`px-4 py-3 ${color} font-medium`}>
                           {etaxUrl ? (
-                            <a
-                              href={etaxUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPdfModal({ url: etaxUrl, title: legal })
+                              }
                               title="เปิดใบกำกับภาษี"
                               className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
                             >
                               {legal}
-                            </a>
+                            </button>
                           ) : (
                             legal || "-"
                           )}
@@ -813,6 +831,41 @@ export default function VanAccountDetailPage() {
         onClose={closeModal}
         onSubmit={handleSubmitPayingBill}
       />
+
+      <Modal
+        open={pdfModal !== null}
+        onCancel={() => setPdfModal(null)}
+        footer={null}
+        width="100%"
+        style={{ top: 0, margin: 0, maxWidth: "100vw", paddingBottom: 0 }}
+        styles={{
+          header: { marginBottom: 0 },
+          body: { height: "calc(100dvh - 120px)", padding: 0 },
+        }}
+        title={
+          <div className="flex items-center justify-between gap-3 pr-8">
+            <span className="truncate text-base font-semibold">
+              ใบกำกับภาษี {pdfModal?.title}
+            </span>
+            <Button
+              type="primary"
+              icon={<PrinterOutlined />}
+              onClick={handlePrintPdf}
+            >
+              พิมพ์
+            </Button>
+          </div>
+        }
+      >
+        {pdfModal && (
+          <iframe
+            ref={pdfFrameRef}
+            src={pdfModal.url}
+            title={`ใบกำกับภาษี ${pdfModal.title}`}
+            className="block h-full w-full border-0"
+          />
+        )}
+      </Modal>
     </div>
   );
 }

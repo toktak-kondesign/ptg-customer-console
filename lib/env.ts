@@ -57,11 +57,6 @@ export const PLACE_BILL_PDF_BASE_URL = (
   'https://rdpdf.ptg.co.th/e-taxpdf/PlaceBill'
 ).replace(/\/+$/, '');
 
-// E-tax invoice PDF archive base URL
-export const ETAX_PDF_BASE_URL = (
-  process.env.NEXT_PUBLIC_ETAX_PDF_BASE_URL ||
-  'https://rdpdf.ptg.co.th/e-taxpdf/E-Tax'
-).replace(/\/+$/, '');
 
 // PTG login page (dev/prod aware) — used when session expires or user logs out
 export const getLoginUrl = (): string => {

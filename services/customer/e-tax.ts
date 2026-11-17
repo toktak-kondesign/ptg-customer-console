@@ -1,6 +1,8 @@
-import { ETAX_PDF_BASE_URL } from "@/lib/env";
+import { BASE_PATH } from "@/lib/env";
 
-// รูปแบบ: {base}/ETax{company}/{YYYYMM}/{YYYYMMDD}/Invoice/{legalNumber}_Sign.pdf
+// ใช้ proxy ผ่าน /api/customer-info/etax-invoice-pdf เพื่อให้ iframe ใน modal
+// เป็น same-origin (เรียก contentWindow.print() ได้) — upstream จริงคือ
+// {rdpdf}/e-taxpdf/E-Tax/ETax{company}/{YYYYMM}/{YYYYMMDD}/Invoice/{legalNumber}_Sign.pdf
 // คืนค่า "" เมื่อข้อมูลไม่พอสำหรับสร้าง URL
 export function getEtaxInvoicePdfUrl(
   company: string,
@@ -13,7 +15,11 @@ export function getEtaxInvoicePdfUrl(
 
   const year = Number(match[1]);
   const gregorianYear = year >= 2400 ? year - 543 : year;
-  const yearMonth = `${gregorianYear}${match[2]}`;
+  const params = new URLSearchParams({
+    company: company.trim(),
+    invoiceDate: `${gregorianYear}-${match[2]}-${match[3]}`,
+    invoice,
+  });
 
-  return `${ETAX_PDF_BASE_URL}/ETax${encodeURIComponent(company.trim())}/${yearMonth}/${yearMonth}${match[3]}/Invoice/${encodeURIComponent(invoice)}_Sign.pdf`;
+  return `${BASE_PATH}/api/customer-info/etax-invoice-pdf?${params.toString()}`;
 }
