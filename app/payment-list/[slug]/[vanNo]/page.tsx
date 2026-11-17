@@ -531,11 +531,13 @@ export default function VanAccountDetailPage() {
                     const color = amountClass(row.Color1);
                     const checked = index < selectedCount;
                     const legal = row.Legalnumber?.trim() || "";
-                    const etaxUrl = getEtaxInvoicePdfUrl(
-                      row.Company || companyCode || "",
-                      row.InvoiceDate,
-                      legal,
-                    );
+                    const etaxUrl = row.xIsPDFFile_c
+                      ? getEtaxInvoicePdfUrl(
+                          row.Company || companyCode || "",
+                          row.InvoiceDate,
+                          legal,
+                        )
+                      : "";
                     return (
                       <tr
                         key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`}
