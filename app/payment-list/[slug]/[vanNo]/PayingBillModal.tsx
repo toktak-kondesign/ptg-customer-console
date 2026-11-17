@@ -206,17 +206,18 @@ export default function PayingBillModal({
         onCancel={onClose}
         footer={null}
         centered
-        width={method === "van" ? 640 : 760}
+        width="94%"
+        style={{ maxWidth: method === "van" ? 640 : 760 }}
         closeIcon={<CloseOutlined className="text-gray-400" />}
         mask={{ closable: !saving }}
       >
         <div className="pt-4">
           {method === "van" && (
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center sm:gap-4">
               <label className="text-base text-gray-700">
                 กรอกจำนวนเงินที่ต้องการชำระ :
               </label>
-              <div className="w-80">
+              <div className="w-full sm:w-80">
                 <AmountInput value={amount} onChange={setAmount} />
               </div>
             </div>
@@ -225,7 +226,7 @@ export default function PayingBillModal({
           {method === "bank" && (
             <>
               <p className="mb-3 text-lg text-gray-800">โอนเงินผ่านธนาคาร :</p>
-              <div className="mb-6 flex items-center gap-3">
+              <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 <div className="flex-1">
                   <BankPicker
                     label="โอนจาก :"
@@ -233,7 +234,9 @@ export default function PayingBillModal({
                     onChange={setBankFrom}
                   />
                 </div>
-                <span className="text-2xl text-gray-400">&rarr;</span>
+                <span className="self-center text-2xl text-gray-400 rotate-90 sm:rotate-0">
+                  &rarr;
+                </span>
                 <div className="flex-1">
                   <BankPicker
                     label="ไปยัง :"
@@ -244,9 +247,9 @@ export default function PayingBillModal({
               </div>
 
               <p className="mb-3 text-lg text-gray-800">รายละเอียดการโอน :</p>
-              <div className="mb-3 flex items-center gap-4 rounded-lg border border-gray-200 p-4">
+              <div className="mb-3 flex flex-col gap-2 rounded-lg border border-gray-200 p-4 sm:flex-row sm:items-center sm:gap-4">
                 <span className="text-base text-gray-600">จำนวนเงิน :</span>
-                <div className="ml-auto w-72">
+                <div className="w-full sm:ml-auto sm:w-72">
                   <AmountInput value={amount} onChange={setAmount} />
                 </div>
               </div>
@@ -368,7 +371,7 @@ export default function PayingBillModal({
               type="button"
               onClick={handleSubmit}
               disabled={saving}
-              className="rounded-md bg-[#1155BB] px-16 py-3 text-lg font-medium text-white transition hover:bg-[#0d47a1] disabled:cursor-not-allowed disabled:bg-gray-300"
+              className="w-full rounded-md bg-[#1155BB] px-16 py-3 text-lg font-medium text-white transition hover:bg-[#0d47a1] disabled:cursor-not-allowed disabled:bg-gray-300 sm:w-auto"
             >
               {saving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
             </button>
@@ -404,7 +407,8 @@ export default function PayingBillModal({
         mask={{ closable: !saving }}
         keyboard={!saving}
         centered
-        width={600}
+        width="94%"
+        style={{ maxWidth: 600 }}
       >
         {pendingCheque && (
           <div className="space-y-5 pt-3">

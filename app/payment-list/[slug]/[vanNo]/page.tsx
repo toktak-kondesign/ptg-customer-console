@@ -366,9 +366,9 @@ export default function VanAccountDetailPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F7FA]">
       <Header />
-      <main className="flex-1 py-8 sm:py-8">
-        <div className="max-w-[90%] mx-auto px-4 sm:px-6">
-          <p className="text-sm mb-6">
+      <main className="flex-1 py-4 sm:py-8">
+        <div className="max-w-[90%] mx-auto px-2 sm:px-6">
+          <p className="text-xs sm:text-sm mb-4 sm:mb-6">
             <Link href="/" className="text-gray-500 hover:text-gray-700">
               หน้าหลัก
             </Link>
@@ -394,7 +394,7 @@ export default function VanAccountDetailPage() {
             <p className="text-base text-gray-500 mb-1">ข้อมูลลูกค้า</p>
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex-1">
-                <h2 className="text-3xl text-gray-900 tracking-wide">
+                <h2 className="text-2xl sm:text-3xl text-gray-900 tracking-wide">
                   CUSTOMER INFORMATION
                 </h2>
                 <dl className="mt-3 space-y-1 text-sm">
@@ -415,7 +415,7 @@ export default function VanAccountDetailPage() {
                 </dl>
               </div>
 
-              <div className="flex flex-col items-end gap-5 shrink-0">
+              <div className="flex flex-col items-start lg:items-end gap-5 shrink-0">
                 <div className="relative w-28 h-16">
                   <Image
                     src={company.logo}
@@ -425,12 +425,12 @@ export default function VanAccountDetailPage() {
                     className="object-contain"
                   />
                 </div>
-                <div className="text-right">
+                <div className="text-left lg:text-right">
                   <p className="text-xs text-gray-500">
                     ยอดค้างชำระทั้งสิ้น{" "}
                     <span className="text-gray-400">(Total Amount)</span>
                   </p>
-                  <p className="text-3xl font-bold text-blue-700 mt-1">
+                  <p className="text-2xl sm:text-3xl font-bold text-blue-700 mt-1">
                     {formatAmount(totalAmount)}{" "}
                     <span className="text-sm font-normal">บาท</span>
                   </p>
@@ -462,7 +462,7 @@ export default function VanAccountDetailPage() {
             <h3 className="font-bold text-gray-900 py-2 px-5 bg-[#19368f] text-white">
               รายละเอียดบัญชีเลขที่ {vanNoDisplay}
             </h3>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-b border-gray-200">
               <label className="flex items-center gap-2">
                 แสดง
                 <select
@@ -479,10 +479,10 @@ export default function VanAccountDetailPage() {
                 รายการต่อหน้า
               </label>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/payment-list/${params.slug}/${encodeURIComponent(params.vanNo)}/payment-log${logQuery ? `?${logQuery}` : ""}`}
-                  className="flex items-center gap-2 text-gray-600 mr-4 bg-emerald-100 px-3 py-1 rounded-lg hover:bg-emerald-200 transition"
+                  className="flex items-center gap-2 text-gray-600 bg-emerald-100 px-3 py-1 rounded-lg hover:bg-emerald-200 transition"
                 >
                   <img
                     src={img("/images/payment-method.png")}
@@ -509,7 +509,7 @@ export default function VanAccountDetailPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full min-w-[900px] text-sm whitespace-nowrap">
                 <thead className="bg-gray-200 text-gray-700">
                   <tr>
@@ -626,7 +626,107 @@ export default function VanAccountDetailPage() {
               </table>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 sm:px-6 py-3 border-t border-gray-200 text-sm text-gray-600">
+            {/* หน้าจอเล็ก: แสดงรายการเป็นการ์ดแทนตาราง */}
+            <div className="lg:hidden divide-y divide-gray-100">
+              {pagedRows.map((row, localIndex) => {
+                const index = pageStart + localIndex;
+                const color = amountClass(row.Color1);
+                const checked = index < selectedCount;
+                const legal = row.Legalnumber?.trim() || "";
+                const etaxUrl = row.xIsPDFFile_c
+                  ? getEtaxInvoicePdfUrl(
+                      row.Company || companyCode || "",
+                      row.InvoiceDate,
+                      legal,
+                    )
+                  : "";
+                return (
+                  <div
+                    key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`}
+                    onClick={() => toggleRow(index)}
+                    className={`flex items-start gap-3 px-4 py-3 cursor-pointer ${
+                      checked ? "bg-green-50" : "active:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggleRow(index)}
+                      className="mt-1 w-5 h-5 shrink-0 accent-green-600 cursor-pointer"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-3">
+                        <p className={`${color} font-medium text-sm`}>
+                          {index + 1}.{" "}
+                          {etaxUrl ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPdfModal({ url: etaxUrl, title: legal });
+                              }}
+                              title="เปิดใบกำกับภาษี"
+                              className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
+                            >
+                              {legal}
+                            </button>
+                          ) : (
+                            legal || "-"
+                          )}
+                        </p>
+                        <p
+                          className={`${color} font-semibold whitespace-nowrap`}
+                        >
+                          {formatAmount(Number(row.DocInvoiceAmt) || 0)}
+                        </p>
+                      </div>
+                      <dl className={`mt-1 space-y-0.5 text-xs ${color}`}>
+                        <div className="flex gap-1.5">
+                          <dt className="text-gray-400 shrink-0">
+                            วันที่ซื้อ :
+                          </dt>
+                          <dd>{formatDate(row.InvoiceDate)}</dd>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <dt className="text-gray-400 shrink-0">
+                            ครบกำหนดชำระ :
+                          </dt>
+                          <dd>{formatDate(row.DueDate)}</dd>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <dt className="text-gray-400 shrink-0">
+                            ประเภทสินค้า :
+                          </dt>
+                          <dd className="break-words">
+                            {row.Description?.trim() || "-"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <dt className="text-gray-400 shrink-0">หน้างาน :</dt>
+                          <dd className="break-words">
+                            {row.Address1?.trim() || "-"}
+                          </dd>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <dt className="text-gray-400 shrink-0">หมายเหตุ :</dt>
+                          <dd className="break-words">
+                            {row.CustID?.trim() || "-"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+                );
+              })}
+              {!isLoading && rows.length === 0 && (
+                <p className="px-6 py-8 text-center text-sm text-gray-400">
+                  ไม่พบรายการบัญชี
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3 border-t border-gray-200 text-sm text-gray-600">
               <label className="flex items-center gap-2">
                 แสดง
                 <select
@@ -681,7 +781,7 @@ export default function VanAccountDetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 px-5 sm:px-6 py-4 border-t border-gray-200 bg-white">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4 px-4 sm:px-6 py-4 border-t border-gray-200 bg-white">
               <div className="text-right text-sm text-gray-600">
                 <p className="text-xs text-gray-400">
                   *** รายการที่ระบุปลายทางถูกต้องเรียบร้อย ***
@@ -740,7 +840,7 @@ export default function VanAccountDetailPage() {
               <h4 className="font-semibold text-gray-900 mb-4">
                 การชำระเงินโอน/เดบิต
               </h4>
-              <div className="grid grid-cols-12 gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {BANKS.map((bank) => (
                   <div
                     key={bank.code}
@@ -810,7 +910,7 @@ export default function VanAccountDetailPage() {
               type="button"
               disabled={selectedCount === 0 || !selectedMethod}
               onClick={() => selectedMethod && setModalMethod(selectedMethod)}
-              className="px-6 py-2.5 text-sm font-medium text-white bg-[#0B132B] hover:bg-[#1a2744] disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition"
+              className="w-full sm:w-auto px-6 py-2.5 text-sm font-medium text-white bg-[#0B132B] hover:bg-[#1a2744] disabled:bg-gray-300 disabled:cursor-not-allowed rounded-lg transition"
             >
               ยืนยันการชำระเงิน
             </button>
