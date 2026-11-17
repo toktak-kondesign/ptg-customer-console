@@ -14,6 +14,7 @@ import {
   HistoryOutlined,
   MinusOutlined,
   PlusOutlined,
+  ReloadOutlined,
   RightOutlined,
   SaveOutlined,
   SearchOutlined,
@@ -166,6 +167,7 @@ export default function RequestCardModal({
   const [cust, setCust] = useState({ id: "", name: "" });
   const [logo, setLogo] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [accounts, setAccounts] = useState<CustomerAccountRow[]>([]);
@@ -198,8 +200,13 @@ export default function RequestCardModal({
   const [downloading, setDownloading] = useState(false);
 
   const loadProfile = async (id: string) => {
+    if (!id) return;
     setProfileLoading(true);
-    const res = await getCustomerProfileService(id);
+    setProfileError(null);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const res = await getCustomerProfileService(id, controller.signal);
+    clearTimeout(timer);
     if (res.status === "success" && res.results.length > 0) {
       const profile = resolveCustomerProfile(
         id,
@@ -209,8 +216,24 @@ export default function RequestCardModal({
       );
       setCust({ id, name: profile.name });
       setLogo(res.images?.logo?.src ?? null);
+    } else {
+      setProfileError("ไม่สามารถโหลดข้อมูลลูกค้าได้ กรุณากดโหลดใหม่");
     }
     setProfileLoading(false);
+  };
+
+  const loadCustomer = (id: string) => {
+    const seeded = resolveCustomerProfile(id, getCustomerInfo(), {
+      goldPoints: 0,
+      silverPoints: 0,
+    });
+    setCust({
+      id,
+      name: seeded.name || getAuthUser()?.custName || "",
+    });
+    setLogo(null);
+    void resetProducts(id);
+    void loadProfile(id);
   };
 
   const resetProducts = async (id: string) => {
@@ -253,18 +276,8 @@ export default function RequestCardModal({
     setPendingCard(null);
     setResult(null);
     setDownloading(false);
-    void resetProducts(custId);
-
-    const seeded = resolveCustomerProfile(custId, getCustomerInfo(), {
-      goldPoints: 0,
-      silverPoints: 0,
-    });
-    setCust({
-      id: custId,
-      name: seeded.name || getAuthUser()?.custName || "",
-    });
-    setLogo(null);
-    if (custId) void loadProfile(custId);
+    setProfileError(null);
+    loadCustomer(custId);
   }, [open, custId]);
 
   const openSwitcher = () => {
@@ -296,6 +309,15 @@ export default function RequestCardModal({
     setLogo(null);
     void resetProducts(account.CustID);
     void loadProfile(account.CustID);
+  };
+
+  const handleRetryCustomer = () => {
+    const id = cust.id || custId || getSessionCustomerId();
+    if (!id) {
+      setProfileError("ยังไม่พบข้อมูลลูกค้า กรุณาลองใหม่อีกครั้ง");
+      return;
+    }
+    loadCustomer(id);
   };
 
   const setDraftValue = (item: RequestProductItem, raw: string) => {
@@ -363,7 +385,7 @@ export default function RequestCardModal({
   const phoneValue = qrDirect ? "" : phone.trim();
 
   const handleStep1Next = async () => {
-    if (!cust.id) {
+    if (!cust.id || !cust.name) {
       setFormError("ไม่พบข้อมูลลูกค้า");
       return;
     }
@@ -557,7 +579,9 @@ export default function RequestCardModal({
                     รหัสลูกค้า{cust.id || "-"}
                   </p>
                   <p className="text-gray-700">
-                    {profileLoading ? "กำลังโหลด..." : cust.name || "-"}
+                    {profileLoading || (!cust.id && !profileError)
+                      ? "กำลังโหลด..."
+                      : cust.name || "-"}
                   </p>
                 </div>
                 <button
@@ -573,6 +597,23 @@ export default function RequestCardModal({
                   </span>
                 </button>
               </div>
+
+              {!profileLoading && (profileError || !cust.id) && (
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50 px-3 py-2">
+                  <span className="text-xs text-red-600">
+                    {profileError ??
+                      "ยังไม่พบข้อมูลลูกค้า กรุณาลองใหม่อีกครั้ง"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleRetryCustomer}
+                    className="flex shrink-0 items-center gap-1.5 rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-50"
+                  >
+                    <ReloadOutlined />
+                    โหลดใหม่
+                  </button>
+                </div>
+              )}
 
               <div className="mt-3 flex justify-end">
                 <button
@@ -640,7 +681,8 @@ export default function RequestCardModal({
                   size="large"
                   icon={<ArrowRightOutlined />}
                   iconPlacement="end"
-                  loading={submitting}
+                  loading={submitting || profileLoading}
+                  disabled={!cust.id || !cust.name}
                   onClick={handleStep1Next}
                   className="w-full sm:w-auto sm:min-w-[260px]"
                 >

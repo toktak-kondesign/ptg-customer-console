@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button, DatePicker, Input, Select, Table, Tag, Tooltip } from "antd";
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
@@ -137,6 +137,20 @@ export default function AccessLogPage() {
     [Dayjs | null, Dayjs | null] | null
   >(null);
 
+  // วัดความสูงกล่องค้นหาที่ sticky เพื่อให้ table header ติดใต้กล่องพอดี
+  const filterRef = useRef<HTMLDivElement>(null);
+  const [filterHeight, setFilterHeight] = useState(0);
+
+  useEffect(() => {
+    const el = filterRef.current;
+    if (!el) return;
+    const update = () => setFilterHeight(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const load = useCallback(async (targetPage: number) => {
     setLoading(true);
     setError(null);
@@ -206,8 +220,11 @@ export default function AccessLogPage() {
             </span>
           </p>
 
-          <section className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-6 sm:px-8 sm:py-8">
+          <section className="bg-white border border-gray-200 rounded-2xl shadow-sm">
+            <div
+              ref={filterRef}
+              className="sticky top-0 z-20 bg-white rounded-t-2xl px-5 py-6 sm:px-8 sm:py-8 border-b border-gray-100"
+            >
               <h1 className="text-xl font-semibold text-gray-800">
                 Log การใช้งานระบบ
               </h1>
@@ -311,6 +328,7 @@ export default function AccessLogPage() {
                 loading={loading}
                 size="middle"
                 scroll={{ x: 1400 }}
+                sticky={{ offsetHeader: filterHeight }}
                 pagination={{
                   current: page,
                   pageSize: PAGE_SIZE,

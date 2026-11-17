@@ -52,10 +52,10 @@ const THAI_MONTHS_SHORT = [
 
 const TABLE_HEADERS = [
   "ลำดับ",
+  "ทะเบียนรถ",
   "รหัส",
   "รหัสลูกค้า",
   "ชื่อลูกค้า",
-  "ทะเบียนรถ",
   "เบอร์โทรศัพท์มือถือ",
   "วันที่ขอบัตร",
   "สถานะ",
@@ -489,6 +489,9 @@ export default function TruckCardHistoryPage() {
                             {index + 1}.
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
+                            {row.CarRegister?.trim() || "-"}
+                          </td>
+                          <td className="text-center px-4 py-2.5 text-gray-600">
                             {row.IDCode?.trim() ? (
                               <Link
                                 href={`/truck-card/${row.IDCode.trim()}`}
@@ -506,9 +509,6 @@ export default function TruckCardHistoryPage() {
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {cleanName(row.CustName) || "-"}
-                          </td>
-                          <td className="text-center px-4 py-2.5 text-gray-600">
-                            {row.CarRegister?.trim() || "-"}
                           </td>
                           <td className="text-center px-4 py-2.5 text-gray-600">
                             {row.MobilePhone?.trim() || ""}
