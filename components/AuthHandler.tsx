@@ -43,12 +43,41 @@ function removeCookie(name: string) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
 }
 
+// ?redirect=...&external=false → path ภายในระบบ เช่น truck-list → /truck-list/
+// ?redirect=...&external=true  → URL ภายนอก (อนุญาตเฉพาะ http/https)
+function resolveRedirect(
+  redirect: string | null,
+  external: boolean,
+): { external: boolean; url: string } | null {
+  const value = redirect?.trim();
+  if (!value) return null;
+
+  if (external) {
+    try {
+      const url = new URL(value);
+      return url.protocol === "http:" || url.protocol === "https:"
+        ? { external: true, url: url.href }
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // กัน protocol-relative (//evil.com), backslash และ scheme ใด ๆ
+  if (/[\\]|:\/\//.test(value)) return null;
+  const match = value.match(/^([^?#]*)(.*)$/)!;
+  const path = match[1].replace(/^\/+|\/+$/g, "");
+  return { external: false, url: `/${path ? `${path}/` : ""}${match[2]}` };
+}
+
 export default function AuthHandler() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
   // เจ้าหน้าที่ login ในนามลูกค้า: ?token=...&cid={custID}
   const staffCid = searchParams.get("cid")?.trim() || null;
+  const redirectParam = searchParams.get("redirect");
+  const externalParam = searchParams.get("external")?.trim().toLowerCase() === "true";
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -153,7 +182,12 @@ export default function AuthHandler() {
         // Navigate immediately so the static layout renders without
         // waiting for the approve-link round trip (customer-info +
         // createApproveLink can take a while).
-        router.push("/");
+        const target = resolveRedirect(redirectParam, externalParam);
+        if (target?.external) {
+          window.location.href = target.url;
+        } else {
+          router.push(target?.url ?? "/");
+        }
 
         // Step 1-3: Generate CustomerAccessToken (JWT), fetch ResaleID,
         // and call createApproveLink. Runs in the background — the page
@@ -219,7 +253,7 @@ export default function AuthHandler() {
     return () => {
       cancelled = true;
     };
-  }, [token, staffCid, router]);
+  }, [token, staffCid, redirectParam, externalParam, router]);
 
   if (!token) return null;
 
