@@ -21,6 +21,7 @@ import { getVanAccountDtlService } from "@/services/customer/van-account-dtl";
 import { getLogPayCustService } from "@/services/customer/log-pay-cust";
 import { createPayingBillService } from "@/services/customer/paying-bill";
 import { getStaffViewedCustomerId } from "@/services/approve-link";
+import { getEtaxInvoicePdfUrl } from "@/services/customer/e-tax";
 import { BANKS } from "@/lib/banks";
 import { maskCustomerId } from "@/lib/format";
 import { img } from "@/lib/env";
@@ -529,6 +530,12 @@ export default function VanAccountDetailPage() {
                     const index = pageStart + localIndex;
                     const color = amountClass(row.Color1);
                     const checked = index < selectedCount;
+                    const legal = row.Legalnumber?.trim() || "";
+                    const etaxUrl = getEtaxInvoicePdfUrl(
+                      row.Company || companyCode || "",
+                      row.InvoiceDate,
+                      legal,
+                    );
                     return (
                       <tr
                         key={`${index}-${row.Legalnumber ?? row.HeadNum ?? ""}`}
@@ -546,7 +553,19 @@ export default function VanAccountDetailPage() {
                           {index + 1}.
                         </td>
                         <td className={`px-4 py-3 ${color} font-medium`}>
-                          {row.Legalnumber?.trim() || "-"}
+                          {etaxUrl ? (
+                            <a
+                              href={etaxUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="เปิดใบกำกับภาษี"
+                              className="underline decoration-dotted underline-offset-2 hover:text-blue-700"
+                            >
+                              {legal}
+                            </a>
+                          ) : (
+                            legal || "-"
+                          )}
                         </td>
                         <td className={`px-4 py-3 ${color}`}>
                           {formatDate(row.InvoiceDate)}
