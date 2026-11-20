@@ -8,6 +8,7 @@ import {
   setPtgSystemLink,
   setCustomerInfo,
   setViewedCustomerId,
+  setStaffViewMode,
   notifyCustomerSessionChanged,
   getAuthUser,
 } from "@/lib/auth";
@@ -109,7 +110,12 @@ export default function AuthHandler() {
 
         if (cancelled) return;
 
-        if (data.response_code !== 200 || data.isExpire) {
+        const missingUserData =
+          !data.username?.trim() ||
+          !data.personCode?.trim() ||
+          !data.custID?.trim();
+
+        if (data.response_code !== 200 || data.isExpire || missingUserData) {
           localStorage.removeItem(AUTH_STORAGE_KEY);
           removeCookie(TOKEN_COOKIE);
           removeCookie(USER_COOKIE);
@@ -117,8 +123,10 @@ export default function AuthHandler() {
           setMessage(
             data.isExpire
               ? "ลิงก์เข้าใช้งานหมดอายุ กำลังไปยังหน้าเข้าสู่ระบบ..."
-              : data.response_desc ||
-                  "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
+              : missingUserData
+                ? "ข้อมูลผู้ใช้ไม่ครบถ้วน กรุณาเข้าสู่ระบบใหม่อีกครั้ง"
+                : data.response_desc ||
+                    "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
           );
           if (data.isExpire) {
             window.setTimeout(() => {
@@ -174,6 +182,7 @@ export default function AuthHandler() {
         setCookie(USER_COOKIE, JSON.stringify(data));
         localStorage.removeItem("ptg-session-expires-at");
         localStorage.setItem("ptg-session-last-activity", String(Date.now()));
+        setStaffViewMode(Boolean(staffCid));
         setViewedCustomerId(staffCid);
 
         setStatus("success");

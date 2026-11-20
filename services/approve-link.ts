@@ -2,6 +2,7 @@ import {
   getAuthUser,
   getFreshCustomerAccessToken,
   getViewedCustomerId,
+  isStaffViewMode,
   notifyCustomerSessionChanged,
   setCustomerAccessToken,
   setCustomerInfo,
@@ -32,9 +33,12 @@ export function isStaffSystemLink(ref1: string): boolean {
 
 // custID ที่ staff (EMP) กำลังสวมสิทธิ์อยู่ — "" ถ้าไม่ใช่ staff mode
 export function getStaffViewedCustomerId(): string {
+  const viewedCustomerId = getViewedCustomerId();
+  if (isStaffViewMode()) return viewedCustomerId;
+  // รองรับ session เก่าที่สร้างก่อนมี marker staff view
   const user = getAuthUser();
   if (user?.UserType !== "EMP") return "";
-  return getViewedCustomerId();
+  return viewedCustomerId;
 }
 
 // Re-mint the CustomerAccessToken (8h lifetime) by re-running the ptg-system

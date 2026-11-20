@@ -30,6 +30,8 @@ const STORAGE_KEYS = {
   // รหัสลูกค้าที่กำลังดูอยู่ — ถูกเขียนโดยฝั่ง staff console และฟีเจอร์สลับบัญชี
   // (CustomerPointsContext อ่าน key นี้เพื่อโหลดคะแนนของบัญชีที่เลือก)
   VIEWED_CUSTOMER_ID: "ptg_staff_cid",
+  // true เฉพาะเมื่อ login ผ่าน token+cid และยืนยัน UserType=EMP แล้ว
+  STAFF_VIEW_MODE: "ptg_staff_view_mode",
 } as const;
 
 function getCookie(name: string): string | null {
@@ -43,23 +45,36 @@ function getCookie(name: string): string | null {
   }
 }
 
+function normalizeUser(
+  user: AuthenUserInfo & { userType?: string },
+): AuthenUserInfo {
+  const userType = (user.UserType ?? user.userType)?.toUpperCase();
+  if (userType === "EMP" || userType === "CUS") user.UserType = userType;
+  return user;
+}
+
 export function getAuthUser(): AuthenUserInfo | null {
   if (typeof window === "undefined") return null;
 
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
     if (stored) {
-      const parsed = JSON.parse(stored) as AuthenUserInfo & { token?: string };
+      const parsed = JSON.parse(stored) as AuthenUserInfo & {
+        token?: string;
+        userType?: string;
+      };
       if (parsed.response_code === 200 && !parsed.isExpire) {
-        return parsed;
+        return normalizeUser(parsed);
       }
     }
 
     const cookieUser = getCookie(STORAGE_KEYS.CUSTOMER_USER);
     if (cookieUser) {
-      const parsed = JSON.parse(cookieUser) as AuthenUserInfo;
+      const parsed = JSON.parse(cookieUser) as AuthenUserInfo & {
+        userType?: string;
+      };
       if (parsed.response_code === 200 && !parsed.isExpire) {
-        return parsed;
+        return normalizeUser(parsed);
       }
     }
   } catch (error) {
@@ -186,6 +201,20 @@ export function getViewedCustomerId(): string {
   return localStorage.getItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID)?.trim() ?? "";
 }
 
+export function isStaffViewMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(STORAGE_KEYS.STAFF_VIEW_MODE) === "1";
+}
+
+export function setStaffViewMode(enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  if (enabled) {
+    localStorage.setItem(STORAGE_KEYS.STAFF_VIEW_MODE, "1");
+  } else {
+    localStorage.removeItem(STORAGE_KEYS.STAFF_VIEW_MODE);
+  }
+}
+
 export function setViewedCustomerId(custId: string | null): void {
   if (typeof window === "undefined") return;
   if (custId) {
@@ -254,6 +283,7 @@ export function clearAuth(): void {
   localStorage.removeItem(STORAGE_KEYS.OUTSOURCE_SYSTEM_LINK);
   localStorage.removeItem(STORAGE_KEYS.CUSTOMER_INFO);
   localStorage.removeItem(STORAGE_KEYS.VIEWED_CUSTOMER_ID);
+  localStorage.removeItem(STORAGE_KEYS.STAFF_VIEW_MODE);
 
   const expire = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
   document.cookie = `${STORAGE_KEYS.CUSTOMER_TOKEN}=; path=/; ${expire}; SameSite=Lax`;

@@ -89,8 +89,9 @@ function validate(body: Partial<CreatePayingBillRequest>): string | null {
   if (!body.billDate || !toDateOnly(body.billDate)) return "กรุณาระบุวันที่ให้ถูกต้อง";
 
   if (body.method.startsWith("cheque")) {
-    const recordStaffChequeReceipt =
-      body.userType === "EMP" && Boolean(body.staffViewedCustomerId?.trim());
+    const recordStaffChequeReceipt = Boolean(
+      body.staffViewedCustomerId?.trim(),
+    );
     if (recordStaffChequeReceipt) {
       if (!body.receiptPerson?.trim()) return "ไม่พบชื่อผู้ทำรายการ กรุณาเข้าสู่ระบบใหม่";
       if (body.receiptPerson.trim().length > 100) return "ชื่อผู้ทำรายการต้องไม่เกิน 100 ตัวอักษร";
@@ -117,10 +118,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const isCheque = body.method!.startsWith("cheque");
   const recordStaffChequeReceipt =
-    isCheque &&
-    body.userType === "EMP" &&
-    Boolean(body.staffViewedCustomerId?.trim());
-  const recordCustomerChequeStatus = isCheque && body.userType === "CUS";
+    isCheque && Boolean(body.staffViewedCustomerId?.trim());
+  const recordCustomerChequeStatus =
+    isCheque && !recordStaffChequeReceipt && body.userType === "CUS";
   const billDate = toDateOnly(body.billDate!)!;
   const receiveDate = toDateOnly(new Date().toISOString().slice(0, 10))!;
 
