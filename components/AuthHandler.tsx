@@ -78,7 +78,8 @@ export default function AuthHandler() {
   // เจ้าหน้าที่ login ในนามลูกค้า: ?token=...&cid={custID}
   const staffCid = searchParams.get("cid")?.trim() || null;
   const redirectParam = searchParams.get("redirect");
-  const externalParam = searchParams.get("external")?.trim().toLowerCase() === "true";
+  const externalParam =
+    searchParams.get("external")?.trim().toLowerCase() === "true";
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -110,10 +111,10 @@ export default function AuthHandler() {
 
         if (cancelled) return;
 
+        // เจ้าหน้าที่สวมสิทธิ์: token ไม่มี custID — ใช้ &cid แทน
+        const custID = staffCid ?? data.custID?.trim();
         const missingUserData =
-          !data.username?.trim() ||
-          !data.personCode?.trim() ||
-          !data.custID?.trim();
+          !data.username?.trim() || !data.personCode?.trim() || !custID;
 
         if (data.response_code !== 200 || data.isExpire || missingUserData) {
           localStorage.removeItem(AUTH_STORAGE_KEY);
@@ -126,7 +127,7 @@ export default function AuthHandler() {
               : missingUserData
                 ? "ข้อมูลผู้ใช้ไม่ครบถ้วน กรุณาเข้าสู่ระบบใหม่อีกครั้ง"
                 : data.response_desc ||
-                    "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
+                  "ไม่สามารถเข้าใช้งานได้ กรุณาลองใหม่อีกครั้ง",
           );
           if (data.isExpire) {
             window.setTimeout(() => {
@@ -213,7 +214,7 @@ export default function AuthHandler() {
             body: JSON.stringify({
               username: data.username,
               personName: data.personName,
-              custID: staffCid ?? data.custID,
+              custID,
               custName: staffCid ? "" : data.custName,
             }),
           })
