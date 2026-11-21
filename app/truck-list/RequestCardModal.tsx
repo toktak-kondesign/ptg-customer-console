@@ -107,6 +107,29 @@ const GROUP_NAME_MAP: Record<string, string> = {
 
 const canonicalGroup = (name: string) => GROUP_NAME_MAP[name] ?? name;
 
+const TYPE_SALE_LABELS: Record<string, string> = {
+  "S-002": "ขายเชื่อ",
+  "S-009": "เงินสดจ่ายเงินล่วงหน้า",
+};
+
+const TYPE_SALE_STYLES: Record<string, string> = {
+  "S-002": "border-blue-400 text-blue-700",
+  "S-009": "border-emerald-400 text-emerald-700",
+};
+
+const TypeSaleBadge = ({ typeSale }: { typeSale?: string }) => {
+  if (!typeSale) return null;
+  return (
+    <span
+      className={`ml-2 inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+        TYPE_SALE_STYLES[typeSale] ?? "border-gray-300 text-gray-600"
+      }`}
+    >
+      {TYPE_SALE_LABELS[typeSale] ?? typeSale}
+    </span>
+  );
+};
+
 const GROUP_STYLES: Record<string, string> = {
   [STONE_GROUP]:
     "bg-gradient-to-br from-white to-slate-200 border border-gray-100 shadow-sm",
@@ -255,6 +278,7 @@ export default function RequestCardModal({
         available: row.NumToUse,
         unit: row.Unit,
         group: row.ProdName,
+        typeSale: row.TypeSale,
       }));
       setProducts(items);
       setDraftQty(Object.fromEntries(items.map((item) => [item.key, "0"])));
@@ -360,7 +384,13 @@ export default function RequestCardModal({
   const filteredProducts = useMemo(() => {
     const q = productQuery.trim().toLowerCase();
     const inGroup = products.filter(
-      (item) => canonicalGroup(item.group) === group,
+      (item) =>
+        canonicalGroup(item.group) === group &&
+        !(
+          isStoneProduct(item) &&
+          item.typeSale === "S-002" &&
+          item.available < 5
+        ),
     );
     if (!q) return inGroup;
     return inGroup.filter(
@@ -825,6 +855,7 @@ export default function RequestCardModal({
                           </p>
                           <p className="mt-1 text-sm text-gray-600">
                             จำนวน {formatQty(item.available)} {item.unit}
+                            <TypeSaleBadge typeSale={item.typeSale} />
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center self-end overflow-hidden rounded-md border border-gray-200 sm:self-auto">

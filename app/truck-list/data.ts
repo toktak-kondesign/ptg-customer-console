@@ -38,4 +38,5 @@ export interface RequestProductItem {
   available: number;
   unit: string;
   group: string;
+  typeSale: string;
 }
