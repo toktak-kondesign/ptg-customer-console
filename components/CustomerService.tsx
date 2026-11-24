@@ -86,7 +86,7 @@ const services: ServiceEntry[] = [
     image: img("/images/banner/Order_purchase.png"),
     title: "รายการ Order\nสินค้า",
     desc: "รายการ Order สินค้า",
-    approveLinkRef1: "OrderPicker",
+    href: "/order-picker",
   },
   {
     image: img("/images/banner/PTG-Messages.png"),
