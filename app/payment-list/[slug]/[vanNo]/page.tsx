@@ -959,6 +959,7 @@ export default function VanAccountDetailPage() {
       >
         {pdfModal && (
           <iframe
+            key={pdfModal.url}
             ref={pdfFrameRef}
             src={pdfModal.url}
             title={`ใบกำกับภาษี ${pdfModal.title}`}
